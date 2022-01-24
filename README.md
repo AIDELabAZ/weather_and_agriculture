@@ -68,4 +68,4 @@ weather_and_agriculture
 
   [1]: https://osf.io/8hnz5/
   [2]: https://www.worldbank.org/en/programs/lsms/initiatives/lsms-ISA
-  [3]: https://arxiv.org/abs/2012.11768
+  [3]: https://openknowledge.worldbank.org/handle/10986/36643
