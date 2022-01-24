@@ -11,13 +11,13 @@
 ## Project Team
 
 Contributors:
-* Jeffrey D. Michler
-* Anna Josephson
-* Talip Kilic
-* Siobhan Murray
-* Brian McGreal
-* Alison Conley
-* Emil Kee-Tui
+* Jeffrey D. Michler (Conceptualizaiton, Supervision, Visualization, Writing)
+* Anna Josephson (Conceptualizaiton, Supervision, Visualization, Writing)
+* Talip Kilic (Conceptualization, Resources, Writing)
+* Siobhan Murray (Conceptualization, Writing)
+* Brian McGreal (Data curation)
+* Alison Conley (Data curation)
+* Emil Kee-Tui (Data curation)
 
 ## Data cleaning
 
