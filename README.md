@@ -60,7 +60,7 @@ weather_and_agriculture
 ├──regression_data
 │    ├──country          /* one dir for each country */
 │    └──logs
-│────results_data        /* overall analysis */
+└────results_data        /* overall analysis */
      ├──tables
      ├──figures
      └──logs
