@@ -3,14 +3,12 @@
 
  ## Index
 
- - [Introduction](#introduction)
+ - [Project Team](#project-team)
  - [Data cleaning](#data-cleaning)
   - [Pre-requisites](#pre-requisites)
   - [Folder structure](#folder-structure)
 
-## Introduction
-
-This is the repo for the weather project.<br>
+## Project Team
 
 Contributors:
 * Jeffrey D. Michler
@@ -21,13 +19,9 @@ Contributors:
 * Alison Conley
 * Emil Kee-Tui
 
-As described in more detail below, scripts various
-go through each step, from cleaning raw data to analysis.
-
 ## Data cleaning
 
-The code in `projectdo.do` (to be done) replicates
-    the data cleaning and analysis.
+The code in this repository is primarily for replicating the cleaning of the household LSMS-ISA data. This requires downloading this repo and the household data from the World Bank webiste. The `projectdo.do` should then replicate the data cleaning process.
 
 ### Pre-requisites
 
