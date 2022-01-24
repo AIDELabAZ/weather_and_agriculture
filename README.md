@@ -47,30 +47,30 @@ The code in `projectdo.do` (to be done) replicates
 
 The [OSF project page][1] provides more details on the data cleaning.
 
-The general repo structure looks as follows:<br>
+For the household cleaning code to run, the public use microdata must be downloaded from the [World Bank Microdata Library][2]. Furthermore, the data needs to be placed in the following folder structure:<br>
 
 ```stata
-weather_project
-├────README.md
-├────projectdo.do
-│    
-├────country             /* one dir for each country */
-│    ├──household_code
-│    │  └──wave          /* one dir for each wave */
-│    ├──weather_code
-│    │  └──wave          /* one dir for each wave */
-│    ├──regression_code
-│    └──output
-│       ├──tables
-│       └──figures
-│
-│────Analysis            /* overall analysis */
-│    ├──code
-│    └──output
-│       ├──tables
-│       └──figures
-│   
-└────config
+weather_and_agriculture
+├────household_data      
+│    └──country          /* one dir for each country */
+│       ├──wave          /* one dir for each wave */
+│       └──logs
+├──weather_data
+│    └──country          /* one dir for each country */
+│       ├──wave          /* one dir for each wave */
+│       └──logs
+├──merged_data
+│    └──country          /* one dir for each country */
+│       ├──wave          /* one dir for each wave */
+│       └──logs
+├──regression_data
+│    ├──country          /* one dir for each country */
+│    └──logs
+│────results_data        /* overall analysis */
+     ├──tables
+     ├──figures
+     └──logs
 ```
 
   [1]: https://osf.io/8hnz5/
+  [2]: https://www.worldbank.org/en/programs/lsms/initiatives/lsms-ISA
