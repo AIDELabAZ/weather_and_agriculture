@@ -1,7 +1,7 @@
-* Project: WB Weather
-* Created on: May 2020
-* Created by: jdm
-* Stata v.17.0
+* Project: WB Weather - metric 
+* Created on: Jan 2024
+* Created by: cda
+* Stata v.18.0
 
 * does
 	* establishes an identical workspace between users
@@ -22,10 +22,10 @@
 * **********************************************************************
 
 * set $pack to 0 to skip package installation
-	global 			pack 	0
+	global 			pack 	1
 		
 * Specify Stata version in use
-    global stataVersion 17.0    // set Stata version
+    global stataVersion 18.0    // set Stata version
     version $stataVersion
 
 * **********************************************************************
@@ -36,9 +36,13 @@
     if `"`c(username)'"' == "jdmichler" {
         global 		code  	"C:/Users/jdmichler/git/AIDELabAZ/weather_and_agriculture"
 		global 		data	"G:/My Drive/weather_project"
-    }
+	}
 
-	
+	 if `"`c(username)'"' == "Chandrakant Agme" {
+        global 		code  	"C:/Users/Chandrakant Agme/Documents/GitHub/weather_metrics"
+		global 		data	"C:/Users/Chandrakant Agme/University of Arizona/Michler, Jeffrey David - (jdmichler) - weather_metrics"
+	 }	
+		
 * **********************************************************************
 * 0 (b) - Check if any required packages are installed:
 * **********************************************************************
@@ -46,11 +50,13 @@
 * install packages if global is set to 1
 if $pack == 1 {
 	
-	* temporarily set delimiter to ; so can break the line
-		#delimit ;
 	* for packages/commands, make a local containing any required packages
-		loc userpack "blindschemes mdesc estout distinct winsor2" ;
-		#delimit cr
+    * temporarily set delimiter to ; so can break the line
+    #delimit ;		
+	loc userpack = "blindschemes mdesc estout distinct winsor2 unique 
+                    palettes catplot colrspace carryforward missings 
+                    coefplot" ;
+    #delimit cr
 	
 	* install packages that are on ssc	
 		foreach package in `userpack' {
@@ -69,17 +75,9 @@ if $pack == 1 {
 			}
 		}
 
-	* install -xfill- package
-		net install xfill, replace from(https://www.sealedenvelope.com/)
+	* install -xfill and dm89_1 - packages
+		net install xfill, 	replace from(https://www.sealedenvelope.com/)
 		
-	* install -customsave package
-		net install StataConfig, ///
-		from(https://raw.githubusercontent.com/etjernst/Materials/master/stata/) replace
-
-	* install -weather- package
-		net install WeatherConfig, ///
-		from(https://jdavidm.github.io/) replace
-	
 	* update all ado files
 		ado update, update
 
@@ -87,7 +85,6 @@ if $pack == 1 {
 		set scheme plotplain, perm
 		set more off
 }
-
 
 * **********************************************************************
 * 1 - run weather data cleaning .do file
@@ -111,7 +108,7 @@ if $pack == 1 {
 /*	this code requires a user to have downloaded the publically available 
 	household data sets and placed them into the folder structure detailed
 	in the readme file accompanying this repo.
-*/	
+
 	do 			"$code/ethiopia/household_code/eth_hh_masterdo.do"
 	do 			"$code/malawi/household_code/mwi_hh_masterdo.do"
 	do 			"$code/niger/household_code/ngr_hh_masterdo.do"
