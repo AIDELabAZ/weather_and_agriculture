@@ -13,7 +13,8 @@
 	* mdesc.ado
 
 * TO DO:
-	* done
+	* go back to pwcorr between plot_size_hec_SR and plot_size_hec_GPS
+	
 	
 	
 * **********************************************************************
@@ -27,46 +28,7 @@
 	
 * open log
 	cap 	log 	close
-	log 	using	"$logout/eaciexploi_p1", append
-
-	
-* **********************************************************************
-* 1 - describing plot size - self-reported and GPS
-* **********************************************************************
-	
-* Project: WB Weather
-* Created on: June 2020
-* Created by: ek
-* Stata v.16
-
-* does
-	* reads in Niger, WAVE 1 (2011), POST PLANTING (first passage), ecvmaas1_p1_en
-	* cleans plot size (hecatres)
-	* creates binaries for pesticide and herbicide use
-	* creates binaries and kg for fertilizer use
-	* cleans labor post planting - prep labor
-	* outputs clean data file ready for combination with wave 1 data
-
-* assumes
-	* customsave.ado
-	* mdesc.ado
-
-* TO DO:
-	* done
-	
-	
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
-
-* define paths
-	loc		root	=		"$data/household_data/niger/wave_1/raw"
-	loc		export	=		"$data/household_data/niger/wave_1/refined"
-	loc		logout	= 		"$data/household_data/niger/logs"
-
-* open log
-	cap 	log 	close
-	log 	using	"`logout'/2011_as1p1", append
+	log 	using	"$logout/eaciexploi_p1", append 
 
 	
 * **********************************************************************
@@ -74,7 +36,10 @@
 * **********************************************************************
 	
 * import the first relevant data file
-	use				"$root/ecvmaas1_p1_en", clear
+	use				"$root/EACIEXPLOI_p1", clear
+
+* dropping duplicates
+	duplicates 		drop	
 	
 	rename 			passage visit
 	label 			var visit "number of visit - wave number"
@@ -82,103 +47,94 @@
 	label 			var clusterid "cluster number"
 	rename			menage hh_num
 	label 			var hh_num "household number - not unique id"
-	rename 			as01qa ord 
+	rename 			s1bq03 ord 
 	label 			var ord "number of order"
-	*** note that ord is the id number
-	
-	rename 			as01q03 field 
+	rename 			s1bq01 field 
 	label 			var field "field number"
-	rename 			as01q05 parcel 
+	rename 			s1bq02 parcel 
 	label 			var parcel "parcel number"
-	*** cant find "extension" variable like they have in wave 2
-	*** extension designates movers in wave 2 - does not exist in wave 1 
+	
+* creat household id 	
+	egen 			hid = concat(clusterid hh_num)
+	label 			var hid "Household indentifier"
+	destring		hid, replace
+	order			hid
 	
 * need to include hid field parcel to uniquely identify
 	sort 			hid field parcel
 	isid 			hid field parcel
 	
 * determine cultivated plot
-	rename 			as01q40 cultivated
+	rename 			s1bq32 cultivated
 	label 			var cultivated "plot cultivated"
+	*** 1 = fallow, 2 = cultivated, 9 = missing
 
 * drop if not cultivated
-	keep 			if cultivated == 1
-	*** 220 observations dropped
-	*** as01q42 asks about fallow specifically rather than did you cultivate 
+	keep 			if cultivated == 2
+	*** 446 dropped, 9,212 kept
 	
 * determine self reported plotsize
-	gen 			plot_size_SR = as01q08
-	lab	var			plot_size_SR "self reported size of plot, in square meters"
-	*** all plots measured in metre carre - square meters
-
-	replace			plot_size_SR = . if plot_size_SR > 999997
-	*** 110 changed to missing 
+	gen 			plot_size_hec_SR = s1bq10
+	lab	var			plot_size_hec_SR "self reported size of plot, in hectares"
+	*** all plots measured in hectares
 
 * determine GPS plotsize
-	gen 			plot_size_GPS = as01q09
-	lab var			plot_size_GPS 	"GPS plot size in sq. meters"
-	*** all plots measured in metre carre - square meters
-	*** 999999 seems to be a code used to designate missing values
+	gen 			plot_size_hec_GPS = s1bq05a
+	lab var			plot_size_hec_GPS 	"GPS plot size in hectares"
+	*** all plots measured in hectares
+	*** 99 seems to be a code used to designate missing values
+
+	order 			plot_size_hec_GPS s1bq10 plot_size_hec_SR, after(s1bq05a)		
 	
-	replace			plot_size_GPS = . if plot_size_GPS > 999997
-	***  changed to missing 
+	replace			plot_size_hec_SR = . if plot_size_hec_SR >= 99
+	*** 806 changed to missing 
 	
+	replace			plot_size_hec_GPS = . if plot_size_hec_GPS >= 99
+	*** 707 changed to missing 
+
 * drop if SR and GPS both equal to 0
-	drop	 		if plot_size_GPS == 0 & plot_size_SR == 0
-	*** 31 values dropped  
+	drop	 		if plot_size_hec_GPS == 0 & plot_size_hec_SR == 0
+	*** 0 values dropped  
 
 * assume 0 GPS reading should be . values 
-	replace 		plot_size_GPS = . if plot_size_GPS == 0 
-	*** will replace 1747 values to missing
-	*** in other countries, when plot not measured with GPS coded with . - in Niger seems to be coded as 0
+	replace 		plot_size_hec_GPS = . if plot_size_hec_GPS == 0 
+	*** will replace 0 values to missing
+
 
 	
 * **********************************************************************
 * 2 - conversion to hectares
 * **********************************************************************
-
-	gen 			plot_size_hec_SR = . 
-
-* plots measures in square meters 
-* create conversion variable 
-	gen 			sqmcon = 0.0001
-	
-* convert to SR hectares
-	replace 		plot_size_hec_SR = plot_size_SR*sqmcon
-	lab	var			plot_size_hec_SR "SR area of plot in hectares"
+	***Mali plot sizes already in hectares
 
 * count missing values
-	count			if plot_size_SR == . 
 	count 			if plot_size_hec_SR !=.
 	count			if plot_size_hec_SR == . 
-	*** 110 missing plot_size_SR
-	*** 110 missing plot_size_hec_SR
-	*** 6303 have plot_size_hec_SR
-	
-* convert gps report to hectares
-	count 			if plot_size_GPS == . 
-	*** 3262 have no gps value
-	gen 			plot_size_2 = .
-	replace 		plot_size_2 = plot_size_GPS*sqmcon
-	rename 			plot_size_2 plot_size_hec_GPS
-	lab	var			plot_size_hec_GPS "GPS measured area of plot in hectares"
+	*** 8406 have plot_size_hec_SR
+	*** 806 do not have plot_size_hec_SR
 
 	count 			if plot_size_hec_GPS !=.
 	count			if plot_size_hec_GPS == . 
-	*** 3151 have GPS
-	*** 3262 do not have GPS
+	*** 8719 have GPS
+	*** 493 do not have GPS
 	
 	count	 		if plot_size_hec_SR != . & plot_size_hec_GPS != .
-	*** 3068 observations have both self reported and GPS plot size in hectares
+	*** 7968 observations have both self reported and GPS plot size in hectares
 
 	pwcorr 			plot_size_hec_SR plot_size_hec_GPS
-	*** relatively low correlation = 0.2403 between selfreported plot size and GPS
+	*** relatively low correlation = 0.2704 between selfreported plot size and GPS
+	
+*scatter plot comparing SR and GPS plotsize
+	 twoway (scatter plot_size_hec_SR s1bq05a) ///
+	 (scatter plot_size_hec_SR plot_size_hec_GPS) 
+	 
+
 
 * check correlation within +/- 3sd of mean (GPS)
 	sum 			plot_size_hec_GPS, detail
 	pwcorr 			plot_size_hec_SR plot_size_hec_GPS if ///
 						inrange(plot_size_hec_GPS,`r(p50)'-(3*`r(sd)'),`r(p50)'+(3*`r(sd)'))
-	*** correlation of points with +/- 3sd is higher 0.3600
+	*** correlation of points with +/- 3sd is higher 0.2465
 
 * check correlation within +/- 3sd of mean (GPS and SR)
 	sum 			plot_size_hec_GPS, detail
@@ -186,29 +142,30 @@
 	pwcorr 			plot_size_hec_SR plot_size_hec_GPS if ///
 						inrange(plot_size_hec_GPS,`r(p50)'-(3*`r(sd)'),`r(p50)'+(3*`r(sd)')) & ///
 						inrange(plot_size_hec_SR,`r(p50)'-(3*`r(sd)'),`r(p50)'+(3*`r(sd)'))
-	*** correlation between self reported and GPS for values within +/- 3 sd's of GPS and SR is higher and good: 0.5505
+	*** correlation between self reported and GPS for values within +/- 3 sd's of GPS and SR is higher and good: 0.5919
 
 * examine larger plot sizes
 	tab				plot_size_hec_GPS 	if 	plot_size_hec_GPS > 2
-	*** 944 GPS which are greater than 2
+	*** 2154 GPS which are greater than 2
 	tab				plot_size_hec_GPS 	if 	plot_size_hec_GPS > 20
-	*** 29 GPS which are greater than 20
-	*** 3 GPS measures are in the 90's 
+	*** 295 GPS which are greater than 20
+	tab				plot_size_hec_GPS 	if 	plot_size_hec_GPS > 90
+	*** 16 GPS measures are in the 90's 
 
 * correlation at higher plot sizes
 	list 			plot_size_hec_GPS plot_size_hec_SR 	if ///
 						plot_size_hec_GPS > 3 & !missing(plot_size_hec_GPS), sep(0)
 	pwcorr 			plot_size_hec_GPS plot_size_hec_SR 	if 	///
 						plot_size_hec_GPS > 3 & !missing(plot_size_hec_GPS)
-	*** very low correlation at higher plot sizes: 0.0725
+	*** very low correlation at higher plot sizes: 0.1857
 
 * examine smaller plot sizes
 	tab				plot_size_hec_GPS 	if 	plot_size_hec_GPS < 0.1
-	*** 222  below 0.1
+	*** 680  below 0.1
 	tab				plot_size_hec_GPS 	if 	plot_size_hec_GPS < 0.05
-	*** 126 below 0.5
+	*** 326 below 0.5
 	tab				plot_size_hec_GPS 	if 	plot_size_hec_GPS < 0.005
-	*** 20 are below 0.005
+	*** 16 are below 0.005
 	*** none are unrealistically small, 0.005 hectares is 50 square meters which is a very small vegetable patch.
 	
 *correlation at lower plot sizes
@@ -216,27 +173,27 @@
 						plot_size_hec_GPS < 0.01, sep(0)
 	pwcorr 			plot_size_hec_GPS plot_size_hec_SR 	if ///
 						plot_size_hec_GPS < 0.01
-	*** small relationship between GPS and SR plotsize, correlation = 0.1455
+	*** small relationship between GPS and SR plotsize, correlation = -0.1617
 	
 * compare GPS and SR
 * examine GPS 
 	sum 			plot_size_hec_GPS
 	sum 			plot_size_hec_SR
-	*** GPS tending to be larger than self-reported, mean gps 2.318 and sr 1.906
+	*** GPS tending to be larger than self-reported, mean gps 3.128 and sr 1.534
 	*** per conversations with WBG will not include SR in imputation - only will include GPS 
 	
 * compare the self reported and GPS plot size measures for large plots
 	tab plot_size_hec_SR plot_size_hec_GPS if plot_size_hec_GPS > 70
 	tab plot_size_hec_SR plot_size_hec_GPS if plot_size_hec_SR > 60
-	*** huge discrepencies between self reported and gps plot sizes at higher plot sizes.
-	*** the same obs that are over 80 hectares GPS are less than 10 hectares self reported
-	*** the same obs that is 70 hectares self reported is 3.1 hectares GPS
+	*** many discrepencies between self reported and gps plot sizes at higher plot sizes.
+	*** 
+	*** 
 	
 * replace large GPS values that do not have large SR values
-	sum plot_size_hec_GPS, detail // standard deviation is 5.5, 4 std. above mean is 24.31
-	tab plot_size_hec_GPS plot_size_hec_SR if plot_size_hec_GPS> 24.31 // there are 3 obs with a high GPS, 33 hec, and a high SR plot, 20 hec, suggests they are correct readings. 
+	sum plot_size_hec_GPS, detail // standard deviation is 9.2, 4 std. above mean is 39.92
+	tab plot_size_hec_GPS plot_size_hec_SR if plot_size_hec_GPS> 39.92 // there are 3 obs with a high GPS, 33 hec, and a high SR plot, 20 hec, suggests they are correct readings. 
 	replace plot_size_hec_GPS = . if plot_size_hec_GPS> 40 // above 40 hectares SR totally contridicts GPS and makes appears unreliable
-	*** 14 changed to missing
+	***  changed to missing
 
 * examine with histograms
 	*histogram 		plot_size_hec_GPS 	if 	plot_size_hec_GPS < 0.3
