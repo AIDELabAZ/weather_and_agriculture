@@ -5,7 +5,8 @@
 
 * does
 	* reads in Mali, WAVE 1 (2014), EACIS2C_P2
-	* cleans plot size (hecatres)
+	* creates binaries for pesticide and herbicide use 
+	* creates binaries and kg for fertilizer use 
 
 
 * assumes
@@ -14,6 +15,8 @@
 
 * TO DO:
 	* go back to hid, fix isid error
+	* go back to missing values for pesticides, fertilizers, etc
+	* figure out conversion for fertilizer units
 	
 	
 * **********************************************************************
@@ -72,6 +75,7 @@
 
 * drop if not cultivated
 	keep 			if cultivated == 1
+	***240 dropped
 	
 * binary for pesticide use
 	rename			s2cq29a pest_any
@@ -79,9 +83,27 @@
 	replace			pest_any = 0 if pest_any == 0
 	replace 		pest_any = 1 if pest_any > 0
 	tab				pest_any
-	***question asks about quantity of pesticide used
-	***1=grams 2=kg 3=liters 4=sachet(not sure about this unit, translates to "bag") 0=no pesticide used
-	***85.84 percent use pesticide
+	***question asks about quantity of pesticide used, so values greater than 0 should indicate 1 
+	***s2cq29b- units 1=grams 2=kg 3=liters 4=sachet(not sure about this unit, translates to "bag") 0=no pesticide used
+	***85.50 percent use pesticide
+	***here it looks like . is replaced with 1? i'm thinking this one definitely is wrong
+	
+*pesticide use not including . values
+	rename			s2cq29a pest_any
+	lab var			pest_any "=1 if any pesticide was used"
+	replace			pest_any = 0 if pest_any == 0
+	replace 		pest_any = 1 if pest_any > 0 & pest_any != .
+	tab				pest_any
+	***30.95 percent use pesticide
+	
+*pesticide use, replacing . with 0
+	rename			s2cq29a pest_any
+	lab var			pest_any "=1 if any pesticide was used"
+	replace 		pest_any = 0 if pest_any == .
+	replace			pest_any = 0 if pest_any == 0
+	replace 		pest_any = 1 if pest_any != 0 
+	tab				pest_any
+	***after replacing . with 0, pesticide use is 6.5 percent
 	
 * binary for herbicide / fungicide - label as herbicide use
 	generate		herb_any = . 
@@ -92,12 +114,13 @@
 	lab var			herb_any "=1 if any herbicide was used"
 	tab 			herb_any 
 	*** includes both question about herbicide (s2cq29e) and fungicide (s2cq29c) 
-	***17.28 percent use herbicide/fungicide
+	***17.74 percent use herbicide/fungicide
 	
 * check if any missing values
 	count			if pest_any == . 
 	count			if herb_any == .
-	*** 0 pest and 371 herb missing, change these to "no"
+	*** 0 pest and 368 herb missing, change these to "no" (*binary for pesticide use results)
+	
 	
 * convert missing values to "no"
 	replace			pest_any = 0 if pest_any == .
@@ -109,25 +132,34 @@
 * **********************************************************************
 
 * create fertilizer binary value
-	egen 			fert_any = rsum(as02aq11a as02aq12a as02aq13a as02aq14a)
+	egen 			fert_any = rsum(s2cq25a s2cq25c s2cq25e s2cq25g)
 	replace			fert_any = 1 if fert_any > 0 
 	tab 			fert_any, missing
 	lab var			fert_any "=1 if any fertilizer was used"
 	***
-	*** 805 use some sort of fertilizer (13.04%), none missing
+	*** 2563 percent use some sort of fertilizer (27.52%), none missing
+	*** not sure if this is representative of the data, there are actually many values missing
 	
-* create conversion units - kgs, tiya
+* concat fertilizer use to see missing values
+	egen         	fert_concat = concat(s2cq25a s2cq25c s2cq25e s2cq25g)
+	tab 			fert_concat
+	*** "...." indicates missing (so no fertilizer used), 6712 missing
+	***are we counting missing as no fertilizer use?
+	*** I found the same issue in the Niger data
+
+* create conversion units - kgs,
 	gen 			kgconv = 1 
-	gen 			tiyaconv = 3
+
 	
 * create amount of fertilizer value (kg)
 	*** Units are measured in kilogram bags of various sizes, will convert to kg's where appropriate
 	*** 99 appears to reflect a null or missing value
 ** UREA 
-	replace as02aq11a = . if as02aq11a == 99 
-	rename as02aq11b ureaunits
-	rename as02aq11a ureaquant
+	replace s2cq25a = . if s2cq25a >= 9999 
+	rename s2cq25b ureaunits
+	rename s2cq25a ureaquant
 	tab ureaunits
+***need to figure out conversion
 	gen kgurea = ureaquant*kgconv if ureaunits == 1
 	replace kgurea = ureaquant*tiyaconv if ureaunits == 6
 	replace kgurea = ureaquant*5 if ureaunits == 2
@@ -138,10 +170,11 @@
 	replace kgurea = . if ureaunits == 7
 	tab kgurea 
 ** DAP
-	replace as02aq12a = . if as02aq12a == 99 
-	rename as02aq12b dapunits
-	rename as02aq12a dapquant
+	replace s2cq25c = . if s2cq25c >= 9999 
+	rename s2cq25d dapunits
+	rename s2cq25c dapquant
 	tab dapunits
+***conversion
 	gen kgdap = dapquant*kgconv if dapunits == 1
 	replace kgdap = dapquant*tiyaconv if dapunits == 6
 	replace kgdap = dapquant*5 if dapunits == 2
@@ -151,10 +184,11 @@
 	replace kgdap = . if dapunits == 7
 	tab kgdap 
 ** NPK
-	replace as02aq13a = . if as02aq13a == 99 
-	rename as02aq13b npkunits
-	rename as02aq13a npkquant
+	replace s2cq25e = . if s2cq25e >= 9999 
+	rename s2cq25e npkunits
+	rename s2cq25a npkquant
 	tab npkunits
+***conversion
 	gen npkkg = npkquant*kgconv if npkunits == 1
 	replace npkkg = npkquant*tiyaconv if npkunits == 6
 	replace npkkg = npkquant*5 if npkunits == 2
@@ -165,10 +199,11 @@
 	replace npkkg = . if npkunits == 8
 	tab npkkg 
 ** BLEND 
-	rename as02aq14b blendunits
-	rename as02aq14a blendquant
+	rename s2cq25h blendunits
+	rename s2cq25g blendquant
 	tab blendunits
-	replace blendquant = . if blendquant == 99 
+	replace blendquant = . if blendquant >= 9999 
+***conversion
 	gen blendkg = blendquant*kgconv if blendunits == 1
 	replace blendkg = blendquant*tiyaconv if blendunits == 4
 	replace blendkg = blendquant*5 if blendunits == 2
