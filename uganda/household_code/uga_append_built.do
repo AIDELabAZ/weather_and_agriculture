@@ -78,7 +78,8 @@
 	lab var			pw "Household Sample Weight"
 
 * drop variables
-	drop			region district county subcounty parish hhid ///
+	rename			hhid uhid
+	drop			region district county subcounty parish ///
 						wgt09wosplits season wgt10 wgt11
 	
 	order			country dtype uga_id year aez pw
@@ -97,8 +98,7 @@
 	
 * save file
 	qui: compress
-	customsave 	, idvarname(uid) filename("uga_complete.dta") ///
-		path("`export'") dofile(uga_append_built) user($user)
+	save			"`export'/uga_complete.dta", replace
 
 * close the log
 	log	close

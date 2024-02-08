@@ -75,8 +75,7 @@
 
 * save file
 	qui: compress
-	customsave 	, idvarname(case_id) filename("mwi_cx.dta") ///
-		path("`export'") dofile(mwi_append_built) user($user)
+	save 			"`export'/mwi_cx.dta", replace
 	
 	
 * **********************************************************************
@@ -126,8 +125,7 @@
 	
 * save file
 	qui: compress
-	customsave 	, idvarname(spid) filename("mwi_sp.dta") ///
-		path("`export'") dofile(mwi_append_built) user($user)
+	save 			"`export'/mwi_sp.dta", replace
 
 
 * **********************************************************************
@@ -193,9 +191,8 @@
 	
 * save file
 	qui: compress
-	customsave 	, idvarname(case_id) filename("mwi_lp.dta") ///
-		path("`export'") dofile(mwi_append_built) user($user)
-
+	save 			"`export'/mwi_lp.dta", replace
+	
 		
 * **********************************************************************
 * 4 - append all Malawi data
@@ -278,7 +275,7 @@
 	rename		hhweight pw
 	
 * drop unnecessary variables and reorder remaining
-	drop		rs* case_id region district urban strata cluster ea_id spid ///
+	drop		rs* region district urban strata cluster ea_id spid ///
 					y2_hhid y3_hhid hhid hh_x02 hh_x04 intmonth ///
 					intyear qx_type ta lpid
 	
@@ -306,9 +303,8 @@
 	
 * save file
 	qui: compress
-	customsave 	, idvarname(uid) filename("mwi_complete.dta") ///
-		path("`export'") dofile(mwi_append_built) user($user)
-
+	save 			"`export'/mwi_complete.dta", replace
+	
 * close the log
 	log	close
 

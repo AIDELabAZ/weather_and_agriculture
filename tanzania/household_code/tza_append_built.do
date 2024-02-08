@@ -136,7 +136,7 @@
 	isid			tza_id year
 
 * drop unnecessary variables
-	drop			y1_hhid y2_hhid y3_hhid mover2010 mover2012 _merge
+	drop			mover2010 mover2012 _merge
 						
 * order variables
 	order			country dtype region district ward ea strataid clusterid ///
@@ -320,8 +320,7 @@
 	
 * save file
 	qui: compress
-	customsave 	, idvarname(tza_id) filename("tza_lp.dta") ///
-		path("`export'") dofile(tza_append_built) user($user)
+	save			"`export'/tza_lp.dta", replace
 		
 		
 * **********************************************************************
@@ -344,13 +343,10 @@
 * order variables
 	order			country dtype region district ward ea strataid clusterid ///
 						cx_id hhweight year
-	
-	drop y4_hhid
 
 * save file
 	qui: compress
-	customsave 	, idvarname(cx_id) filename("tza_cx.dta") ///
-		path("`export'") dofile(tza_append_built) user($user)
+	save			"`export'/tza_cx.dta", replace
 		
 		
 * **********************************************************************
@@ -358,13 +354,13 @@
 * **********************************************************************
 
 * import the cross section file
-	use 		"`export'/tza_lp.dta", clear
+	use 			"`export'/tza_lp.dta", clear
 
 * append the two panel files
-	append		using "`export'/tza_cx.dta", force	
+	append			using "`export'/tza_cx.dta", force	
 
 * rename household weight
-	rename		hhweight pw
+	rename			hhweight pw
 
 * drop variables
 	drop			region district ward ea strataid clusterid
@@ -383,8 +379,7 @@
 	
 * save file
 	qui: compress
-	customsave 	, idvarname(uid) filename("tza_complete.dta") ///
-		path("`export'") dofile(tza_append_built) user($user)
+	save			"`export'/tza_complete.dta", replace
 
 * close the log
 	log	close

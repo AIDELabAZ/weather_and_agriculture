@@ -25,7 +25,7 @@
 	global 			pack 	0
 		
 * Specify Stata version in use
-    global stataVersion 17.0    // set Stata version
+    global stataVersion 18.0    // set Stata version
     version $stataVersion
 
 * **********************************************************************
@@ -35,7 +35,7 @@
 * Define root folder globals
     if `"`c(username)'"' == "jdmichler" {
         global 		code  	"C:/Users/jdmichler/git/AIDELabAZ/weather_and_agriculture"
-		global 		data	"G:/My Drive/weather_project"
+		global 		data	"C:/Users/jdmichler/OneDrive - University of Arizona/weather_project"
     }
 
 	

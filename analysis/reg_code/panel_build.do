@@ -202,6 +202,8 @@
 	replace			HHID = tza_id if tza_id != ""
 	replace			HHID = uga_id if uga_id != ""
 	
+	rename			hhid nhid
+	
 	sort			country HHID year
 	egen			hhid = group(HHID)
 	
@@ -292,16 +294,18 @@
 	
 * summarize temp variables - make sure everything went well
 	sum				*tp*
-	
-	
+/*
+* produce list of hhids for Siobhan
+	keep 			country hhid year household_id case_id hid nhid y1_hhid y2_hhid y3_hhid y4_hhid uhid
+	export 			delimited using "1export'\lsms_panel.csv", replace
+*/	
 * **********************************************************************
 * 9 - end matter
 * **********************************************************************
 
 * save complete results
 	qui: compress
-	customsave 	, idvarname(hhid) filename("lsms_panel.dta") ///
-		path("`export'") dofile(panel_build) user($user)
+	save "`export'/lsms_panel.dta", replace
 
 * close the log
 	log	close

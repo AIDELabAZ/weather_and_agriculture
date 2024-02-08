@@ -88,7 +88,7 @@
 	lab var			pw "Household Sample Weight"
 	
 * drop variables
-	drop			region zone woreda ea household_id2 household_id
+	drop			region zone woreda ea household_id2
 	
 	order			country dtype eth_id year aez pw
 	
@@ -108,9 +108,8 @@
 	
 * save file
 	qui: compress
-	customsave 	, idvarname(uid) filename("eth_complete.dta") ///
-		path("`export'") dofile(eth_append_built) user($user)
-
+	save 				"`export'/eth_complete.dta", replace
+	
 * close the log
 	log	close
 
