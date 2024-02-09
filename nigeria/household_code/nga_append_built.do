@@ -88,7 +88,7 @@
 	isid			nga_id year
 
 * drop variables
-	drop			zone state lga sector ea hhid
+	drop			zone state lga sector ea
 	
 	order			country dtype nga_id pw aez year 
 
@@ -107,8 +107,7 @@
 	
 * save file
 	qui: compress
-	customsave 	, idvarname(uid) filename("nga_complete.dta") ///
-		path("`export'") dofile(nga_append_built) user($user)
+	save			"`export'/nga_complete.dta", replace 
 
 * close the log
 	log	close

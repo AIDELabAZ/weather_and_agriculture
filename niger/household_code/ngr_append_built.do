@@ -96,7 +96,7 @@
 	
 * order variables
 	drop			extension region dept canton enumeration clusterid ///
-						hhid_y2 hid
+						hhid_y2
 	
 	order			country dtype ngr_id pw aez year 
 	
@@ -115,8 +115,7 @@
 	
 * save file
 	qui: compress
-	customsave 	, idvarname(ngr_id) filename("ngr_complete.dta") ///
-		path("`export'") dofile(ngr_append_built) user($user)
+	save			"`export'/ngr_complete.dta", replace 
 
 * close the log
 	log	close
