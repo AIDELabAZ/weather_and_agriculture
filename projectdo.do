@@ -22,7 +22,7 @@
 * **********************************************************************
 
 * set $pack to 0 to skip package installation
-	global 			pack 	0
+	global 			pack 	1
 		
 * Specify Stata version in use
     global stataVersion 18.0    // set Stata version
@@ -38,6 +38,10 @@
 		global 		data	"C:/Users/jdmichler/OneDrive - University of Arizona/weather_project"
     }
 
+    if `"`c(username)'"' == "Rodrigos-MacBook-Pro" {
+        global 		code  	"/Users/rodrigoguerra/Library/CloudStorage/OneDrive-UniversityofArizona/Documents/GitHub/weather_and_agriculture"
+		global 		data	"/Users/rodrigoguerra/Library/CloudStorage/OneDrive-UniversityofArizona/weather_project"
+    }
 	
 * **********************************************************************
 * 0 (b) - Check if any required packages are installed:
@@ -102,7 +106,7 @@ if $pack == 1 {
 	do 			"$code/nigeria/weather_code/nga_ghs_masterdo.do"
 	do 			"$code/tanzania/weather_code/tza_nps_masterdo.do"
 	do 			"$code/uganda/weather_code/uga_unps_masterdo.do"
-*/
+
 
 * **********************************************************************
 * 2 - run household data cleaning .do files and merge with weather data
