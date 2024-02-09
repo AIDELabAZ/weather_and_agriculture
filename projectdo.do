@@ -50,11 +50,11 @@
 * install packages if global is set to 1
 if $pack == 1 {
 	
-	* temporarily set delimiter to ; so can break the line
-		#delimit ;
 	* for packages/commands, make a local containing any required packages
-		loc userpack "blindschemes mdesc estout distinct winsor2" ;
-		#delimit cr
+    * temporarily set delimiter to ; so can break the line
+    #delimit ;		
+	loc userpack = "blindschemes mdesc estout distinct winsor2" ;
+    #delimit cr
 	
 	* install packages that are on ssc	
 		foreach package in `userpack' {
@@ -91,7 +91,6 @@ if $pack == 1 {
 		set scheme plotplain, perm
 		set more off
 }
-
 
 * **********************************************************************
 * 1 - run weather data cleaning .do file
