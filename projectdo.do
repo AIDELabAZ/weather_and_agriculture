@@ -37,6 +37,10 @@
         global 		code  	"C:/Users/jdmichler/git/AIDELabAZ/weather_and_agriculture"
 		global 		data	"C:/Users/jdmichler/OneDrive - University of Arizona/weather_project"
     }
+if `"`c(username)'"' == "fvkrysbackpackpc" {
+        global 		code  	"/Users/fvkrysbackpackpc/Documents/GitHub/weather_and_agriculture"
+		global 		data	"/Users/fvkrysbackpackpc/Library/CloudStorage/OneDrive-UniversityofArizona/weather_project"
+    }
 
 	
 * **********************************************************************
