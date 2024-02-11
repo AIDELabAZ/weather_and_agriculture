@@ -62,10 +62,15 @@
 	destring		hid, replace
 	order			hid
 	
+* drop duplicate observations of parcels since can't match to land area
+	duplicates 		tag hid field parcel, generate(dup)
+	drop			if dup > 0
+	*** dropped 19 observations
+	
 * need to include hid field parcel to uniquely identify
 	sort 			hid field parcel
 	isid 			hid field parcel
-*isid error- 
+
 
 * determine cultivated plot
 	rename 			s2cq03 cultivated

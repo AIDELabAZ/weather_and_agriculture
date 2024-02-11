@@ -1,10 +1,10 @@
 * Project: WB Weather
-* Created on: Nov 20, 2023
+* Created on: Feb 8, 2024
 * Created by: reece
 * Stata v.18
 
 * does
-	* reads in Mali, WAVE 1 (2014), eaciexploi_p1
+	* reads in Mali, WAVE 2 (2017), eaci17_s11bp1
 	* cleans plot size (hecatres)
 
 
@@ -13,7 +13,8 @@
 	* mdesc.ado
 
 * TO DO:
-	* go back to pwcorr between plot_size_hec_SR and plot_size_hec_GPS
+	* plot size SR conversion
+	
 	
 	
 	
@@ -22,13 +23,13 @@
 * **********************************************************************
 
 * define paths
-	global	root	=		"$data/household_data/mali/wave_1/raw"
-	global	export	=		"$data/household_data/mali/wave_1/refined"
+	global	root	=		"$data/household_data/mali/wave_2/raw"
+	global	export	=		"$data/household_data/mali/wave_2/refined"
 	global	logout	= 		"$data/household_data/mali/logs"
 	
 * open log
 	cap 	log 	close
-	log 	using	"$logout/eaciexploi_p1", append 
+	log 	using	"$logout/eaci17_s11bp1", append 
 
 	
 * **********************************************************************
@@ -36,7 +37,7 @@
 * **********************************************************************
 	
 * import the first relevant data file
-	use				"$root/EACIEXPLOI_p1", clear
+	use				"$root/eaci17_s11bp1", clear
 
 * dropping duplicates
 	duplicates 		drop	
@@ -45,13 +46,13 @@
 	label 			var visit "number of visit - wave number"
 	rename			grappe clusterid
 	label 			var clusterid "cluster number"
-	rename			menage hh_num
-	label 			var hh_num "household number - not unique id"
-	rename 			s1bq03 ord 
-	label 			var ord "number of order"
-	rename 			s1bq01 field 
+	*rename			menage hh_num
+	*label 			var hh_num "household number - not unique id"
+	*rename 			s1bq03 ord 
+	*label 			var ord "number of order"
+	rename 			s11bq01 field 
 	label 			var field "field number"
-	rename 			s1bq02 parcel 
+	rename 			s11bq02 parcel 
 	label 			var parcel "parcel number"
 	
 * create household id 	
@@ -65,94 +66,70 @@
 	isid 			hid field parcel
 	
 * determine cultivated plot
-	rename 			s1bq32 cultivated
+	rename 			s11bq32 cultivated
 	label 			var cultivated "plot cultivated"
-	*** 1 = fallow, 2 = cultivated, 9 = missing
+	*** 1 = fallow, 2 = rented, 3 = cultivated
 
 * drop if not cultivated
-	keep 			if cultivated == 2
-	*** 446 dropped, 9,212 kept
+	keep 			if cultivated == 3
+	*** 152 dropped, 24098 kept
 	
 * determine self reported plotsize
-	gen 			plot_size_hec_SR = s1bq10
-	lab	var			plot_size_hec_SR "self reported size of plot, in hectares"
-	*** all plots measured in hectares
+	gen 			plot_size_SR = s11bq11a
+	lab	var			plot_size_SR "self reported size of plot"
+	***respondents reported plot size in hectares and square meters
 
 * determine GPS plotsize
-	gen 			plot_size_hec_GPS = s1bq05a
+	gen 			plot_size_hec_GPS = s11bq07
 	lab var			plot_size_hec_GPS 	"GPS plot size in hectares"
-	*** all plots measured in hectares
-	*** 99 seems to be a code used to designate missing values
-
-	order 			plot_size_hec_GPS s1bq10 plot_size_hec_SR, after(s1bq05a)		
-	
-	replace			plot_size_hec_SR = . if plot_size_hec_SR >= 99
-	*** 806 changed to missing 
-	
-	replace			plot_size_hec_GPS = . if plot_size_hec_GPS >= 99
-	*** 707 changed to missing 
+	*** all GPS plots measured in hectares	
 
 * drop if SR and GPS both equal to 0
-	drop	 		if plot_size_hec_GPS == 0 & plot_size_hec_SR == 0
+	drop	 		if plot_size_hec_GPS == 0 & plot_size_SR == 0
 	*** 0 values dropped  
 
 * assume 0 GPS reading should be . values 
 	replace 		plot_size_hec_GPS = . if plot_size_hec_GPS == 0 
 	*** will replace 0 values to missing
+	*** 0 real changes made
 
 
 	
 * **********************************************************************
-* 2 - conversion to hectares
+* 2 - Self reported conversion to hectares
 * **********************************************************************
-	***Mali plot sizes already in hectares
+	gen 			plot_size_hec_SR = . 
+
+* plots measures in square meters 
+* create conversion variable 
+	gen 			sqmcon = 0.0001
+
+* determine SR plot size units
+	rename  		s11bq11b plot_SR_unit
+* convert to SR hectares
+	replace 		plot_size_hec_SR = plot_size_SR
+	replace 		plot_size_hec_SR = plot_size_SR*sqmcon if plot_SR_unit == 2
+	lab	var			plot_size_hec_SR "SR area of plot in hectares"
+	***1= hectares 2= sq meters
+	*** 1291 real changes made
 
 * count missing values
+	count			if plot_size_SR == . 
 	count 			if plot_size_hec_SR !=.
 	count			if plot_size_hec_SR == . 
-	*** 8406 have plot_size_hec_SR
-	*** 806 do not have plot_size_hec_SR
+	*** 351 observations do not have plot_size_SR
+	*** 351 observations do not have plot_size_hec_SR
+	*** 23747 observations have plot_size_hec_SR
 
-	count 			if plot_size_hec_GPS !=.
-	count			if plot_size_hec_GPS == . 
-	*** 8719 have GPS
-	*** 493 do not have GPS
+*GPS plot sizes already in hectares
+
+
+	pwcorr			plot_size_hec_GPS plot_size_hec_SR
+	*** relatively low correlation = 0.0133 between selfreported plot size and GPS
 	
-	count	 		if plot_size_hec_SR != . & plot_size_hec_GPS != .
-	*** 7968 observations have both self reported and GPS plot size in hectares
-
-	pwcorr 			plot_size_hec_SR plot_size_hec_GPS
-	*** relatively low correlation = 0.2704 between selfreported plot size and GPS
 	
 *scatter plot comparing SR and GPS plotsize
-	 twoway (scatter plot_size_hec_SR s1bq05a) ///
-	 (scatter plot_size_hec_SR plot_size_hec_GPS) 
-	
-*scatter plot comparing SR and GPS plot size by crop type
-	twoway(scatter plot_size_hec_GPS plot_size_hec_SR), by(s1bq08b)
-	*millet
-	twoway (scatter plot_size_hec_GPS plot_size_hec_SR if s1bq08b == 101), by(s1bq08b) ///
-	title("Millet")
-	*graph export "$export/plot_corr_millet.png", replace as(png)
-	*sorghum
-	twoway (scatter plot_size_hec_GPS plot_size_hec_SR if s1bq08b == 102), by(s1bq08b) ///
-	title("Sorghum")
-	*graph export "$export/plot_corr_sorghum.png", replace as(png)
-	*rice
-	twoway (scatter plot_size_hec_GPS plot_size_hec_SR if s1bq08b == 103), by(s1bq08b) ///
-	title("Rice")
-	*graph export "$export/plot_corr_rice.png", replace as(png)
-	*corn
-	twoway (scatter plot_size_hec_GPS plot_size_hec_SR if s1bq08b == 104), by(s1bq08b) ///
-	title("Corn")
-	*graph export "$export/plot_corr_corn.png", replace as(png)
-	*groundnut
-	twoway (scatter plot_size_hec_GPS plot_size_hec_SR if s1bq08b == 121), by(s1bq08b) ///
-	title("Groundnut")
-	*graph export "$export/plot_corr_groundnut.png", replace as(png)
-	
-	
-	
+	 twoway (scatter plot_size_hec_SR plot_size_hec_GPS)
 	
 	
 
