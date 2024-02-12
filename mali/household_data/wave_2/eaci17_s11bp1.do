@@ -13,7 +13,11 @@
 	* mdesc.ado
 
 * TO DO:
-	* plot size SR conversion
+	* create hid variable (clusterid + hh_num)
+		***need menage/household number variable
+	* impute missing plot values
+	
+	
 	
 	
 	
@@ -98,6 +102,8 @@
 * **********************************************************************
 * 2 - Self reported conversion to hectares
 * **********************************************************************
+*GPS plot sizes already in hectares
+	
 	gen 			plot_size_hec_SR = . 
 
 * plots measures in square meters 
@@ -112,6 +118,8 @@
 	lab	var			plot_size_hec_SR "SR area of plot in hectares"
 	***1= hectares 2= sq meters
 	*** 1291 real changes made
+	*** seems to be issues with some unit labels
+		***some respondents reported hectares instead of sq meters
 
 * count missing values
 	count			if plot_size_SR == . 
@@ -121,17 +129,25 @@
 	*** 351 observations do not have plot_size_hec_SR
 	*** 23747 observations have plot_size_hec_SR
 
-*GPS plot sizes already in hectares
-
 
 	pwcorr			plot_size_hec_GPS plot_size_hec_SR
-	*** relatively low correlation = 0.0133 between selfreported plot size and GPS
+	***low correlation = 0.0133 between selfreported plot size and GPS
+	
+	tab 			plot_size_hec_SR
+	***a few SR values are extremely high 
 	
 	
-*scatter plot comparing SR and GPS plotsize
-	 twoway (scatter plot_size_hec_SR plot_size_hec_GPS)
+* scatter plot comparing SR and GPS plotsize
+	twoway (scatter plot_size_hec_SR plot_size_hec_GPS)
+
+* drop large SR values 
+	drop 			if plot_size_hec_SR > 40
 	
+	pwcorr			plot_size_hec_GPS plot_size_hec_SR
+	***much higher correlation after dropping incorrectly reported units
+	***correlation = 0.6541
 	
+oifhreobreak
 
 * check correlation within +/- 3sd of mean (GPS)
 	sum 			plot_size_hec_GPS, detail

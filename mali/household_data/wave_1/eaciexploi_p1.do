@@ -13,7 +13,8 @@
 	* mdesc.ado
 
 * TO DO:
-	* go back to pwcorr between plot_size_hec_SR and plot_size_hec_GPS
+	* address issues with self reported and GPS plot size discrepencies
+	* impute missing data
 	
 	
 	
@@ -59,6 +60,7 @@
 	label 			var hid "Household indentifier"
 	destring		hid, replace
 	order			hid
+	
 	
 * need to include hid field parcel to uniquely identify
 	sort 			hid field parcel
@@ -124,37 +126,43 @@
 	pwcorr 			plot_size_hec_SR plot_size_hec_GPS
 	*** relatively low correlation = 0.2704 between selfreported plot size and GPS
 	
-*scatter plot comparing SR and GPS plotsize
+* scatter plot comparing SR and GPS plotsize
 	 twoway (scatter plot_size_hec_SR s1bq05a) ///
 	 (scatter plot_size_hec_SR plot_size_hec_GPS) 
 	
-*scatter plot comparing SR and GPS plot size by crop type
+* scatter plot comparing SR and GPS plot size by crop type
+* scatter plot comparing SR and GPS by millet, sorghum, rice, corn, and groundnut
+ 
+	*all crops types
 	twoway(scatter plot_size_hec_GPS plot_size_hec_SR), by(s1bq08b)
+	
 	*millet
 	twoway (scatter plot_size_hec_GPS plot_size_hec_SR if s1bq08b == 101), by(s1bq08b) ///
 	title("Millet")
 	*graph export "$export/plot_corr_millet.png", replace as(png)
+	
 	*sorghum
 	twoway (scatter plot_size_hec_GPS plot_size_hec_SR if s1bq08b == 102), by(s1bq08b) ///
 	title("Sorghum")
 	*graph export "$export/plot_corr_sorghum.png", replace as(png)
+	
 	*rice
 	twoway (scatter plot_size_hec_GPS plot_size_hec_SR if s1bq08b == 103), by(s1bq08b) ///
 	title("Rice")
 	*graph export "$export/plot_corr_rice.png", replace as(png)
+	
 	*corn
 	twoway (scatter plot_size_hec_GPS plot_size_hec_SR if s1bq08b == 104), by(s1bq08b) ///
 	title("Corn")
 	*graph export "$export/plot_corr_corn.png", replace as(png)
+	
 	*groundnut
 	twoway (scatter plot_size_hec_GPS plot_size_hec_SR if s1bq08b == 121), by(s1bq08b) ///
 	title("Groundnut")
 	*graph export "$export/plot_corr_groundnut.png", replace as(png)
 	
 	
-	
-	
-	
+uwiqheuwqbreak
 
 * check correlation within +/- 3sd of mean (GPS)
 	sum 			plot_size_hec_GPS, detail
@@ -276,7 +284,7 @@
 	summarize
 
 * save file
-		save "$export/2011_as1p1", replace
+		save "$export/eaciexploi_p1", replace
 
 * close the log
 	log	close

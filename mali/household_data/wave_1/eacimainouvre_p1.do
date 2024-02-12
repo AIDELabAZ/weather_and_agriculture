@@ -13,7 +13,8 @@
 	* mdesc.ado
 
 * TO DO:
-	*
+	* imput labor outliers
+
 	
 	
 	
@@ -144,5 +145,90 @@
 	***why are we doing this here? i don't think 99 indicates missing
 	replace			mutual_women = 0 if s2bq09e == 999
 	replace 		mutual_women = 0 if s2bq09e == .  
-
 	
+uhwqhebreak
+* **********************************************************************
+* 6 - impute labor outliers
+* **********************************************************************
+	
+* summarize household individual labor for land prep to look for outliers
+	sum				hh_1 hh_2 hh_3 hh_4 hh_5 hh_6 hired_men hired_women mutual_men mutual_women
+	*** hh_1, hh_2, hh_3, hh_4, hh_5, hh_6 are all less than the minimum (91 days)
+	*** only hired_men (124) is larger than the minimum and hired men is not 
+	*** disaggregated into the number of people hired and our labor caps are per person so we leave this
+	
+* generate local for variables that contain outliers
+	loc				labor 	hh_1 hh_2 hh_3 hh_4 hh_5 hh_6 hired_men ///
+						hired_women mutual_men mutual_women
+	
+* replace zero to missing, missing to zero, and outliers to missing
+	foreach var of loc labor {
+	mvdecode 		`var', mv(0)
+	mvencode		`var', mv(0)
+    replace			`var' = . if `var' > 90
+	}
+	*** 4 outliers changed to missing
+
+* impute missing values (only need to do one variable - set new local)
+	loc 			laborimp hh_2 hired_men
+	mi set 			wide 	// declare the data to be wide.
+	mi xtset		, clear 	// clear any xtset that may have had in place previously
+
+
+* impute each variable in local		
+	foreach var of loc laborimp {
+		mi register			imputed `var' // identify variable to be imputed
+		sort				hid field parcel, stable 
+		// sort to ensure reproducability of results
+		mi impute 			pmm `var' i.clusterid, add(1) rseed(245780) ///
+								noisily dots force knn(5) bootstrap
+	}						
+	mi 				unset	
+	
+* summarize imputed variables
+	sum				hh_2_1_ hired_men_1_ hh_2_2_ hired_men_2_
+	
+	replace 		hh_2 = hh_2_1_
+	replace 		hired_men = hired_men_2_ 
+
+* total labor days for prep
+	egen			hh_prep_labor = rowtotal(hh_1 hh_2 hh_3 hh_4 hh_5 hh_6)
+	egen			hired_prep_labor  = rowtotal(hired_men hired_women)
+	egen			mutual_prep_labor = rowtotal(mutual_men mutual_women)
+	egen			prep_labor = rowtotal(hh_prep_labor hired_prep_labor)
+	lab var			prep_labor "total labor for prep (days) - no free labor"
+	egen 			prep_labor_all = rowtotal(hh_prep_labor hired_prep_labor mutual_prep_labor)  
+	lab var			prep_labor_all "total labor for prep (days) - with free labor"
+
+* check for missing values
+	mdesc			prep_labor prep_labor_all
+	*** no missing values
+	sum 			prep_labor prep_labor_all
+	*** with free labor: average = 11.4, max = 540
+	*** without free labor: average = 11.07, max = 540
+		
+
+* **********************************************************************
+* 7 - end matter, clean up to save
+* **********************************************************************
+
+	keep 			hid clusterid hh_num field parcel plotsize
+
+* create unique household-plot identifier
+	isid				hid field parcel
+	sort				hid field parcel
+	egen				plot_id = group(hid field parcel)
+	lab var				plot_id "unique field and parcel identifier"
+
+	compress
+	describe
+	summarize
+
+* save file
+		save "$export/eacimainouvre_p1", replace
+
+* close the log
+	log	close
+
+/* END */
+

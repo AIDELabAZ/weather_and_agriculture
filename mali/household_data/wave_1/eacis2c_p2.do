@@ -14,11 +14,14 @@
 	* mdesc.ado
 
 * TO DO:
-	* go back to hid, fix isid error
-	* go back to missing values for pesticides, fertilizers, etc
 	* figure out conversion for fertilizer units
+		***currently units are not consistent with basic info doc
+		***also need conversion unit for "donkey carts" and "cattle carts"
+	* convert fertilizer (DAP, urea, NPK,) to kg
+	* impute missing values
 	
-	
+
+
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
@@ -85,30 +88,12 @@
 * binary for pesticide use
 	rename			s2cq29a pest_any
 	lab var			pest_any "=1 if any pesticide was used"
-	replace			pest_any = 0 if pest_any == 0
-	replace 		pest_any = 1 if pest_any > 0
-	tab				pest_any
-	***question asks about quantity of pesticide used, so values greater than 0 should indicate 1 
-	***s2cq29b- units 1=grams 2=kg 3=liters 4=sachet(not sure about this unit, translates to "bag") 0=no pesticide used
-	***85.50 percent use pesticide
-	***here it looks like . is replaced with 1? i'm thinking this one definitely is wrong
-	
-*pesticide use not including . values
-	rename			s2cq29a pest_any
-	lab var			pest_any "=1 if any pesticide was used"
-	replace			pest_any = 0 if pest_any == 0
-	replace 		pest_any = 1 if pest_any > 0 & pest_any != .
-	tab				pest_any
-	***30.95 percent use pesticide
-	
-*pesticide use, replacing . with 0
-	rename			s2cq29a pest_any
-	lab var			pest_any "=1 if any pesticide was used"
 	replace 		pest_any = 0 if pest_any == .
 	replace			pest_any = 0 if pest_any == 0
 	replace 		pest_any = 1 if pest_any != 0 
 	tab				pest_any
-	***after replacing . with 0, pesticide use is 6.5 percent
+	***pesticide use is 6.5 percent
+		***s2cq29b- units 1=grams 2=kg 3=liters 4=sachet(not sure about this unit, translates to "bag") 0=no pesticide used
 	
 * binary for herbicide / fungicide - label as herbicide use
 	generate		herb_any = . 
@@ -141,24 +126,20 @@
 	replace			fert_any = 1 if fert_any > 0 
 	tab 			fert_any, missing
 	lab var			fert_any "=1 if any fertilizer was used"
-	***
-	*** 2563 percent use some sort of fertilizer (27.52%), none missing
-	*** not sure if this is representative of the data, there are actually many values missing
-	
-* concat fertilizer use to see missing values
-	egen         	fert_concat = concat(s2cq25a s2cq25c s2cq25e s2cq25g)
-	tab 			fert_concat
-	*** "...." indicates missing (so no fertilizer used), 6712 missing
-	***are we counting missing as no fertilizer use?
-	*** I found the same issue in the Niger data
+	*** 2563 use some sort of fertilizer (27.52%), none missing
+
+iuehrwebreak
 
 * create conversion units - kgs,
+* need conversion unit for "donkey cart, cattle cart" etc
 	gen 			kgconv = 1 
+
 
 	
 * create amount of fertilizer value (kg)
 	*** Units are measured in kilogram bags of various sizes, will convert to kg's where appropriate
 	*** 99 appears to reflect a null or missing value
+	
 ** UREA 
 	replace s2cq25a = . if s2cq25a >= 9999 
 	rename s2cq25b ureaunits
@@ -252,3 +233,28 @@
 	mdesc fert_use
 	*** 6174 total values
 	*** 0 missing values 	
+	
+* **********************************************************************
+* 7 - end matter, clean up to save
+* **********************************************************************
+
+	keep 			hid clusterid hh_num field parcel plotsize
+
+* create unique household-plot identifier
+	isid				hid field parcel
+	sort				hid field parcel
+	egen				plot_id = group(hid field parcel)
+	lab var				plot_id "unique field and parcel identifier"
+
+	compress
+	describe
+	summarize
+
+* save file
+		save "$export/eacis2c_p2", replace
+
+* close the log
+	log	close
+
+/* END */
+
