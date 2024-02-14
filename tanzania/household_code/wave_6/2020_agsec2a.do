@@ -1,10 +1,10 @@
 * Project: WB Weather
-* Created on: May 2020
-* Created by: McG
-* Stata v.16
+* Created on: Feb 2024
+* Created by: reece
+* Stata v.18
 
 * does
-	* cleans Tanzania household variables, wave 4 Ag sec2a
+	* cleans Tanzania household variables, wave 6 Ag sec2a
 	* looks like a parcel roster, long rainy season
 	* generates imputed plot sizes
 	
@@ -21,21 +21,21 @@
 * **********************************************************************
 
 * define paths
-	loc root = "$data/household_data/tanzania/wave_4/raw"
-	loc export = "$data/household_data/tanzania/wave_4/refined"
+	loc root = "$data/household_data/tanzania/wave_6/raw"
+	loc export = "$data/household_data/tanzania/wave_6/refined"
 	loc logout = "$data/household_data/tanzania/logs"
 
 * open log 
 	cap log close 
-	log using "`logout'/wv4_AGSEC2A", append
+	log using "`logout'/2020_agsec2a", append
 
 	
 * ***********************************************************************
-* 1 - prepare TZA 2014 (Wave 4) - Agriculture Section 2A 
+* 1 - prepare TZA 2020 (Wave 6) - Agriculture Section 2 
 * ***********************************************************************
 
 * load data
-	use 		"`root'/ag_sec_2a", clear
+	use 		"`root'/ag_sec_02", clear
 
 * dropping duplicates
 	duplicates 	drop
@@ -46,14 +46,16 @@
 	rename 		ag2a_09 plotsize_gps_ac
 
 * check for unique identifiers
+	rename 		ag2a_05 plotnum
 	drop		if plotnum == ""
-	isid		y4_hhid plotnum
-	*** 1,262 obs dropped
+	isid		y5_hhid plotnum
+	*** 2,774 obs dropped
 	
 * generating unique observation id for each ob
-	generate 	plot_id = y4_hhid + " " + plotnum
+	generate 	plot_id = y5_hhid + " " + plotnum
 	lab var		plot_id "Unique plot identifier"
 	isid 		plot_id
+	*** already a "plot_id" in the data, should this be renamed?
 	
 * convert from acres to hectares
 	generate	plotsize_self = plotsize_self_ac * 0.404686
@@ -62,6 +64,8 @@
 	label		var plotsize_gps "GPS Measured Area (Hectares)"
 	drop		plotsize_gps_ac plotsize_self_ac
 
+	tab 		plotsize_gps
+	*** two large outliers (1575.24 and 4833.17) 
 	
 * ***********************************************************************
 * 2 - merge in regional ID and cultivation status
@@ -106,7 +110,7 @@
 	
 * interrogating plotsize variables
 	count 		if plotsize_gps != . & plotsize_self != .
-	*** only 2,919 not missing, out of 5,537
+	*** 2145 missing out of 3786
 	
 	pwcorr 		plotsize_gps plotsize_self
 	*** medium strong corr (0.6261)
