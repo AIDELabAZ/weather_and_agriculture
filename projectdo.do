@@ -37,11 +37,11 @@
         global 		code  	"C:/Users/jdmichler/git/AIDELabAZ/weather_and_agriculture"
 		global 		data	"C:/Users/jdmichler/OneDrive - University of Arizona/weather_project"
     }
-if `"`c(username)'"' == "fvkrysbackpackpc" {
-        global 		code  	"/Users/fvkrysbackpackpc/Documents/GitHub/weather_and_agriculture"
-		global 		data	"/Users/fvkrysbackpackpc/Library/CloudStorage/OneDrive-UniversityofArizona/weather_project"
-    }
 
+    if `"`c(username)'"' == "rguerrasu" {
+        global 		code  	"/Users/rodrigoguerra/Library/CloudStorage/OneDrive-UniversityofArizona/Documents/GitHub/weather_and_agriculture"
+		global 		data	"/Users/rodrigoguerra/Library/CloudStorage/OneDrive-UniversityofArizona/weather_project"
+    }
 	
 * **********************************************************************
 * 0 (b) - Check if any required packages are installed:
@@ -50,11 +50,11 @@ if `"`c(username)'"' == "fvkrysbackpackpc" {
 * install packages if global is set to 1
 if $pack == 1 {
 	
-	* temporarily set delimiter to ; so can break the line
-		#delimit ;
 	* for packages/commands, make a local containing any required packages
-		loc userpack "blindschemes mdesc estout distinct winsor2" ;
-		#delimit cr
+    * temporarily set delimiter to ; so can break the line
+    #delimit ;		
+	loc userpack = "blindschemes mdesc estout distinct winsor2" ;
+    #delimit cr
 	
 	* install packages that are on ssc	
 		foreach package in `userpack' {
@@ -92,7 +92,6 @@ if $pack == 1 {
 		set more off
 }
 
-
 * **********************************************************************
 * 1 - run weather data cleaning .do file
 * **********************************************************************
@@ -106,7 +105,7 @@ if $pack == 1 {
 	do 			"$code/nigeria/weather_code/nga_ghs_masterdo.do"
 	do 			"$code/tanzania/weather_code/tza_nps_masterdo.do"
 	do 			"$code/uganda/weather_code/uga_unps_masterdo.do"
-*/
+
 
 * **********************************************************************
 * 2 - run household data cleaning .do files and merge with weather data
