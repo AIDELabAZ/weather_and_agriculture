@@ -37,7 +37,7 @@
 * **********************************************************************
 
 * import wave 4 season A
-	use "$root/agric/2013_AGSEC2A.dta", clear
+	use "$root/agric/AGSEC2A.dta", clear
 		
 * unlike other waves, HHID is a numeric here
 	format 			%18.0g HHID

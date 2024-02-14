@@ -38,7 +38,7 @@
 		global 		data	"C:/Users/jdmichler/OneDrive - University of Arizona/weather_project"
     }
 
-    if `"`c(username)'"' == "rguerrasu" {
+    if `"`c(username)'"' == "rodrigoguerra" {
         global 		code  	"/Users/rodrigoguerra/Library/CloudStorage/OneDrive-UniversityofArizona/Documents/GitHub/weather_and_agriculture"
 		global 		data	"/Users/rodrigoguerra/Library/CloudStorage/OneDrive-UniversityofArizona/weather_project"
     }
