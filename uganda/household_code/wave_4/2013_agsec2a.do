@@ -1,44 +1,43 @@
 * Project: WB Weather
-* Created on: Aug 2020
-* Created by: ek
-* Stata v.16
+* Created on: Feb 2024
+* Created by: rg
+* Edited on: 14 Feb 24
+* Edited by: rg
+* Stata v.18
 
 * does
-	* reads Uganda wave 3 owned plot info (2011_AGSEC2A) for the 1st season
-	* ready to append to rented plot info (2011_AGSEC2B)
+	* reads Uganda wave 4 owned plot info (2013_AGSEC2A) for the 1st season
+	* ready to append to rented plot info (2013_AGSEC2B)
 	* owned plots are in A and rented plots are in B
 	* ready to be appended to 2011_AGSEC2B to make 2011_AGSEC2
 
 * assumes
-	* customsave.ado
+	* access to the raw data
 	* mdesc.ado
 
 * TO DO:
-	* done
+	* everything
 
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
 
 * define paths	
-	loc 	root 		= 		"$data/household_data/uganda/wave_3/raw"  
-	loc     export 		= 		"$data/household_data/uganda/wave_3/refined"
-	loc 	logout 		= 		"$data/household_data/uganda/logs"
-
-* close log 
-	*log close
+	global 	root  		"$data/household_data/uganda/wave_4/raw"  
+	global  export 		"$data/household_data/uganda/wave_4/refined"
+	global 	logout 		"$data/household_data/uganda/logs"
 	
 * open log	
 	cap log close
-	log using "`logout'/2011_agsec2a", append
+	log using "$logout/2013_agsec2a", append
 
 	
 * **********************************************************************
 * 1 - clean up the key variables
 * **********************************************************************
 
-* import wave 2 season A
-	use "`root'/2011_AGSEC2A.dta", clear
+* import wave 4 season A
+	use "$root/agric/2013_AGSEC2A.dta", clear
 		
 * unlike other waves, HHID is a numeric here
 	format 			%18.0g HHID
