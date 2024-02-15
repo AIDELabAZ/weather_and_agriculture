@@ -13,3 +13,5 @@
 *.smcl
 *.docx
 *.html
+*.DS_Store
+*.Rhistory
