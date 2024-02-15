@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: jdm
-* Stata v.17.0
+* Edited on: 15 Feb 24
+* Edited by: jdm
+* Stata v.18.0
 
 * does
 	* establishes an identical workspace between users
