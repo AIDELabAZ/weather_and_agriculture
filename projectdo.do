@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: jdm
-* Stata v.17.0
+* Edited on: 15 Feb 24
+* Edited by: jdm
+* Stata v.18.0
 
 * does
 	* establishes an identical workspace between users
@@ -73,17 +75,9 @@ if $pack == 1 {
 			}
 		}
 
-	* install -xfill- package
-		net install xfill, replace from(https://www.sealedenvelope.com/)
+	* install -xfill and dm89_1 - packages
+		net install xfill, 	replace from(https://www.sealedenvelope.com/)
 		
-	* install -customsave package
-		net install StataConfig, ///
-		from(https://raw.githubusercontent.com/etjernst/Materials/master/stata/) replace
-
-	* install -weather- package
-		net install WeatherConfig, ///
-		from(https://jdavidm.github.io/) replace
-	
 	* update all ado files
 		ado update, update
 
