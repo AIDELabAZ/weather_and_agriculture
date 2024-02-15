@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: jdm
-* Stata v.17.0
+* Edited on: 15 Feb 2024
+* Edited by: alj 
+* Stata v.18.0
 
 * does
 	* establishes an identical workspace between users
@@ -15,8 +17,8 @@
 
 * TO DO:
 	* complete
-
-
+	* add run time 
+	
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
@@ -92,7 +94,7 @@ if $pack == 1 {
 		set more off
 }
 
-
+/* 
 * **********************************************************************
 * 1 - run weather data cleaning .do file
 * **********************************************************************
