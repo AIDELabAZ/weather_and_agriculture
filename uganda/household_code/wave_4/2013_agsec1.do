@@ -6,14 +6,13 @@
 * Stata v.18, mac
 
 * does
-	* household Location data (2015_GSEC1) for the 1st season
+	* household Location data (2013_AGSEC1) for the 1st season
 
 * assumes
 	* access to raw data
-	* mdesc.ado
-
+	
 * TO DO:
-	* finish section 1 
+	* done
 
 	
 ***********************************************************************
@@ -21,53 +20,50 @@
 ***********************************************************************
 
 * define paths	
-	global root 	 "$data/household_data/uganda/wave_5/raw"  
-	global export 	 "$data/household_data/uganda/wave_5/refined"
-	global logout 	 "$data/household_data/uganda/logs"
+	global root 	"$data/household_data/uganda/wave_4/raw"  
+	global export 	"$data/household_data/uganda/wave_4/refined"
+	global logout 	"$data/household_data/uganda/logs"
 	
 * open log	
 	cap log 		close
-	log using 		"$logout/2015_GSEC1", append
+	log using 		"$logout/2013_AGSEC1", append
 
 	
 ***********************************************************************
-**# 1 - UNPS 2011 (Wave 5) - General(?) Section 1 
+**# 1 - UNPS 2013 (Wave 4) - Section 1 
 ***********************************************************************
 
-* import wave 5 season 1
-	use				"$root/hh/gsec1", clear
+* import wave 4 season 1
+	use				"$root/agric/AGSEC1", clear
 
 * rename variables
 	isid 			HHID
-	rename 			HHID hhid
-	
-	drop 			district
+	rename			HHID hhid
+
 	rename 			district_name district
 	rename 			subcounty_name subcounty
 	rename 			parish_name parish
-	rename 			hwgt_W5 wgt15
-
-	tab 			region, missing
+	rename 			wgt wgt13
+	rename			HHID_old hhid_pnl
 
 * drop if missing
 	drop if			district == ""
-	*** dropped 164 observations
+	*** dropped 0 observations
 	
 	
 ***********************************************************************
 **# 2 - end matter, clean up to save
 ***********************************************************************
 
-	keep 			hhid region district county subcounty parish ///
-						hh_status2011 wgt11
+	keep 			hh hhid region district subcounty parish ///
+						 wgt13 hhid_pnl rotate ea
 
 	compress
 	describe
 	summarize
 
 * save file
-		customsave , idvar(hhid) filename("2011_GSEC1.dta") ///
-			path("`export'") dofile(2011_GSEC1) user($user)
+	save			"$export/2013_agsec1.dta", replace 
 
 * close the log
 	log	close

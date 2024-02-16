@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 15 Feb 24
+* Edited on: 16 Feb 24
 * Stata v.18
 
 * does
@@ -17,9 +17,9 @@
 * TO DO:
 	* everything
 
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+***********************************************************************
+**# 0 - setup
+***********************************************************************
 
 * define paths	
 	global 	root 		"$data/household_data/uganda/wave_5/raw"  
@@ -32,16 +32,13 @@
 	log using "$logout/2015_agsec2a", append
 
 	
-* **********************************************************************
-* 1 - clean up the key variables
-* **********************************************************************
+***********************************************************************
+**# 1 - clean up the key variables
+***********************************************************************
 
 * import wave 5 season A
 	use "$root/agric/AGSEC2A.dta", clear
 		
-* unlike other waves, HHID is a numeric here
-	format 			%18.0g HHID
-	tostring		HHID, gen(hhid) format(%18.0g)
 	
 	rename			parcelID prcid
 	rename 			a2aq4 plotsizeGPS
@@ -56,13 +53,12 @@
 	gen				irr_any = 1 if a2aq18 == 1
 	replace			irr_any = 0 if irr_any == .
 	lab var			irr_any "Irrigation (=1)"
-	*** irrigation is q18 not q20 like in other rounds
-	*** there is an error that labels the question with soil type
+	*** there are 39 observations irrigated
 
 
-* **********************************************************************
-* 2 - merge location data
-* **********************************************************************	
+***********************************************************************
+**# 2 - merge location data
+***********************************************************************	
 	
 * merge the location identification
 	merge m:1 hhid using "`export'/2011_GSEC1"
@@ -74,7 +70,7 @@
 
 	
 ************************************************************************
-* 3 - keeping cultivated land
+**# 3 - keeping cultivated land
 ************************************************************************
 
 * what was the primary use of the parcel
@@ -87,9 +83,9 @@
 	*** 431 observations deleted	
 
 	
-* **********************************************************************
-* 4 - clean plotsize
-* **********************************************************************
+***********************************************************************
+**# 4 - clean plotsize
+***********************************************************************
 
 * summarize plot size
 	sum 			plotsizeGPS
@@ -170,9 +166,9 @@
 	*** none missing
 
 	
-* **********************************************************************
-* 4 - end matter, clean up to save
-* **********************************************************************
+***********************************************************************
+**# 4 - end matter, clean up to save
+***********************************************************************
 	
 	keep 			hhid HHID prcid region district county subcounty ///
 					parish hh_status2011 wgt11 ///
