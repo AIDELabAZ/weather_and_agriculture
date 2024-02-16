@@ -1,15 +1,16 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 14 Feb 24
-* Edited by: rg
+* Edited on: 16 Feb 24
+* Edited by: jdm
 * Stata v.18
 
 * does
-	* reads Uganda wave 4 owned plot info (2013_AGSEC2A) for the 1st season
-	* ready to append to rented plot info (2013_AGSEC2B)
+	* reads Uganda wave 7 owned plot info (2018_AGSEC2A) for the 1st season
+	* ready to append to rented plot info (2018_AGSEC2B)
 	* owned plots are in A and rented plots are in B
-	* ready to be appended to 2011_AGSEC2B to make 2011_AGSEC2
+	* ready to be appended to 2018_AGSEC2B to make 2018_AGSEC2
+	* cleans irrigated data
 
 * assumes
 	* access to the raw data
@@ -18,35 +19,32 @@
 * TO DO:
 	* everything
 
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+************************************************************************
+**# 0 - setup
+************************************************************************
 
 * define paths	
-	global 	root  		"$data/household_data/uganda/wave_4/raw"  
-	global  export 		"$data/household_data/uganda/wave_4/refined"
+	global 	root  		"$data/household_data/uganda/wave_7/raw"  
+	global  export 		"$data/household_data/uganda/wave_7/refined"
 	global 	logout 		"$data/household_data/uganda/logs"
 	
 * open log	
 	cap log close
-	log using "$logout/2013_agsec2a", append
+	log using "$logout/2018_agsec2a", append
 
 	
-* **********************************************************************
-* 1 - clean up the key variables
-* **********************************************************************
+************************************************************************
+**# 1 - clean up the key variables
+************************************************************************
 
-* import wave 4 season A
+* import wave 7 season A
 	use "$root/agric/AGSEC2A.dta", clear
 		
-* unlike other waves, HHID is a numeric here
-	format 			%18.0g HHID
-	tostring		HHID, gen(hhid) format(%18.0g)
-	
+* rename id variables
 	rename			parcelID prcid
-	rename 			a2aq4 plotsizeGPS
-	rename 			a2aq5 plotsizeSR
-	rename			a2aq7 tenure
+	rename 			s2aq4 plotsizeGPS
+	rename 			s2aq5 plotsizeSR
+	rename			s2aq7 tenure
 	
 	describe
 	sort hhid prcid
@@ -56,13 +54,12 @@
 	gen				irr_any = 1 if a2aq18 == 1
 	replace			irr_any = 0 if irr_any == .
 	lab var			irr_any "Irrigation (=1)"
-	*** irrigation is q18 not q20 like in other rounds
-	*** there is an error that labels the question with soil type
+	*** there are only 3 parcels irrigated
 
-
-* **********************************************************************
-* 2 - merge location data
-* **********************************************************************	
+	
+************************************************************************
+**# 2 - merge location data
+************************************************************************	
 	
 * merge the location identification
 	merge m:1 hhid using "`export'/2011_GSEC1"
@@ -71,7 +68,7 @@
 	*** no option at this stage except to drop all unmatched
 	
 	drop 		if _merge != 3	
-
+	*** drops 995 observations
 	
 ************************************************************************
 * 3 - keeping cultivated land
@@ -93,7 +90,7 @@
 
 * summarize plot size
 	sum 			plotsizeGPS
-	***	mean 2.18, max 75, min .01
+	***	mean 1.16 max 9, min .02
 	*** no plotsizes that are zero
 	
 	sum				plotsizeSR
@@ -101,7 +98,7 @@
 
 * how many missing values are there?
 	mdesc 			plotsizeGPS
-	*** 1,585 missing, 51% of observations
+	*** 1,585 missing, 94% of observations
 
 * convert acres to square meters
 	gen				plotsize = plotsizeGPS*0.404686
@@ -170,9 +167,9 @@
 	*** none missing
 
 	
-* **********************************************************************
-* 4 - end matter, clean up to save
-* **********************************************************************
+************************************************************************
+**# 5 - end matter, clean up to save
+************************************************************************
 	
 	keep 			hhid HHID prcid region district county subcounty ///
 					parish hh_status2011 wgt11 ///

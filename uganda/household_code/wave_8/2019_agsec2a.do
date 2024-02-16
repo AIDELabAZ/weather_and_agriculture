@@ -1,15 +1,15 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 14 Feb 24
-* Edited by: rg
-* Stata v.18
+* Edited on: 16 Feb 24
+* Edited by: KCD
+* Stata v.18, mac
 
 * does
-	* reads Uganda wave 4 owned plot info (2013_AGSEC2A) for the 1st season
-	* ready to append to rented plot info (2013_AGSEC2B)
+	* reads Uganda wave 4 owned plot info (2019_AGSEC2A) for the 1st season
+	* ready to append to rented plot info (2019_AGSEC2B)
 	* owned plots are in A and rented plots are in B
-	* ready to be appended to 2011_AGSEC2B to make 2011_AGSEC2
+	* ready to be appended to 2019_AGSEC2B to make 2019_AGSEC2
 
 * assumes
 	* access to the raw data
@@ -18,41 +18,38 @@
 * TO DO:
 	* everything
 
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+***********************************************************************
+**# 0 - setup
+***********************************************************************
 
 * define paths	
-	global 	root  		"$data/household_data/uganda/wave_4/raw"  
-	global  export 		"$data/household_data/uganda/wave_4/refined"
+	global 	root  		"$data/household_data/uganda/wave_8/raw"  
+	global  export 		"$data/household_data/uganda/wave_8/refined"
 	global 	logout 		"$data/household_data/uganda/logs"
 	
 * open log	
 	cap log close
-	log using "$logout/2013_agsec2a", append
+	log using "$logout/2019_agsec2a", append
 
 	
-* **********************************************************************
-* 1 - clean up the key variables
-* **********************************************************************
+***********************************************************************
+**# 1 - clean up the key variables
+***********************************************************************
 
 * import wave 4 season A
 	use "$root/agric/AGSEC2A.dta", clear
 		
-* unlike other waves, HHID is a numeric here
-	format 			%18.0g HHID
-	tostring		HHID, gen(hhid) format(%18.0g)
-	
+* Rename ID variables
 	rename			parcelID prcid
-	rename 			a2aq4 plotsizeGPS
-	rename 			a2aq5 plotsizeSR
-	rename			a2aq7 tenure
+	rename 			s2aq4 plotsizeGPS
+	rename 			s2aq5 plotsizeSR
+	rename			s2aq7 tenure
 	
 	describe
 	sort hhid prcid
 	isid hhid prcid
 
-* make a variable that shows the irrigation
+**# make a variable that shows the irrigation
 	gen				irr_any = 1 if a2aq18 == 1
 	replace			irr_any = 0 if irr_any == .
 	lab var			irr_any "Irrigation (=1)"
