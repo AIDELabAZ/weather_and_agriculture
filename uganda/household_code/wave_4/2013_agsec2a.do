@@ -1,15 +1,15 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 14 Feb 24
+* Edited on: 16 Feb 24
 * Edited by: rg
-* Stata v.18
+* Stata v.18, mac
 
 * does
 	* reads Uganda wave 4 owned plot info (2013_AGSEC2A) for the 1st season
 	* ready to append to rented plot info (2013_AGSEC2B)
 	* owned plots are in A and rented plots are in B
-	* ready to be appended to 2011_AGSEC2B to make 2011_AGSEC2
+	* ready to be appended to 2013_AGSEC2B to make 2013_AGSEC2
 
 * assumes
 	* access to the raw data
@@ -18,9 +18,9 @@
 * TO DO:
 	* everything
 
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+***********************************************************************
+**# 0 - setup
+***********************************************************************
 
 * define paths	
 	global 	root  		"$data/household_data/uganda/wave_4/raw"  
@@ -32,9 +32,9 @@
 	log using "$logout/2013_agsec2a", append
 
 	
-* **********************************************************************
-* 1 - clean up the key variables
-* **********************************************************************
+***********************************************************************
+**# 1 - clean up the key variables
+***********************************************************************
 
 * import wave 4 season A
 	use "$root/agric/AGSEC2A.dta", clear
@@ -56,13 +56,12 @@
 	gen				irr_any = 1 if a2aq18 == 1
 	replace			irr_any = 0 if irr_any == .
 	lab var			irr_any "Irrigation (=1)"
-	*** irrigation is q18 not q20 like in other rounds
-	*** there is an error that labels the question with soil type
+	*** there are 26 irrigated
 
 
-* **********************************************************************
-* 2 - merge location data
-* **********************************************************************	
+***********************************************************************
+**# 2 - merge location data
+***********************************************************************	
 	
 * merge the location identification
 	merge m:1 hhid using "`export'/2011_GSEC1"
