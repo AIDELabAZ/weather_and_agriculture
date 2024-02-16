@@ -1,6 +1,8 @@
 * Project: WB Weather
 * Created on: May 2020
-* Created by: rb
+* Created by: jdm
+* Edited on: 12 Feb 2024
+* Edited by: reece
 * Stata v.18.0
 
 * does
