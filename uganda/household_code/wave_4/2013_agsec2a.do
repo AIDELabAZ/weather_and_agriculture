@@ -16,7 +16,7 @@
 	* mdesc.ado
 
 * TO DO:
-	* everything
+	* section 3 and beyond
 
 ***********************************************************************
 **# 0 - setup
@@ -39,10 +39,17 @@
 * import wave 4 season A
 	use "$root/agric/AGSEC2A.dta", clear
 		
-* unlike other waves, HHID is a numeric here
-	format 			%18.0g HHID
-	tostring		HHID, gen(hhid) format(%18.0g)
+	rename			HHID hhid
+		
+* merge household key 
+	merge m:1 hhid using "$export/2013_agsec1"		
+	*** merged 4,142, 345 unmerged in using data
+	*** drop all unmatched since no land area data
 	
+	drop 		if _merge != 3	
+	drop		_merge
+	
+* rename key variables
 	rename			parcelID prcid
 	rename 			a2aq4 plotsizeGPS
 	rename 			a2aq5 plotsizeSR
@@ -57,19 +64,6 @@
 	replace			irr_any = 0 if irr_any == .
 	lab var			irr_any "Irrigation (=1)"
 	*** there are 26 irrigated
-
-
-***********************************************************************
-**# 2 - merge location data
-***********************************************************************	
-	
-* merge the location identification
-	merge m:1 hhid using "`export'/2011_GSEC1"
-	*** 995 unmatched from master
-	*** that means 995 observations did not have location data
-	*** no option at this stage except to drop all unmatched
-	
-	drop 		if _merge != 3	
 
 	
 ************************************************************************
@@ -86,9 +80,9 @@
 	*** 431 observations deleted	
 
 	
-* **********************************************************************
-* 4 - clean plotsize
-* **********************************************************************
+***********************************************************************
+**# 4 - clean plotsize
+***********************************************************************
 
 * summarize plot size
 	sum 			plotsizeGPS
@@ -169,9 +163,9 @@
 	*** none missing
 
 	
-* **********************************************************************
-* 4 - end matter, clean up to save
-* **********************************************************************
+***********************************************************************
+**## 4 - end matter, clean up to save
+***********************************************************************
 	
 	keep 			hhid HHID prcid region district county subcounty ///
 					parish hh_status2011 wgt11 ///
