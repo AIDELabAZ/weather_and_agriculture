@@ -49,7 +49,7 @@
 	sort hhid prcid
 	isid hhid prcid
 
-**# make a variable that shows the irrigation
+* make a variable that shows the irrigation
 	gen				irr_any = 1 if a2aq18 == 1
 	replace			irr_any = 0 if irr_any == .
 	lab var			irr_any "Irrigation (=1)"
@@ -57,12 +57,12 @@
 	*** there is an error that labels the question with soil type
 
 
-* **********************************************************************
-* 2 - merge location data
-* **********************************************************************	
+***********************************************************************
+**#2 - merge location data
+ **********************************************************************	
 	
 * merge the location identification
-	merge m:1 hhid using "`export'/2011_GSEC1"
+	merge m:1 hhid using "$export/2019_gsec1"
 	*** 995 unmatched from master
 	*** that means 995 observations did not have location data
 	*** no option at this stage except to drop all unmatched
