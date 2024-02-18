@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 16 Feb 24
+* Edited on: 18 Feb 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -13,7 +13,7 @@
 	* mdesc.ado
 
 * TO DO:
-	* finish section 1 
+	* done
 
 	
 ***********************************************************************
@@ -31,7 +31,7 @@
 
 	
 ***********************************************************************
-**# 1 - UNPS 2011 (Wave 5) - General(?) Section 1 
+**# 1 - UNPS 2011 (Wave 5) - Section 1 
 ***********************************************************************
 
 * import wave 5 season 1
@@ -51,23 +51,22 @@
 
 * drop if missing
 	drop if			district == ""
-	*** dropped 164 observations
+	*** dropped 0 observations
 	
 	
 ***********************************************************************
 **# 2 - end matter, clean up to save
 ***********************************************************************
 
-	keep 			hhid region district county subcounty parish ///
-						hh_status2011 wgt11
+	keep 			hh hhid region district subcounty parish ///
+						wgt15 hwgt_W4_W5 rotate ea
 
 	compress
 	describe
 	summarize
 
 * save file
-		customsave , idvar(hhid) filename("2011_GSEC1.dta") ///
-			path("`export'") dofile(2011_GSEC1) user($user)
+	save			"$export/2015_gsec1.dta", replace		
 
 * close the log
 	log	close

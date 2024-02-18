@@ -40,14 +40,6 @@
 	use "$root/agric/AGSEC2A.dta", clear
 		
 	rename			HHID hhid
-		
-* merge household key 
-	merge m:1 hhid using "$export/2013_agsec1"		
-	*** merged 4,142, 345 unmerged in using data
-	*** drop all unmatched since no land area data
-	
-	drop 		if _merge != 3	
-	drop		_merge
 	
 * rename key variables
 	rename			parcelID prcid
@@ -63,12 +55,24 @@
 	gen				irr_any = 1 if a2aq18 == 1
 	replace			irr_any = 0 if irr_any == .
 	lab var			irr_any "Irrigation (=1)"
-	*** there are 26 irrigated
-
+	*** there are 26 irrigated	
 	
-************************************************************************
-* 3 - keeping cultivated land
-************************************************************************
+	
+***********************************************************************
+**# 2 - merge location data
+***********************************************************************			
+* merge household key 
+	merge m:1 hhid using "$export/2013_agsec1"		
+	*** merged 4,142, 345 unmerged in using data
+	*** drop all unmatched since no land area data
+	
+	drop 		if _merge != 3	
+	drop		_merge
+	
+	
+***********************************************************************
+**# 3 - keeping cultivated land
+***********************************************************************
 
 * what was the primary use of the parcel
 	*** activity in the first season is recorded seperately from activity in the second season

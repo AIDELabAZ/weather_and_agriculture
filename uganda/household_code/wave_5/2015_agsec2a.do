@@ -1,8 +1,9 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 16 Feb 24
-* Stata v.18
+* Edited on: 18 Feb 24
+* Edited by: rg
+* Stata v.18, mac
 
 * does
 	* reads Uganda wave 5 owned plot info (2015_AGSEC2A) for the 1st season
@@ -15,7 +16,7 @@
 	* mdesc.ado
 
 * TO DO:
-	* everything
+	* section 3 and beyond
 
 ***********************************************************************
 **# 0 - setup
@@ -39,7 +40,7 @@
 * import wave 5 season A
 	use "$root/agric/AGSEC2A.dta", clear
 		
-	
+	rename			HHID hhid
 	rename			parcelID prcid
 	rename 			a2aq4 plotsizeGPS
 	rename 			a2aq5 plotsizeSR
@@ -61,13 +62,13 @@
 ***********************************************************************	
 	
 * merge the location identification
-	merge m:1 hhid using "`export'/2011_GSEC1"
-	*** 995 unmatched from master
-	*** that means 995 observations did not have location data
-	*** no option at this stage except to drop all unmatched
+	merge m:1 hhid using "$export/2015_gsec1"
+	*** merged 4,129, 1,128 unmerged total, 1,057 from using data
+	*** 71 unmerged from master
 	
-	drop 		if _merge != 3	
-
+	drop 		if _merge ! = 3
+	drop		_merge
+	
 	
 ************************************************************************
 **# 3 - keeping cultivated land
