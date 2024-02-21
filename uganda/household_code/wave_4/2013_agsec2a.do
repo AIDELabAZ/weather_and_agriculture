@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 16 Feb 24
+* Edited on: 20 Feb 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -16,7 +16,7 @@
 	* mdesc.ado
 
 * TO DO:
-	* section 3 and beyond
+	* clean up to save section
 
 ***********************************************************************
 **# 0 - setup
@@ -81,7 +81,7 @@
 	*** we will only include plots used for annual or perennial crops
 	
 	keep			if a2aq11a == 1 | a2aq11a == 2
-	*** 431 observations deleted	
+	*** 507 observations deleted	
 
 	
 ***********************************************************************
@@ -90,26 +90,39 @@
 
 * summarize plot size
 	sum 			plotsizeGPS
-	***	mean 2.18, max 75, min .01
+	***	mean 1.49, max 48, min .01
 	*** no plotsizes that are zero
 	
 	sum				plotsizeSR
-	*** mean 2.36, max 100, min .01
+	*** mean 1.48, max 40, min .02
 
 * how many missing values are there?
 	mdesc 			plotsizeGPS
-	*** 1,585 missing, 51% of observations
+	*** 1,906 missing, 52% of observations
 
-* convert acres to square meters
+* convert acres to hectares
 	gen				plotsize = plotsizeGPS*0.404686
-	label var       plotsize "Plot size (ha)"
+	label var		plotsize "PLot size (ha)"
 	
 	gen				selfreport = plotsizeSR*0.404686
 	label var       selfreport "Plot size (ha)"
 
+* examine gps outlier values
+	sum 			plotsize, detail
+	*** mean 0.604, max 19.42, min 0.004, std. dev. 1.03
+	
+	sum 			plotsize if plotsize < 18, detail
+	*** mean 0.593, max 16.99, min 0.004, std. dev. 0.932
+	
+	list 			plotsize selfreport if plotsize > 18 & !missing(plotsize)
+	*** gps plotsize is almost a hundred times larger self reported, which means a decimal point misplacement.
+	
+* recode outlier to be 1/100
+	replace 		plotsize = plotsize/100 if plotsize > 18
+		
 * check correlation between the two
 	corr 			plotsize selfreport
-	*** 0.79 correlation, high correlation between GPS and self reported
+	*** 0.914 correlation, high correlation between GPS and self reported
 	
 * compare GPS and self-report, and look for outliers in GPS 
 	sum				plotsize, detail
@@ -118,27 +131,27 @@
 * look at GPS and self-reported observations that are > ±3 Std. Dev's from the median 
 	list			plotsize selfreport if !inrange(plotsize,`r(p50)'-(3*`r(sd)'),`r(p50)'+(3*`r(sd)')) ///
 						& !missing(plotsize)
-	*** these all look good, largest size is 30 ha
+	*** these all look good, largest size is 16 ha
 	
 * gps on the larger side vs self-report
 	tab				plotsize if plotsize > 3, plot
-	*** distribution has a few high values, but mostly looks reasonable
+	*** distribution looks reasonable
 
 * correlation for larger plots	
 	corr			plotsize selfreport if plotsize > 3 & !missing(plotsize)
-	*** this is very high, 0.842, so these look good
+	*** this is very high, 0.9007, so these look good
 
 * correlation for smaller plots	
 	corr			plotsize selfreport if plotsize < .1 & !missing(plotsize)
-	*** this is very low 0.127
+	*** this is very low 0.238
 		
 * correlation for extremely small plots	
 	corr			plotsize selfreport if plotsize < .01 & !missing(plotsize)
-	*** this is terrible, 0.036, basically no relation, not unexpected
+	*** correlation is negative. -0.70
 	
 * summarize before imputation
 	sum				plotsize
-	*** mean 0.883, max 30.35, min 0.004
+	*** mean 0.593, max 16.99, min 0.004
 	
 * encode district to be used in imputation
 	encode district, gen (districtdstrng) 	
@@ -154,10 +167,10 @@
 		
 * how did imputing go?
 	sum 			plotsize_1_
-	*** mean 0.884, max 30.35, min 0.004
+	*** mean 0.619, max 16.99, min 0.004
 	
 	corr 			plotsize_1_ selfreport if plotsize == .
-	*** strong correlation 0.824
+	*** strong correlation 0.878
 	
 	replace 		plotsize = plotsize_1_ if plotsize == .
 	
