@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: reece
-* Edited on: Feb 16 2024
+* Edited on: Feb 20 2024
 * Edited by: reece
 * Stata v.18
 
@@ -16,7 +16,8 @@
 	* cleaned HH_SECA data
 
 * TO DO:
-	* everything
+	* merge regional identifiers
+	* impute missing values
 
 	
 ************************************************************************
@@ -60,6 +61,7 @@
 	lab var		plot_id "Unique plot identifier"
 	isid 		plot_id
 	*** already a "plot_id" in the data, should this be renamed?
+	*** renamed plot_id_wb
 	
 * convert from acres to hectares
 	generate	plotsize_self = plotsize_self_ac * 0.404686
@@ -91,7 +93,11 @@
 	
 * must merge in regional identifiers from 2012_AG_SEC_3A to impute
 	merge			1:1 y5_hhid plotnum using "$root/ag_sec_3a"
-	*** 1,262 not matched from using - good
+	*** no plotnum in ag_sec_3a, plot number is named prevplot_id
+	*** as is cannot merge
+	*** do we need to rename plotnum? or rename prevplot_id in file we want to merge?
+	*** also, plot_id  in agsec2a is different from plot_id in agsec3a, which also causes issues when merging
+	
 
 	drop		if _merge == 2
 	drop		_merge
