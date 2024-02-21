@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: jt
-* Edited on: 16 Feb 2024
+* Edited on: 20 Feb 2024
 * Edited by: jt
 * Stata v.18
 
@@ -17,8 +17,14 @@
 
 * TO DO:
 	* everything
-	* rename locals to globals
+	* completed section 1, other than plot_unit recoding
+	* completed section 2 up through line 101 (count)
+	
 	* troubleshoot log issue on Jacob's machine
+	
+	* QUESTIONS
+	* 1. For the variable plot_unit, the survey no longer has a number 4-plots
+	* 	 option. Should we recode?
 	
 ***********************************************************************
 **# 0 - setup
@@ -45,7 +51,7 @@
 		isid				hhid plotid
 		
 * determine self reported plotsize
-		gen plot_size_SR = s11aq4a
+		gen plot_size_SR = s11aq4aa
 		rename s11aq4b plot_unit
 		label variable plot_size_SR "self reported size of plot, not standardized"
 		label variable plot_unit "self reported unit of measure, 1=heaps, 2=ridges, 3=stands, 4=plots, 5=acres, 6=hectares, 7=sq meters, 8=other"
@@ -90,8 +96,8 @@
 
 	count 			if plot_size_hec_SR !=.
 	count			if plot_size_hec_SR == . 
-	*** 6 observations do not have plot_size_hec_SR
-	*** 5818 observations have plot_size_hec_SR
+	*** 4 observations do not have plot_size_hec_SR
+	*** 11072 observations have plot_size_hec_SR
 
 	* convert GPS  to hectares
 	count if plot_size_GPS == .
@@ -209,7 +215,7 @@
 
 * save file
 		customsave , idvar(hhid) filename("ph_sect11a1.dta") ///
-			path("`export'/`folder'") dofile(ph_sect11a1) user($user)
+			path("$export/`folder'") dofile(ph_sect11a1) user($user)
 
 * close the log
 	log	close

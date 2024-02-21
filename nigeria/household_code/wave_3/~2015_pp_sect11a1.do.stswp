@@ -1,71 +1,58 @@
 * Project: WB Weather
-* Created on: Feb 2024
-* Created by: jt
-* Edited on: 20 Feb 2024
-* Edited by: jt
-* Stata v.18
+* Created on: May 2020
+* Created by: alj
+* Edited by: ek
+* Stata v.16
 
 * does
-	* reads in Nigeria, WAVE 4 (2018-2019) POST PLANTING, NIGERIA AG SECTA1
+	* reads in Nigeria, WAVE 3 (2015-2016) POST PLANTING, NIGERIA AG SECTA1
 	* determines primary and secondary crops, cleans plot size (hecatres)
 	* outputs clean data file ready for combination with wave 2 plot data
 	* outputs clean data file ready for combination with wave 3 hh data
 
 * assumes
-	* access to the raw data
+	* customsave.ado
 	* land-conversion.dta conversion file
 
 * TO DO:
-	* everything
-	* completed section 1, other than plot_unit recoding
-	* completed section 2 up through line 101 (count)
-	
-	* troubleshoot log issue on Jacob's machine
-	
-	* QUESTIONS
-	* 1. For the variable plot_unit, the survey no longer has a number 4-plots
-	* 	 option. Should we recode?
-	
-***********************************************************************
-**# 0 - setup
-***********************************************************************
+	* complete
+* **********************************************************************
+* 0 - setup
+* **********************************************************************
 	
 * define paths	
-	global	root			"$data/household_data/nigeria/wave_4/raw"
-	global	cnvrt   		"$data/household_data/nigeria/conversion_files"
-	global 	export  		"$data/household_data/nigeria/wave_4/refined"
-	global 	logout  		"$data/household_data/nigeria/logs"
+	loc		root	=		"$data/household_data/nigeria/wave_3/raw"
+	loc		cnvrt   =		"$data/household_data/nigeria/conversion_files"
+	loc 	export  = 		"$data/household_data/nigeria/wave_3/refined"
+	loc 	logout  = 		"$data/household_data/nigeria/logs"
 
 * open log	
-	cap log close
-*	log using "$logout/2018_ph_sect11a1"
+	*cap log close
+	*log using "`logout'/ph_sect11a1", append
 
-***********************************************************************
-**# 1 - find unique identifier and determine plot size
-***********************************************************************
+* **********************************************************************
+* 1 - determine plot size
+* **********************************************************************
 		
 * import the relevant data file
-		use "$root/sect11a1_plantingw4", clear 	
+		use "`root'/sect11a1_plantingw3", clear 	
 
-* find unique identifier	
-		isid				hhid plotid
-		
 * determine self reported plotsize
-		gen plot_size_SR = s11aq4aa
+		gen plot_size_SR = s11aq4a
 		rename s11aq4b plot_unit
 		label variable plot_size_SR "self reported size of plot, not standardized"
 		label variable plot_unit "self reported unit of measure, 1=heaps, 2=ridges, 3=stands, 4=plots, 5=acres, 6=hectares, 7=sq meters, 8=other"
-		
+
 * determine GPS plotsize
 		gen plot_size_GPS = s11aq4c
 		label variable plot_size_GPS "GPS plotsize in sq. meters"
 		
-***********************************************************************
-**# 2 - conversions
-***********************************************************************
+* **********************************************************************
+* 2 - conversions
+* **********************************************************************
 
 * merge in conversion file
-	merge 			m:1 	zone using 	"$cnvrt/land-conversion"
+	merge 			m:1 	zone using 	"`cnvrt'/land-conversion"
 	
 	***all observations matched
 
@@ -96,8 +83,8 @@
 
 	count 			if plot_size_hec_SR !=.
 	count			if plot_size_hec_SR == . 
-	*** 4 observations do not have plot_size_hec_SR
-	*** 11072 observations have plot_size_hec_SR
+	*** 6 observations do not have plot_size_hec_SR
+	*** 5818 observations have plot_size_hec_SR
 
 	* convert GPS  to hectares
 	count if plot_size_GPS == .
@@ -197,13 +184,14 @@
 	rename			plot_size_hec_GPS_1_ plotsize
 	lab	var			plotsize	"plot size (ha)"
 	
-************************************************************************
-**# 3 - end matter, clean up to save
-************************************************************************
+* **********************************************************************
+* 3 - end matter, clean up to save
+* **********************************************************************
 
 	keep 			hhid zone state lga hhid ea plotid plotsize
 
 * create unique household-plot identifier
+	isid				hhid plotid
 	sort				hhid plotid
 	egen				plot_id = group(hhid plotid)
 	lab var				plot_id "unique plot identifier"
@@ -215,9 +203,9 @@
 
 * save file
 		customsave , idvar(hhid) filename("ph_sect11a1.dta") ///
-			path("$export/`folder'") dofile(ph_sect11a1) user($user)
+			path("`export'/`folder'") dofile(ph_sect11a1) user($user)
 
 * close the log
-	log	close
+	*log	close
 
 /* END */
