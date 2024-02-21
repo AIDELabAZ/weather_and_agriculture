@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 20 Feb 24
+* Edited on: 21 Feb 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -16,7 +16,7 @@
 	* mdesc.ado
 
 * TO DO:
-	* clean up to save section
+	* check imputation results
 
 ***********************************************************************
 **# 0 - setup
@@ -76,13 +76,13 @@
 
 * what was the primary use of the parcel
 	*** activity in the first season is recorded seperately from activity in the second season
-	*** for some reason, the first cropping season is a2aq11b, not a2aq11a
-	tab 		 	a2aq11b
+	*** even data label says first season is a2aq11b, by looking at previous waves and the documentation, we can say that a2aq11a is the first cropping season
+	tab 		 	a2aq11a
 	*** activities include renting out, pasture, forest. cultivation, and other
 	*** we will only include plots used for annual or perennial crops
 	
-	keep			if a2aq11b == 1 | a2aq11b == 2
-	*** 1,170 observations deleted	
+	keep			if a2aq11a == 1 | a2aq11a == 2
+	*** 636 observations deleted	
 
 	
 ***********************************************************************
@@ -91,15 +91,15 @@
 
 * summarize plot size
 	sum 			plotsizeGPS
-	***	mean 1.59, max 158, min 0
+	***	mean 1.56, max 158, min 0
 	*** only 1 plotsize = 0
 	
 	sum				plotsizeSR
-	*** mean 1.38, max 50, min .01
+	*** mean 1.51, max 300, min .01
 
 * how many missing values are there?
 	mdesc 			plotsizeGPS
-	*** 1,840 missing, 62% of observations
+	*** 2,141 missing, 61.2% of observations
 
 * convert acres to hectares
 	gen				plotsize = plotsizeGPS*0.404686
@@ -110,10 +110,10 @@
 
 * examine gps outlier values
 	sum				plotsize, detail
-	*** mean 0.64, min 0, max 63.94, std. dev. 2.03
+	*** mean 0.63, min 0, max 63.94, std. dev. 1.88
 	
 	sum				plotsize if plotsize < 60, detail
-	*** mean 0.59, max 9.3, min 0, std. dev 0.75
+	*** mean 0.585, max 9.3, min 0, std. dev 0.75
 	
 	list			plotsize selfreport if plotsize > 60 & !missing(plotsize)
 	*** gps plotsize is a hundred times larger self reported, which means a decimal point misplacement.
@@ -140,19 +140,19 @@
 
 * correlation for larger plots	
 	corr			plotsize selfreport if plotsize > 3 & !missing(plotsize)
-	*** this is very high, 0.86, so these look good
+	*** this is very high, 0.83, so these look good
 
 * correlation for smaller plots	
 	corr			plotsize selfreport if plotsize < .1 & !missing(plotsize)
-	*** correlation is negative, -0.12
+	*** correlation is negative, -0.108
 		
 * correlation for extremely small plots	
 	corr			plotsize selfreport if plotsize < .01 & !missing(plotsize)
-	*** correlation is negative, -0.79
+	*** correlation is negative, -0.728
 	
 * summarize before imputation
 	sum				plotsize
-	*** mean 0.589, max 9.3, min 0
+	*** mean 0.585, max 9.3, min 0
 	
 * encode district to be used in imputation
 	encode district, gen (districtdstrng) 	
@@ -168,10 +168,10 @@
 		
 * how did imputing go?
 	sum 			plotsize_1_
-	*** mean 0.569, max 9.3, min 0
+	*** mean 0.59, max 9.3, min 0
 	
 	corr 			plotsize_1_ selfreport if plotsize == .
-	*** strong correlation 0.816
+	*** weak correlatio 0.27
 	
 	replace 		plotsize = plotsize_1_ if plotsize == .
 	
@@ -185,17 +185,16 @@
 **# 4 - end matter, clean up to save
 ***********************************************************************
 	
-	keep 			hhid HHID prcid region district county subcounty ///
-					parish hh_status2011 wgt11 ///
-					plotsize irr_any
+	keep 			hhid hh_agric prcid region district subcounty ///
+					parish  wgt15 hwgt_W4_W5 ///
+					plotsize irr_any ea rotate
 
 	compress
 	describe
 	summarize
 
 * save file
-		customsave , idvar(hhid) filename("2011_AGSEC2A.dta") ///
-			path("`export'") dofile(2011_AGSEC2A) user($user)
+	save 			"$export/2015_agsec2a.dta", replace
 
 * close the log
 	log	close

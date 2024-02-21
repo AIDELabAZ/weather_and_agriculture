@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 20 Feb 24
+* Edited on: 21 Feb 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -16,7 +16,7 @@
 	* mdesc.ado
 
 * TO DO:
-	* clean up to save section
+	* done
 
 ***********************************************************************
 **# 0 - setup
@@ -184,17 +184,16 @@
 **## 4 - end matter, clean up to save
 ***********************************************************************
 	
-	keep 			hhid HHID prcid region district county subcounty ///
-					parish hh_status2011 wgt11 ///
-					plotsize irr_any
+	keep 			hhid hhid_pnl prcid region district subcounty ///
+					parish wgt13 ///
+					plotsize irr_any ea rotate
 
 	compress
 	describe
 	summarize
 
 * save file
-		customsave , idvar(hhid) filename("2011_AGSEC2A.dta") ///
-			path("`export'") dofile(2011_AGSEC2A) user($user)
+	save 			"$export/2013_agsec2a.dta", replace
 
 * close the log
 	log	close
