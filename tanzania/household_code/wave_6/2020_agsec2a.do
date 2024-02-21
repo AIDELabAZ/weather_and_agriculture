@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: reece
-* Edited on: Feb 20 2024
+* Edited on: Feb 21 2024
 * Edited by: reece
 * Stata v.18
 
@@ -45,12 +45,19 @@
 	duplicates 	drop
 	*** 0 obs dropped
 
+* must merge in regional identifiers from 2012_AG_SEC_3A to impute
+	rename 		ag2a_05 prevplot_id
+	
+	merge		m:m y5_hhid prevplot_id using "$root/ag_sec_3a"
+	drop		_merge
+	*** merging m:m unique identifer for missing values, renaming ag2a_05 to prevplot_id to merge plotnum
+	
 * renaming variables of interest
 	rename 		ag2a_04 plotsize_self_ac
 	rename 		ag2a_09 plotsize_gps_ac
 
 * check for unique identifiers
-	rename 		ag2a_05 plotnum
+	rename 		prevplot_id plotnum
 	drop		if plotnum == ""
 	isid		y5_hhid plotnum
 	*** 2,774 obs dropped
@@ -91,25 +98,17 @@
 	distinct 	uq_dist
 	*** 172 distinct districts
 	
-* must merge in regional identifiers from 2012_AG_SEC_3A to impute
-	merge			1:1 y5_hhid plotnum using "$root/ag_sec_3a"
-	*** no plotnum in ag_sec_3a, plot number is named prevplot_id
-	*** as is cannot merge
-	*** do we need to rename plotnum? or rename prevplot_id in file we want to merge?
-	*** also, plot_id  in agsec2a is different from plot_id in agsec3a, which also causes issues when merging
-	
-
-	drop		if _merge == 2
-	drop		_merge
-	
 * record if field was cultivated during long rainy
 	gen 		status = ag3a_03==1 if ag3a_03!=.
 	lab var		status "=1 if field cultivated during long rain"
-	*** 3,930 obs were cultivated (92%)
+	*** 1926 obs were cultivated (68%)
+	*** 952 missing
 	
 * drop any obs that weren't cultivated
 	drop if		status != 1
-	*** dropped 345 obs not cultivated during long rainy
+	*** dropped 1860 not cultivated during long rainy
+	
+	order plot_id plotsize_self plotsize_gps region district y5_rural clusterid strataid hhweight uq_dist, after(plotnum)
 	
 	drop 		ag3a_02_1- status
 	
@@ -203,12 +202,11 @@
 		*** I will not drop any low end values at this time
 
 * impute missing + irregular plot sizes using predictive mean matching
-* imputing 1,376 observations (out of 4,275) - 32.19% 
 * including plotsize_self as control
 	mi set 		wide 	// declare the data to be wide.
 	mi xtset	, clear 	// clear any xtset in place previously
 	mi register	imputed plotsize_gps // identify plotsize_GPS as the variable being imputed
-	sort		y4_hhid plotnum, stable // sort to ensure reproducability of results
+	sort		y5_hhid plotnum, stable // sort to ensure reproducability of results
 	mi impute 	pmm plotsize_gps plotsize_self i.uq_dist, add(1) rseed(245780) ///
 					noisily dots force knn(5) bootstrap
 	mi 			unset
@@ -221,7 +219,7 @@
 					format(%9.3g) 
 	rename		plotsize_gps_1_ plotsize
 	lab var		plotsize "Plot size (ha), imputed"
-	*** imputed 1,220 values out of 3,930 total obs
+	*** imputed 1554 values out of 1926 total obs
 	
 	sum				plotsize_self plotsize_gps	plotsize
 	*** self reported	:	mean 1.06 and s.d. 3.01

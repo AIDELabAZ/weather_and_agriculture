@@ -191,7 +191,6 @@
 		*** I will not drop any low end values at this time
 
 * impute missing + irregular plot sizes using predictive mean matching
-* imputing 1,376 observations (out of 4,275) - 32.19% 
 * including plotsize_self as control
 	mi set 		wide 	// declare the data to be wide.
 	mi xtset	, clear 	// clear any xtset in place previously
