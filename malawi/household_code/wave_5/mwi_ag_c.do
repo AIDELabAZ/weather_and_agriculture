@@ -19,7 +19,7 @@
 * **********************************************************************
 
 * define paths
-	loc		root 	= 	"$data/household_data/malawi/wave_5/raw"
+	loc		root 	= 	"$data/household_data/malawi/wave_5/raw"	
 	loc		export 	= 	"$data/household_data/malawi/wave_5/refined"
 	loc		logout 	= 	"$data/household_data/malawi/logs"
 
@@ -86,15 +86,18 @@
 * correlations
 	pwcorr 			selfreport gps
 	*** 0.62 - okay but not great
-	pwcorr 			selfreport gps if inrange(gps,0.002,2.5)
+	pwcorr 			selfreport gps if inrange(gps,0.002,4)
 	*** not much higher = 0.65
 	*** tested down to 0.001 to 1 - really no differences, always around 0.65
 	*** my inclincation, in reviewing, is to not trust gps 
 	scatter			selfreport gps
-	*** staying with my gut 	
 
-	generate 		plotsize = selfreport 
-	
+* make plotsize using GPS area if it is within reasonable range
+	generate 		plotsize = gps if gps>0.002 & gps<4
+	summarize 			selfreport gps plotsize	
+	*** we have some self-report information where we are missing plotsize 
+	summarize 			selfreport if missing(plotsize), detail
+
 * prepare for imputation
 * need district variables 
 	merge m:1 case_id using "`root'/hh_mod_a_filt.dta", keepusing(district) assert (2 3) keep (3) nogenerate
@@ -106,14 +109,12 @@
 	mi 				register imputed plotsize
 	mi 				impute pmm plotsize selfreport i.district, add(1) rseed(245780) noisily dots force knn(5) bootstrap 
 	mi unset 
-*** little value to this 
 
 * summarize results of imputation
 	tabulate 		mi_miss	
 	*** this binary = 1 for the full set of observations where plotsize is missing
 	tabstat 		gps selfreport plotsize plotsize_1_, ///
-					by(mi_miss) statistics(n mean min max) columns(statistics) longstub format(%9.3g) 
-	* 28 total 				
+					by(mi_miss) statistics(n mean min max) columns(statistics) longstub format(%9.3g) 			
 					
 * cannot do anyting about missing plot sizes from above 
 	list 			gps selfreport plotsize if missing(plotsize_1_), sep(0)
