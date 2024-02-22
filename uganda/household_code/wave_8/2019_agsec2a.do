@@ -60,7 +60,7 @@
 ***********************************************************************
 **#2 - merge location data
  **********************************************************************	
-	
+**#	/2019_gsec1.dta not found is returned. Lookingin onedrive file, I am not seeiung this in the refined folder so is this the wrong folder or do I need to do something else?
 * merge the location identification
 	merge m:1 hhid using "$export/2019_gsec1"
 	*** 995 unmatched from master
@@ -71,17 +71,17 @@
 
 	
 ************************************************************************
-* 3 - keeping cultivated land
+**# 3 - keeping cultivated land
 ************************************************************************
 
 * what was the primary use of the parcel
 	*** activity in the first season is recorded seperately from activity in the second season
-	tab 		 	a2aq11a 
+	tab 		 	s2aq11a 
 	*** activities include renting out, pasture, forest. cultivation, and other
 	*** we will only include plots used for annual or perennial crops
 	
-	keep			if a2aq11a == 1 | a2aq11a == 2
-	*** 431 observations deleted	
+	keep			if s2aq11a == 1 | s2aq11a == 2
+	*** 955 observations deleted
 
 	
 * **********************************************************************
