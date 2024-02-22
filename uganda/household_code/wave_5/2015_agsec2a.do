@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 21 Feb 24
+* Edited on: 22 Feb 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -16,7 +16,7 @@
 	* mdesc.ado
 
 * TO DO:
-	* check imputation results
+	* done
 
 ***********************************************************************
 **# 0 - setup
@@ -121,6 +121,19 @@
 * recode outlier to be 1/100
 	replace			plotsize = plotsize/100 if plotsize > 60
 	
+	sum 			selfreport, detail
+	*** mean 0.61, max 121, min 0.004
+	
+	sum				selfreport if selfreport < 60, detail
+	*** mean 0.576, max 20.2, min 0.004
+	
+	list			plotsize selfreport if selfreport > 60 & !missing(selfreport)
+	*** self reported value of 121 hectares seems unreasonable.
+	*** plotsize value is missing for this observation.
+	** dividing by a 100 makes it a more reasonable plotsize
+	
+	replace 		selfreport = selfreport/100 if selfreport > 60 & plotsize == . 
+	
 * check correlation between the two
 	corr 			plotsize selfreport
 	*** 0.88 correlation, high correlation between GPS and self reported
@@ -171,7 +184,7 @@
 	*** mean 0.59, max 9.3, min 0
 	
 	corr 			plotsize_1_ selfreport if plotsize == .
-	*** weak correlatio 0.27
+	*** strong correlation, 0.83
 	
 	replace 		plotsize = plotsize_1_ if plotsize == .
 	
