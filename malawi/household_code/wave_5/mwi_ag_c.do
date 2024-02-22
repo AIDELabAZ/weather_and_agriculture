@@ -124,6 +124,8 @@
 * manipulate variables for export
 	rename 			(plotsize plotsize_1_)(plotsize_raw plotsize)
 	label 			variable plotsize		"Plot Size (ha)"
+	
+	pwcorr 			plotsize gps selfreport 
 
 * restrict to variables of interest 
 	keep  			case_id HHID gardenid plotid plotsize
