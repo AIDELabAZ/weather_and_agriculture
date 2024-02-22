@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: reece
-* Edited on: Feb 21 2024
+* Edited on: Feb 22 2024
 * Edited by: reece
 * Stata v.18
 
@@ -16,8 +16,7 @@
 	* cleaned HH_SECA data
 
 * TO DO:
-	* merge regional identifiers
-	* impute missing values
+
 
 	
 ************************************************************************
@@ -119,75 +118,75 @@
 	
 * interrogating plotsize variables
 	count 		if plotsize_gps != . & plotsize_self != .
-	*** 2145 missing out of 3786
+	*** 1556 missing out of 1926
 	
 	pwcorr 		plotsize_gps plotsize_self
-	*** low correlation (0.0072)
+	*** low correlation (0.0026)
 	
 	replace 	plotsize_gps = . if plotsize_gps > 55
 	pwcorr		plotsize_gps plotsize_self
-	*** correlation much higher after dropping two outliers (0.7660)
+	*** correlation much higher after dropping two outliers (0.7335)
 	*** 2 replaced as missing
 	
 * inverstingating the high and low end of gps measurments
 	* high end
 		tab			plotsize_gps
 		sum			plotsize_gps, detail
-		*** mean = 1.189
-		*** 90% of obs < 2.6
+		*** mean = 1.33
+		*** 90% of obs < 2.9
 		
 		sort		plotsize_gps
-		sum 		plotsize_gps if plotsize_gps>2.6
-		*** 218 obs > 2.65
+		sum 		plotsize_gps if plotsize_gps>2.9
+		*** 159 obs > 2.9
 		
-		list		plotsize_gps plotsize_self if plotsize_gps>2.6 & ///
+		list		plotsize_gps plotsize_self if plotsize_gps>2.9 & ///
 						!missing(plotsize_gps), sep(0)
-		pwcorr		plotsize_gps plotsize_self if plotsize_gps>2.6 & ///
+		pwcorr		plotsize_gps plotsize_self if plotsize_gps>2.9 & ///
 						!missing(plotsize_gps)
-		*** corr = 0.6972 (pretty high correlation)
+		*** corr = 0.6439 (pretty high correlation)
 		
-		sum 		plotsize_gps if plotsize_gps>4.22
-		*** 109 obs > 4.22
+		sum 		plotsize_gps if plotsize_gps>4.60
+		*** 95% of obs < 4.60, 77 obs > 4.22
 		
 		list		plotsize_gps plotsize_self if plotsize_gps>4.22 & ///
 						!missing(plotsize_gps), sep(0)
 		pwcorr		plotsize_gps plotsize_self if plotsize_gps>4.22 & ///
 						!missing(plotsize_gps)
-		*** corr = 0.6420 
+		*** corr = 0.5944 
 		
 		count 		if plotsize_gps > 20 & plotsize_gps != .
-		*** 6 obs >= 20
+		*** 5 obs >= 20
 		
 		list		plotsize_gps plotsize_self if plotsize_gps>20 & ///
 						!missing(plotsize_gps), sep(0)
 		pwcorr		plotsize_gps plotsize_self if plotsize_gps>20 & ///
 						!missing(plotsize_gps)
-		*** corr at 0.2465
+		*** corr at 0.2894
 
 	* low end
 		tab			plotsize_gps
 		*hist		plotsize_gps if plotsize_gps < 0.5
 		sum			plotsize_gps, detail
 		*** mean = 1.189
-		*** 10% of obs < 0.069
+		*** 10% of obs < 0.085
 		
-		sum 		plotsize_gps if plotsize_gps<0.069
-		*** 221 obs < 0.069
+		sum 		plotsize_gps if plotsize_gps<0.085
+		*** 161 obs < 0.085
 		
-		list		plotsize_gps plotsize_self if plotsize_gps<0.069 & ///
+		list		plotsize_gps plotsize_self if plotsize_gps<0.085 & ///
 						!missing(plotsize_gps), sep(0)
-		pwcorr		plotsize_gps plotsize_self if plotsize_gps<0.069 & ///
+		pwcorr		plotsize_gps plotsize_self if plotsize_gps<0.085 & ///
 						!missing(plotsize_gps)
-		*** corr = 0.0015 (correlation very low)
+		*** corr = 0.0791 (correlation very low)
 		
-		sum 		plotsize_gps if plotsize_gps<0.036
-		*** 100 obs < 0.036
+		sum 		plotsize_gps if plotsize_gps<0.049
+		*** 88 obs < 0.049
 	
-		list		plotsize_gps plotsize_self if plotsize_gps<0.036 & ///
+		list		plotsize_gps plotsize_self if plotsize_gps<0.049 & ///
 						!missing(plotsize_gps), sep(0)
-		pwcorr		plotsize_gps plotsize_self if plotsize_gps<0.036 & ///
+		pwcorr		plotsize_gps plotsize_self if plotsize_gps<0.049 & ///
 						!missing(plotsize_gps)
-		*** corr = 0.0251
+		*** corr = 0.0346
 	
 	* dropping any '0' values, to be imputed later
 		replace 	plotsize_gps = . if plotsize_gps == 0
@@ -196,7 +195,7 @@
 		count		if plotsize_gps < 0.01 & plotsize_gps != .
 		list		plotsize_gps plotsize_self if plotsize_gps<0.01 & ///
 						!missing(plotsize_gps), sep(0)
-		*** 26 obs < 0.01
+		*** 16 obs < 0.01
 		*** all values equal 0.0040469 or 0.0080937 
 		*** meaning pre-conversion values of 0.01, or 0.02
 		*** I will not drop any low end values at this time
@@ -222,9 +221,9 @@
 	*** imputed 1554 values out of 1926 total obs
 	
 	sum				plotsize_self plotsize_gps	plotsize
-	*** self reported	:	mean 1.06 and s.d. 3.01
-	*** gps				:	mean 1.32 and s.d. 3.52
-	*** imputed			:	mean 1.27 and s.d. 3.25
+	*** self reported	:	mean 1.19 and s.d. 2.21
+	*** gps				:	mean 1.33 and s.d. 2.93
+	*** imputed			:	mean 1.35 and s.d. 2.84
 	
 	drop			if plotsize == . & plotsize_self ==.
 	*** no observations dropped
@@ -235,33 +234,30 @@
 * **********************************************************************
 	
 * keep what we want, get rid of the rest
-	keep		y4_hhid plotnum plot_id plotsize clusterid strataid ///
-					hhweight region district ward ea y4_rural
-	order		y4_hhid plotnum plot_id clusterid strataid hhweight ///
-					region district ward ea plotsize
+	keep		y5_hhid plotnum plot_id plotsize clusterid strataid ///
+					hhweight region district y5_rural
+	order		y5_hhid plotnum plot_id clusterid strataid hhweight ///
+					region district plotsize
 					
-* renaming and relabelling variables
-	lab var		y4_hhid "Unique Household Identification NPS Y4"
-	lab var		y4_rural "Cluster Type"
+* renaming and relabeling variables
+	lab var		y5_hhid "Unique Household Identification NPS Y4"
+	lab var		y5_rural "Cluster Type"
 	lab var		hhweight "Household Weights (Trimmed & Post-Stratified)"
 	lab var		plotnum "Plot ID Within household"
-	lab var		plot_id "Unquie Plot Identifier"
+	lab var		plot_id "Unique Plot Identifier"
 	lab var		plotsize "Plot size (ha), imputed"
 	lab var		clusterid "Unique Cluster Identification"
 	lab var		strataid "Design Strata"
 	lab var		region "Region Code"
 	lab var		district "District Code"
-	lab var		ward "Ward Code"
-	lab var		ea "Village / Enumeration Area Code"
 
 * prepare for export
-	isid			y4_hhid plotnum
+	isid			y5_hhid plotnum
 	compress
 	describe
 	summarize 
 	sort plot_id
-	customsave , idvar(plot_id) filename(AG_SEC2A.dta) path("`export'") ///
-		dofile(2014_AGSEC2A) user($user)
+	save 		"$export/2020_AGSEC2A.dta", replace
 
 * close the log
 	log	close
