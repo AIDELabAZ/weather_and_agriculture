@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 22 Feb 24
+* Edited on: 23 Feb 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -16,7 +16,7 @@
 	* mdesc.ado
 
 * TO DO:
-	* section 1 and beyond
+	* section 3 and beyond
 	
 
 ***********************************************************************
@@ -25,7 +25,7 @@
 
 * define paths	
 	global root 	 	"$data/household_data/uganda/wave_4/raw"  
-	global export		"$data/household_data/uganda/wave_3/refined"
+	global export		"$data/household_data/uganda/wave_4/refined"
 	global logout 		"$data/household_data/uganda/logs"
 	
 * open log	
@@ -39,10 +39,8 @@
 * import wave 4 season A
 	use 			"$root/agric/AGSEC3A.dta", clear
 	
-* unlike other waves, HHID is a numeric here
-	format 			%18.0g HHID
-	tostring		HHID, gen(hhid) format(%18.0g)
-	
+* rename variables 
+	rename			HHID hhid
 	rename			parcelID prcid
 	rename			plotID pltid
 
@@ -57,8 +55,9 @@
 ***********************************************************************	
 	
 * merge the location identification
-	merge m:1 		hhid using "`export'/2011_GSEC1"
-	*** 1054 unmatched from master
+	merge m:1 		hhid using "$export/2013_agsec1"
+	*** 101 unmatched from using
+	*** 7,550 matched
 	
 	drop if			_merge != 3
 	

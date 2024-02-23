@@ -28,8 +28,8 @@
 	global 	logout 		"$data/household_data/uganda/logs"
 	
 * open log	
-	cap log close
-	log using "$logout/2013_agsec2a", append
+	cap log 			close
+	log using 			"$logout/2013_agsec2a", append
 
 	
 ***********************************************************************

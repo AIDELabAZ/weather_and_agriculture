@@ -56,7 +56,7 @@
 ***********************************************************************
 
 	keep 			hh hhid region district subcounty parish ///
-						 wgt13 hhid_pnl rotate ea
+						 wgt13 hhid_pnl rotate ea 
 
 	compress
 	describe

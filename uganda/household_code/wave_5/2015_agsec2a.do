@@ -29,8 +29,8 @@
 
 
 * open log	
-	cap log close
-	log using "$logout/2015_agsec2a", append
+	cap 				log close
+	log using 			"$logout/2015_agsec2a", append
 
 	
 ***********************************************************************
