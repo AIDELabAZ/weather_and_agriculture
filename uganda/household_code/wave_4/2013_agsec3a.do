@@ -16,7 +16,8 @@
 	* mdesc.ado
 
 * TO DO:
-	* section 3 and beyond
+	* section 4 and beyond
+	* ask about imputation
 	
 
 ***********************************************************************
@@ -76,14 +77,14 @@
 	*** no observations
 	
 	replace			fert_any = 2 if fert_any == . 
-	*** 5 changes
+	*** 7 changes
 			
 	sum 			kilo_fert if fert_any == 1, detail
-	*** 34.41, min 0.25, max 800
+	*** mean 28.53, min 0.2, max 1,000
 
-* replace zero to missing, missing to zero, and outliers to mizzing
+* replace zero to missing, missing to zero, and outliers to missing
 	replace			kilo_fert = . if kilo_fert > 264
-	*** 3 outliers changed to missing
+	*** 2 outliers changed to missing
 
 * encode district to be used in imputation
 	encode 			district, gen (districtdstrng) 	
@@ -102,10 +103,10 @@
 	
 * how did impute go?	
 	sum 		kilo_fert_1_ if fert_any == 1, detail
-	*** max 200, mean 23.83, min 0.25
+	*** max 150, mean 20.71, min 0.2
 	
 	replace			kilo_fert = kilo_fert_1_ if fert_any == 1
-	*** 3 changed
+	*** 2 changed
 	
 	drop 			kilo_fert_1_ mi_miss
 	
