@@ -1,41 +1,43 @@
 * Project: WB Weather
-* Created on: Aug 2020
-* Created by: ek
-* Stata v.16
+* Created on: Feb 2024
+* Created by: rg
+* Edited on: 22 Feb 24
+* Edited by: rg
+* Stata v.18, mac
 
 * does
 	* fertilizer use
-	* reads Uganda wave 3 fertilizer and pest info (2011_AGSEC3A) for the 1st season
+	* reads Uganda wave 3 fertilizer and pest info (2015_AGSEC3A) for the 1st season
 	* 3A - 5A are questionaires for the first planting season
 	* 3B - 5B are questionaires for the second planting season
 
 * assumes
-	* customsave.ado
+	* access to raw data
 	* mdesc.ado
 
 * TO DO:
-	* complete
+	* section 1 and beyond
 	
 
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+***********************************************************************
+**# 0 - setup
+***********************************************************************
 
 * define paths	
-	loc root 		= "$data/household_data/uganda/wave_3/raw"  
-	loc export 		= "$data/household_data/uganda/wave_3/refined"
-	loc logout 		= "$data/household_data/uganda/logs"
+	global root 	"$data/household_data/uganda/wave_5/raw"  
+	global export 	"$data/household_data/uganda/wave_5/refined"
+	global logout 	"$data/household_data/uganda/logs"
 	
 * open log	
 	cap log 		close
-	log using 		"`logout'/2011_agsec3a", append
+	log using 		"$logout/2015_agsec3a", append
 	
-* **********************************************************************
-* 1 - import data and rename variables
-* **********************************************************************
+***********************************************************************
+**# 1 - import data and rename variables
+***********************************************************************
 
-* import wave 2 season A
-	use 			"`root'/2011_AGSEC3A.dta", clear
+* import wave 5 season A
+	use 			"$root/agric/AGSEC3A.dta", clear
 	
 * unlike other waves, HHID is a numeric here
 	format 			%18.0g HHID
@@ -50,9 +52,9 @@
 	isid 			hhid prcid pltid
 
 	
-* **********************************************************************
-* 2 - merge location data
-* **********************************************************************	
+***********************************************************************
+**# 2 - merge location data
+***********************************************************************	
 	
 * merge the location identification
 	merge m:1 		hhid using "`export'/2011_GSEC1"
@@ -61,9 +63,9 @@
 	drop if			_merge != 3
 	
 
-* **********************************************************************
-* 3 - fertilizer, pesticide and herbicide
-* **********************************************************************
+***********************************************************************
+**# 3 - fertilizer, pesticide and herbicide
+***********************************************************************
 
 * fertilizer use
 	rename 		a3aq13 fert_any
@@ -112,9 +114,9 @@
 	replace			fert_any = 0 if fert_any == 2
 
 	
-* **********************************************************************
-* 4 - pesticide & herbicide
-* **********************************************************************
+***********************************************************************
+**# 4 - pesticide & herbicide
+***********************************************************************
 
 * pesticide & herbicide
 	tab 		a3aq22
@@ -128,9 +130,9 @@
 	replace		herb_any = 0 if herb_any == .
 
 	
-* **********************************************************************
-* 5 - labor 
-* **********************************************************************
+***********************************************************************
+**# 5 - labor 
+***********************************************************************
 	* per Palacios-Lopez et al. (2017) in Food Policy, we cap labor per activity
 	* 7 days * 13 weeks = 91 days for land prep and planting
 	* 7 days * 26 weeks = 182 days for weeding and other non-harvest activities
@@ -191,9 +193,9 @@
 	*** mean 101.45, max 3080, min 0	
 
 	
-* **********************************************************************
-* 6 - end matter, clean up to save
-* **********************************************************************
+***********************************************************************
+**# 6 - end matter, clean up to save
+***********************************************************************
 
 	keep hhid prcid pltid fert_any kilo_fert labor_days region ///
 		district county subcounty parish pest_any herb_any
