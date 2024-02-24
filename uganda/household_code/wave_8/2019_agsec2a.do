@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 16 Feb 24
+* Edited on: 23 Feb 24
 * Edited by: KCD
 * Stata v.18, mac
 
@@ -60,9 +60,9 @@
 ***********************************************************************
 **#2 - merge location data
  **********************************************************************	
-**#	/2019_gsec1.dta not found is returned. Lookingin onedrive file, I am not seeiung this in the refined folder so is this the wrong folder or do I need to do something else?
 * merge the location identification
 	merge m:1 hhid using "$export/2019_gsec1"
+	
 	*** 995 unmatched from master
 	*** that means 995 observations did not have location data
 	*** no option at this stage except to drop all unmatched
