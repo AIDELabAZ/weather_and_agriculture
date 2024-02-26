@@ -38,6 +38,8 @@
 
 * import wave 4 season A
 	use "$root/agric/AGSEC2A.dta", clear
+	
+	compress
 		
 * Rename ID variables
 	rename			parcelID prcid
