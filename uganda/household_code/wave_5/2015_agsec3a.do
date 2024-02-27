@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 23 Feb 24
+* Edited on: 27 Feb 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -16,7 +16,7 @@
 	* mdesc.ado
 
 * TO DO:
-	* section 4 and beyond
+	* section 5 and beyond
 	* ask about imputation 
 	
 
@@ -122,7 +122,7 @@
 
 * pesticide & herbicide
 	tab 		a3aq22
-	*** 5.08 percent of the sample used pesticide or herbicide
+	*** 3.98 percent of the sample used pesticide or herbicide
 	tab 		a3aq23
 	
 	gen 		pest_any = 1 if a3aq23 != . & a3aq23 != 4 & a3aq23 != 96

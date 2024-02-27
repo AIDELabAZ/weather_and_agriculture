@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 23 Feb 24
+* Edited on: 27 Feb 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -16,8 +16,8 @@
 	* mdesc.ado
 
 * TO DO:
-	* section 4 and beyond
-	* ask about imputation
+	* section 6
+	* ask about days_worked variable and missing values
 	
 
 ***********************************************************************
@@ -120,7 +120,7 @@
 
 * pesticide & herbicide
 	tab 		a3aq22
-	*** 5.08 percent of the sample used pesticide or herbicide
+	*** 4.83 percent of the sample used pesticide or herbicide
 	tab 		a3aq23
 	
 	gen 		pest_any = 1 if a3aq23 != . & a3aq23 != 4 & a3aq23 != 96
@@ -143,23 +143,33 @@
 	* includes all labor tasks performed on a plot during the first cropp season
 
 * family labor	
+* in this wave, it is asked about the specific household members who worked on the plot rather than the total number of members who did
+
+* create a new variable counting how many household members worked on the plot
+	egen 			household_count = rownonmiss(a3aq33a a3aq33b ///
+					a3aq33c a3aq33d a3aq33e)
+	
 * make a binary if they had family work
-	gen				fam = 1 if a3aq31 > 0
+	gen				fam = 1 if household_count > 0
 	
 * how many household members worked on this plot?
-	tab 			a3aq31
-	replace			a3aq31 = 12 if a3aq31 == 25000
-	*** family labor is from 0 - 12 people
+	tab 			household_count
+	*** family labor is from 0 - 5 people
 	
-	sum 			a3aq32, detail
-	*** mean 32.8, min 1, max 300
+* hours worked on plot are recorded per household member not total
+* create variable of total days worked on plot
+	egen			days_worked = rowtotal (a3aq33a_1 a3aq33b_1 ///
+					a3aq33c_1 a3aq33d_1 a3aq33e_1)
+
+	sum 			days_worked, detail
+	*** mean 42.01, min 0, max 450
 	*** don't need to impute any values
 	
 * fam lab = number of family members who worked on the farm*days they worked	
-	gen 			fam_lab = a3aq31*a3aq32
+	gen 			fam_lab = household_count*days_worked
 	replace			fam_lab = 0 if fam_lab == .
 	sum				fam_lab
-	*** max 3000, mean 9780, min 0
+	*** max 2250, mean 134.7, min 0
 	
 * hired labor 
 * hired men days
@@ -190,7 +200,7 @@
 	gen				labor_days = fam_lab + hired_men + hired_women
 	
 	sum 			labor_days
-	*** mean 101.45, max 3080, min 0	
+	*** mean 137.59, max 2,250, min 0	
 
 	
 ***********************************************************************
