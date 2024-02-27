@@ -37,7 +37,7 @@
 ***********************************************************************
 
 * import wave 4 season A
-	use "$root/agric/AGSEC2A.dta", clear
+	use "$root/agric/agsec2a.dta", clear
 	
 	compress
 		
