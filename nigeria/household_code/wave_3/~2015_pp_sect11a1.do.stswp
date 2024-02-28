@@ -27,8 +27,8 @@
 	loc 	logout  = 		"$data/household_data/nigeria/logs"
 
 * open log	
-	*cap log close
-	*log using "`logout'/ph_sect11a1", append
+	//cap log close
+	//log using "`logout'/ph_sect11a1", append
 
 * **********************************************************************
 * 1 - determine plot size
@@ -206,6 +206,6 @@
 			path("`export'/`folder'") dofile(ph_sect11a1) user($user)
 
 * close the log
-	*log	close
+	//log	close
 
 /* END */

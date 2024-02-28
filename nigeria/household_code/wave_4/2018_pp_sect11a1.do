@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: jt
-* Edited on: 20 Feb 2024
+* Edited on: 27 Feb 2024
 * Edited by: jt
 * Stata v.18
 
@@ -16,15 +16,20 @@
 	* land-conversion.dta conversion file
 
 * TO DO:
-	* everything
-	* completed section 1, other than plot_unit recoding
-	* completed section 2 up through line 101 (count)
-	
-	* troubleshoot log issue on Jacob's machine
+	* completed, barring questions
 	
 	* QUESTIONS
 	* 1. For the variable plot_unit, the survey no longer has a number 4-plots
 	* 	 option. Should we recode?
+	* 2. 4,202 are missing plot_size_GPS, representing a larger proportion of
+	*	 the sample, is this okay? (19% for wave 3, 38% for wave 4)
+	* 3. High plot size GPS/SR correlation is incredibly low compared to wave
+	*	 3 (0.0647 < 0.2911), couldn't figure out why just from looking. Same
+	*	 for small values, and the correlation sign changed w3 -> w4.
+	* 4. There are some format changes at the end when data is aggregated, is
+	*	 this okay?
+	* 5. Any fix for the log issue?
+	* 6. Mentioned we are not using customsave anymore, how to fix the end?
 	
 ***********************************************************************
 **# 0 - setup
@@ -101,20 +106,20 @@
 
 	* convert GPS  to hectares
 	count if plot_size_GPS == .
-	*** 1,125 missing GPS
+	*** 4,202 missing GPS
 	gen 			plot_size_2 = .
 	replace 		plot_size_2 = plot_size_GPS*sqmcon
 	rename 			plot_size_2 plot_size_hec_GPS
 	lab	var			plot_size_hec_GPS "GPS measured area of plot in hectares"
 
 	count if plot_size_hec_GPS != .
-	*** these 1125 observations have no value of GPS given so cannot be converted 
+	*** these 4202 observations have no value of GPS given so cannot be converted 
 	*** will impute missing
 	count if plot_size_hec_GPS == .
-	*** 4,699 observations for plot size in hectares GPS 
+	*** 6,874 observations for plot size in hectares GPS 
 	
 	pwcorr 			plot_size_hec_SR plot_size_hec_GPS
-	*** very low correlation = 0.0198 between selfreported plot size and GPS
+	*** very low correlation = 0.017 between selfreported plot size and GPS
 
 * check correlation within +/- 3sd of mean (GPS)
 	sum 			plot_size_hec_GPS, detail
@@ -128,29 +133,30 @@
 	pwcorr 			plot_size_hec_SR plot_size_hec_GPS if ///
 						inrange(plot_size_hec_GPS,`r(p50)'-(3*`r(sd)'),`r(p50)'+(3*`r(sd)')) & ///
 						inrange(plot_size_hec_SR,`r(p50)'-(3*`r(sd)'),`r(p50)'+(3*`r(sd)'))
-	*** correlation between self reported and GPS for values within +/- 3 sd's of GPS and SR is higher 0.1442
+	*** correlation between self reported and GPS for values within +/- 3 sd's of GPS and SR is higher 0.3929
+	*** much higher than wave 3 correlation (0.1442 -> 0.3929)
 
 * examine larger plot sizes
 	tab				plot_size_hec_GPS 	if 	plot_size_hec_GPS > 2
-	*** 164 GPS which are greater than 2
+	*** 308 GPS which are greater than 2
 	tab				plot_size_hec_GPS 	if 	plot_size_hec_GPS > 20
-	*** but none which are greater than 20 
+	*** only one is greater than 20 
 
 	* correlation at higher plot sizes
 	list 			plot_size_hec_GPS plot_size_hec_SR 	if ///
 						plot_size_hec_GPS > 3 & !missing(plot_size_hec_GPS), sep(0)
 	pwcorr 			plot_size_hec_GPS plot_size_hec_SR 	if 	///
 						plot_size_hec_GPS > 3 & !missing(plot_size_hec_GPS)
-	*** correlation at higher plot sizes is higher than correlation among all values - 0.2911 
+	*** much lower correlation at higher plot sizes than correlation among all values - 0.0647
 
 * examine smaller plot sizes
 	tab				plot_size_hec_GPS 	if 	plot_size_hec_GPS < 0.1
-	*** 1,056  below 0.1
+	*** 1,801  below 0.1
 	tab				plot_size_hec_GPS 	if 	plot_size_hec_GPS < 0.05
-	*** 602 below 0.5
+	*** 980 below 0.5
 	tab				plot_size_hec_GPS 	if 	plot_size_hec_GPS < 0.005
-	*** 46 below 0.005
-	*** the smallest plot is 6 square meters, could feasibly be a very small vegetable patch
+	*** 40 below 0.005
+	*** the smallest plot is 4 square meters, could feasibly be a very small vegetable patch
 	*** all small values are reasonable - give GPS sensing abilities 
 
 *correlation at lower plot sizes
@@ -158,17 +164,19 @@
 						plot_size_hec_GPS < 0.01, sep(0)
 	pwcorr 			plot_size_hec_GPS plot_size_hec_SR 	if ///
 						plot_size_hec_GPS < 0.01
-	*** higher correlation between GPS and SR plotsize, correlation = -0.3175
+	*** higher correlation between GPS and SR plotsize, correlation = 0.1086
+	*** still comparatively low to wave 3, and relationship changed sign
 
 	* compare GPS and SR
 * examine GPS 
 	sum 			plot_size_hec_GPS
 	sum 			plot_size_hec_SR
 	*** GPS tending to be smaller than self-reported - and more realistic
-	*** as in wave 2, will not include SR in imputation - only will include GPS 
+	*** as in wave 3, will not include SR in imputation - only will include GPS 
 	
 	*hist	 		plot_size_hec_GPS 	if 	plot_size_hec_GPS < 0.3
 	*hist	 		plot_size_hec_GPS 	if 	plot_size_hec_GPS < 0.2
+	*** distributions are very close to the shape of wave 3 distributions
 	*** roughly uniform distribution until 0.5 to 0.3 hectares
 	*** distribution looks okay! 
 
@@ -182,7 +190,7 @@
 	mi unset
 
 * look at the data 
-* this piece of code gives three values to consider: SR, GPS before conversion, and GPS after conversion (indicated with _1_) 
+* this piece of code gives three values to consider: SR, GPS before 	conversion, and GPS after conversion (indicated with _1_) 
 	tab				mi_miss
 	tabstat 		plot_size_hec_GPS plot_size_hec_SR plot_size_hec_GPS_1_, ///
 						by(mi_miss) statistics(n mean min max) columns(statistics) ///
@@ -218,6 +226,6 @@
 			path("$export/`folder'") dofile(ph_sect11a1) user($user)
 
 * close the log
-	log	close
+	//log	close
 
 /* END */
