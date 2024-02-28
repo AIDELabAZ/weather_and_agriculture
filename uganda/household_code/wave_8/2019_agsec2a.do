@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 23 Feb 24
+* Edited on: 27 Feb 24
 * Edited by: KCD
 * Stata v.18, mac
 
@@ -92,17 +92,17 @@
 
 * summarize plot size
 	sum 			plotsizeGPS
-	***	mean 2.18, max 75, min .01
+	***	mean 1.38, max 19.86, min .01
 	*** no plotsizes that are zero
 	
 	sum				plotsizeSR
-	*** mean 2.36, max 100, min .01
+	*** mean 1.48, max 50, min .01
 
 * how many missing values are there?
 	mdesc 			plotsizeGPS
-	*** 1,585 missing, 51% of observations
+	*** 1,773 missing, 56.61% of observations
 
-* convert acres to square meters
+**# convert acres to square meters
 	gen				plotsize = plotsizeGPS*0.404686
 	label var       plotsize "Plot size (ha)"
 	
