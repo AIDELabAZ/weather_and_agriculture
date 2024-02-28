@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 27 Feb 24
+* Edited on: 28 Feb 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -16,8 +16,7 @@
 	* mdesc.ado
 
 * TO DO:
-	* section 6
-	* ask about days_worked variable and missing values
+	* done
 	
 
 ***********************************************************************
@@ -160,7 +159,7 @@
 * create variable of total days worked on plot
 	egen			days_worked = rowtotal (a3aq33a_1 a3aq33b_1 ///
 					a3aq33c_1 a3aq33d_1 a3aq33e_1)
-
+	
 	sum 			days_worked, detail
 	*** mean 42.01, min 0, max 450
 	*** don't need to impute any values
@@ -207,16 +206,16 @@
 **# 6 - end matter, clean up to save
 ***********************************************************************
 
-	keep hhid prcid pltid fert_any kilo_fert labor_days region ///
-		district county subcounty parish pest_any herb_any
+	keep 			hhid hhid_pnl prcid region district subcounty ///
+					parish wgt13 ea rotate pest_any herb_any labor_days ///
+					fert_any kilo_fert
 
 	compress
 	describe
 	summarize
 
 * save file
-		customsave , idvar(hhid) filename("2011_AGSEC3A.dta") ///
-			path("`export'") dofile(2011_AGSEC3A) user($user)
+	save 			"$export/2013_agsec3a.dta", replace
 
 * close the log
 	log	close

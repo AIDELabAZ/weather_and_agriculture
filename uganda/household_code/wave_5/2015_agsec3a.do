@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 27 Feb 24
+* Edited on: 28 Feb 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -16,8 +16,7 @@
 	* mdesc.ado
 
 * TO DO:
-	* section 6
-	* ask about imputation (fertilizer and labor?)
+	* done
 	
 
 ***********************************************************************
@@ -203,16 +202,16 @@
 **# 6 - end matter, clean up to save
 ***********************************************************************
 
-	keep hhid prcid pltid fert_any kilo_fert labor_days region ///
-		district county subcounty parish pest_any herb_any
+	keep 			hhid hh_agric prcid region district subcounty ///
+					parish  wgt15 hwgt_W4_W5 ///
+					ea rotate fert_any kilo_fert labor_days pest_any herb_any
 
 	compress
 	describe
 	summarize
 
 * save file
-		customsave , idvar(hhid) filename("2011_AGSEC3A.dta") ///
-			path("`export'") dofile(2011_AGSEC3A) user($user)
+	save 			"$export/2015_agsec3a.dta", replace
 
 * close the log
 	log	close
