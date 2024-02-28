@@ -15,7 +15,7 @@
 	* distinct.ado
 
 * TO DO:
-	* labor imutation (how did imputation go)
+	* done
 
 	
 * **********************************************************************
@@ -215,7 +215,6 @@
 
 * summarize hired individual labor to look for outliers
 	sum				plant* other* hrvst* if ag3a_73 == 1
-	*** unreasonable outliers here (plant_m = 5000 harvest_w = 6000)
 
 * replace outliers with missing
 	replace			plant_w = . if plant_w > 90  // 0 changes
@@ -258,10 +257,8 @@
 * how did the imputation go?
 	replace			plant_w = plant_w_1_ // 0 changes
 	replace			hrvst_w = hrvst_w_2_ // 0 changes
-	replace			plant_m = plant_m_3_ // _ changes
-	replace			hrvst_m = hrvst_m_4_ // _ changes
-	drop			mi_miss1- hrvst_m_4_
-	*** error "plant_m_3" not found. not sure what is missing in my code here
+	drop			mi_miss1- hrvst_m_2_
+
 
 * generate total hired labor days
 	egen			hired_labor_days = rsum(plant_w plant_m other_w ///
@@ -276,18 +273,18 @@
 * **********************************************************************
 
 * keep what we want, get rid of the rest
-	keep			y4_hhid plotnum plot_id irrigated fert_any kilo_fert ///
+	keep			y5_hhid plotnum plot_id irrigated fert_any kilo_fert ///
 						pesticide_any herbicide_any labor_days plotnum ///
-						region district ward ea y4_rural clusterid strataid ///
+						region district y5_rural clusterid strataid ///
 						hhweight
-	order			y4_hhid plotnum plot_id
+	order			y5_hhid plotnum plot_id
 	
 * renaming and relabelling variables
-	lab var			y4_hhid "Unique Household Identification NPS Y4"
-	lab var			y4_rural "Cluster Type"
+	lab var			y5_hhid "Unique Household Identification NPS Y5"
+	lab var			y5_rural "Cluster Type"
 	lab var			hhweight "Household Weights (Trimmed & Post-Stratified)"
 	lab var			plotnum "Plot ID Within household"
-	lab var			plot_id "Unquie Plot Identifier"
+	lab var			plot_id "Unique Plot Identifier"
 	lab var			clusterid "Unique Cluster Identification"
 	lab var			strataid "Design Strata"
 	lab var			region "Region Code"
@@ -299,13 +296,12 @@
 	lab var			kilo_fert "Fertilizer Use (kg), Imputed"
 	
 * prepare for export
-	isid			y4_hhid plotnum
+	isid			y5_hhid plotnum
 	compress
 	describe
 	summarize 
 	sort plot_id
-	customsave , idvar(plot_id) filename(AG_SEC3A.dta) path("`export'") ///
-		dofile(2014_AGSEC3A) user($user)
+	save 		"$export/2020_AGSEC3A.dta", replace
 
 * close the log
 	log	close
