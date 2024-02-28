@@ -15,8 +15,7 @@
 	* distinct.ado
 
 * TO DO:
-	* impute fertilizer
-	* everything else
+	* labor imutation (how did imputation go)
 
 	
 * **********************************************************************
@@ -105,7 +104,7 @@
 	sum				kilo_fert, detail
 	replace			kilo_fert = . if kilo_fert > `r(p50)'+(3*`r(sd)')
 	sum				kilo_fert, detail
-	*** replaced __ values, max is now __
+	*** replaced 48 values, max is now 130
 	
 * impute missing values
 	mi set 			wide 	// declare the data to be wide.
@@ -123,7 +122,7 @@
 						longstub format(%9.3g) 
 	replace			kilo_fert = kilo_fert_1_
 	drop			kilo_fert_1_
-	*** imputed 40 values out of 3,930 total observations	
+	*** imputed 46 values out of 2878 total observations	
 
 	
 * ***********************************************************************
@@ -160,56 +159,71 @@
 * since we can't match household members we deal with each activity seperately
 
 *change missing to zero and then back again
-	mvdecode		ag3a_72_1 ag3a_72_2 ag3a_72_3 ag3a_72_4 ///
-						ag3a_72_5 ag3a_72_6 ag3a_72_7 ag3a_72_8 ag3a_72_9 ///
-						ag3a_72_10 ag3a_72_11 ag3a_72_12 ag3a_72_13 ag3a_72_14 ///
-						ag3a_72_15 ag3a_72_16 ag3a_72_17 ag3a_72_18, mv(0)
+		mvdecode		ag3a_72c_1 ag3a_72c_2 ag3a_72c_3 ag3a_72c_4 ///
+						ag3a_72c_5 ag3a_72c_6 ag3a_72c_7 ag3a_72c_8 ag3a_72c_9 ag3a_72c_10 ///
+						ag3a_72g_1 ag3a_72g_2 ag3a_72g_3 ag3a_72g_4 ///
+						ag3a_72g_5 ag3a_72g_6 ag3a_72g_7 ag3a_72g_8 ag3a_72g_9 ag3a_72g_10 ///
+						ag3a_72k_1 ag3a_72k_2 ag3a_72k_3 ag3a_72k_4 ///
+						ag3a_72k_5 ag3a_72k_6 ag3a_72k_7 ag3a_72k_8 ag3a_72k_9 ag3a_72k_10, mv(0)
 
-	mvencode		ag3a_72_1 ag3a_72_2 ag3a_72_3 ag3a_72_4 ///
-						ag3a_72_5 ag3a_72_6 ag3a_72_7 ag3a_72_8 ag3a_72_9 ///
-						ag3a_72_10 ag3a_72_11 ag3a_72_12 ag3a_72_13 ag3a_72_14 ///
-						ag3a_72_15 ag3a_72_16 ag3a_72_17 ag3a_72_18, mv(0)
-	*** this allows us to impute only the variables we change to missing				
+		mvencode		ag3a_72c_1 ag3a_72c_2 ag3a_72c_3 ag3a_72c_4 ///
+						ag3a_72c_5 ag3a_72c_6 ag3a_72c_7 ag3a_72c_8 ag3a_72c_9 ag3a_72c_10 ///
+						ag3a_72g_1 ag3a_72g_2 ag3a_72g_3 ag3a_72g_4 ///
+						ag3a_72g_5 ag3a_72g_6 ag3a_72g_7 ag3a_72g_8 ag3a_72g_9 ag3a_72g_10 ///
+						ag3a_72k_1 ag3a_72k_2 ag3a_72k_3 ag3a_72k_4 ///
+						ag3a_72k_5 ag3a_72k_6 ag3a_72k_7 ag3a_72k_8 ag3a_72k_9 ag3a_72k_10, mv(0)
+						
+	*** this allows us to impute only the variables we change to missing
+	*** in wave6 there are 10 members (wave4 had 6), however basic info doc says there should be 6 members here as well- revisit
 						
 * summarize household individual labor for land prep to look for outliers
-	sum				ag3a_72_1 ag3a_72_2 ag3a_72_3 ag3a_72_4 ag3a_72_5 ag3a_72_6
-	*** no obs > 90, one = 90
+	sum				ag3a_72c_1 ag3a_72c_2 ag3a_72c_3 ag3a_72c_4 ///
+						ag3a_72c_5 ag3a_72c_6 ag3a_72c_7 ag3a_72c_8 ag3a_72c_9 ag3a_72c_10
+	*** no obs > 92, two obs = 92
 
 * summarize household individual labor for weeding/ridging to look for outliers
-	sum				ag3a_72_7 ag3a_72_8 ag3a_72_9 ag3a_72_10 ag3a_72_11 ag3a_72_12
-	*** no obs > 90, one = 90
+	sum				ag3a_72g_1 ag3a_72g_2 ag3a_72g_3 ag3a_72g_4 ///
+						ag3a_72g_5 ag3a_72g_6 ag3a_72g_7 ag3a_72g_8 ag3a_72g_9 ag3a_72g_10 
+	*** no obs > 90, two obs = 90
 	
 * summarize household individual labor for harvest to look for outliers
-	sum				ag3a_72_13 ag3a_72_14 ag3a_72_15 ag3a_72_16 ag3a_72_17 ag3a_72_18
-	*** no obs > 90
+	sum				ag3a_72k_1 ag3a_72k_2 ag3a_72k_3 ag3a_72k_4 ///
+						ag3a_72k_5 ag3a_72k_6 ag3a_72k_7 ag3a_72k_8 ag3a_72k_9 ag3a_72k_10
+	*** no obs > 144, one obs = 144
+	*** four obs = 120
+	*** seems large compared to other labor variables and wave4
 	
 * no imputation necessary as no values are dropped
 	
 * compiling labor inputs
-	egen			hh_labor_days = rsum(ag3a_72_1 ag3a_72_2 ag3a_72_3 ag3a_72_4 ///
-						ag3a_72_5 ag3a_72_6 ag3a_72_7 ag3a_72_8 ag3a_72_9 ///
-						ag3a_72_10 ag3a_72_11 ag3a_72_12 ag3a_72_13 ag3a_72_14 ///
-						ag3a_72_15 ag3a_72_16 ag3a_72_17 ag3a_72_18)
+	egen			hh_labor_days = rsum(ag3a_72c_1 ag3a_72c_2 ag3a_72c_3 ag3a_72c_4 ///
+						ag3a_72c_5 ag3a_72c_6 ag3a_72c_7 ag3a_72c_8 ag3a_72c_9 ag3a_72c_10 ///
+						ag3a_72g_1 ag3a_72g_2 ag3a_72g_3 ag3a_72g_4 ///
+						ag3a_72g_5 ag3a_72g_6 ag3a_72g_7 ag3a_72g_8 ag3a_72g_9 ag3a_72g_10 ///
+						ag3a_72k_1 ag3a_72k_2 ag3a_72k_3 ag3a_72k_4 ///
+						ag3a_72k_5 ag3a_72k_6 ag3a_72k_7 ag3a_72k_8 ag3a_72k_9 ag3a_72k_10)
+	*** seems pretty comparable to wave4
+	*** however there are many missing obs (989) compared to wave4 (122)
 
 * generate hired labor by gender and activity
-	gen				plant_w = ag3a_74_1
-	gen				plant_m = ag3a_74_2
-	gen				other_w = ag3a_74_5
-	gen				other_m = ag3a_74_6
-	gen				hrvst_w = ag3a_74_13
-	gen				hrvst_m = ag3a_74_14
+	gen				plant_w = ag3a_74_1a
+	gen				plant_m = ag3a_74_1b
+	gen				other_w = ag3a_74_2a
+	gen				other_m = ag3a_74_2b
+	gen				hrvst_w = ag3a_74_3a
+	gen				hrvst_m = ag3a_74_3b
 
 * summarize hired individual labor to look for outliers
 	sum				plant* other* hrvst* if ag3a_73 == 1
+	*** unreasonable outliers here (plant_m = 5000 harvest_w = 6000)
 
 * replace outliers with missing
-	replace			plant_w = . if plant_w > 90  // 1 change
+	replace			plant_w = . if plant_w > 90  // 0 changes
 	replace			plant_m = . if plant_m > 90 // 1 change
-	replace			other_w = . if other_w > 181
-	replace			other_m = . if other_m > 181 
-	replace			hrvst_w = . if hrvst_w > 90 // 2 changes
-	replace			hrvst_m = . if hrvst_m > 90 // 1 change
-	*** only 5 values replaced
+	replace			other_w = . if other_w > 181 // 0 changes
+	replace			other_m = . if other_m > 181 // 0 changes
+	replace			hrvst_w = . if hrvst_w > 90 // 1 change
+	replace			hrvst_m = . if hrvst_m > 90 // 0 changes
 
 * impute missing values (need to do it for men and women's planting and harvesting)
 	mi set 			wide 	// declare the data to be wide.
@@ -217,41 +231,37 @@
 	
 	* impute women's planting labor
 		mi register		imputed plant_w // identify kilo_fert as the variable being imputed
-		sort			y4_hhid plotnum, stable // sort to ensure reproducability of results
+		sort			y5_hhid plotnum, stable // sort to ensure reproducability of results
 		mi impute 		pmm plant_w i.uq_dist if ag3a_73 == 1, add(1) rseed(245780) ///
 							noisily dots force knn(5) bootstrap
 	
 	* impute women's harvest labor
 		mi register		imputed hrvst_w // identify kilo_fert as the variable being imputed
-		sort			y4_hhid plotnum, stable // sort to ensure reproducability of results
+		sort			y5_hhid plotnum, stable // sort to ensure reproducability of results
 		mi impute 		pmm hrvst_w i.uq_dist if ag3a_73 == 1, add(1) rseed(245780) ///
 							noisily dots force knn(5) bootstrap
 
 	* impute men's planting labor
 		mi register		imputed plant_m // identify kilo_fert as the variable being imputed
-		sort			y4_hhid plotnum, stable // sort to ensure reproducability of results
+		sort			y5_hhid plotnum, stable // sort to ensure reproducability of results
 		mi impute 		pmm plant_m i.uq_dist if ag3a_73 == 1, add(1) rseed(245780) ///
 							noisily dots force knn(5) bootstrap
 	
 	* impute men's harvest labor
 		mi register		imputed hrvst_m // identify kilo_fert as the variable being imputed
-		sort			y4_hhid plotnum, stable // sort to ensure reproducability of results
+		sort			y5_hhid plotnum, stable // sort to ensure reproducability of results
 		mi impute 		pmm hrvst_m i.uq_dist if ag3a_73 == 1, add(1) rseed(245780) ///
 							noisily dots force knn(5) bootstrap
 							
 	mi 				unset
 	
 * how did the imputation go?
-	replace			plant_w = plant_w_1_ // 6 changes
-	replace			hrvst_w = hrvst_w_2_ // 6 changes
-	replace			plant_m = plant_m_3_ // 3 changes
-	replace			hrvst_m = hrvst_m_4_ // 4 changes
+	replace			plant_w = plant_w_1_ // 0 changes
+	replace			hrvst_w = hrvst_w_2_ // 0 changes
+	replace			plant_m = plant_m_3_ // _ changes
+	replace			hrvst_m = hrvst_m_4_ // _ changes
 	drop			mi_miss1- hrvst_m_4_
-	*** why so many changes?
-	*** seems like more than 5 imputations are happening maybe?
-	*** Wv3 has a total of 2 changes for three imputed values
-	*** are these the right imputed variabes for each var? I think so...
-	*** what am I missing?
+	*** error "plant_m_3" not found. not sure what is missing in my code here
 
 * generate total hired labor days
 	egen			hired_labor_days = rsum(plant_w plant_m other_w ///
@@ -282,8 +292,6 @@
 	lab var			strataid "Design Strata"
 	lab var			region "Region Code"
 	lab var			district "District Code"
-	lab var			ward "Ward Code"
-	lab var			ea "Village / Enumeration Area Code"
 	lab var			labor_days "Total Labor (days), Imputed"
 	lab var			irrigated "Is plot irrigated?"
 	lab var			pesticide_any "Was Pesticide Used?"
