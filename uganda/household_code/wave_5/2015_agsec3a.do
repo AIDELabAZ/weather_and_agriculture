@@ -16,8 +16,8 @@
 	* mdesc.ado
 
 * TO DO:
-	* section 5 and beyond
-	* ask about imputation 
+	* section 6
+	* ask about imputation (fertilizer and labor?)
 	
 
 ***********************************************************************
@@ -146,22 +146,26 @@
 
 * family labor	
 * make a binary if they had family work
-	gen				fam = 1 if a3aq31 > 0
+	gen				fam = 1 if a3aq33 > 0
 	
 * how many household members worked on this plot?
-	tab 			a3aq31
-	replace			a3aq31 = 12 if a3aq31 == 25000
-	*** family labor is from 0 - 12 people
+	tab 			a3aq33
+	*** family labor is from 0 - 15 people
 	
-	sum 			a3aq32, detail
-	*** mean 32.8, min 1, max 300
+* hours worked on plot are recorded per household member not total
+* create variable of total days worked on plot
+	egen			days_worked = rowtotal (a3aq33a_1 a3aq33b_1 ///
+					a3aq33c_1 a3aq33d_1 a3aq33e_1)
+	
+	sum 			days_worked, detail
+	*** mean 41.33, min 0, max 300
 	*** don't need to impute any values
 	
 * fam lab = number of family members who worked on the farm*days they worked	
-	gen 			fam_lab = a3aq31*a3aq32
+	gen 			fam_lab = a3aq33*days_worked
 	replace			fam_lab = 0 if fam_lab == .
 	sum				fam_lab
-	*** max 3000, mean 9780, min 0
+	*** max 1490, mean 133.75, min 0
 	
 * hired labor 
 * hired men days
@@ -192,7 +196,7 @@
 	gen				labor_days = fam_lab + hired_men + hired_women
 	
 	sum 			labor_days
-	*** mean 101.45, max 3080, min 0	
+	*** mean 136.65, max 1,538, min 0	
 
 	
 ***********************************************************************
