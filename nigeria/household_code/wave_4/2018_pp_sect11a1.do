@@ -1,15 +1,15 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: jt
-* Edited on: 27 Feb 2024
-* Edited by: jt
+* Edited on: 29 Feb 2024
+* Edited by: alj
 * Stata v.18
 
 * does
 	* reads in Nigeria, WAVE 4 (2018-2019) POST PLANTING, NIGERIA AG SECTA1
 	* determines primary and secondary crops, cleans plot size (hecatres)
-	* outputs clean data file ready for combination with wave 2 plot data
-	* outputs clean data file ready for combination with wave 3 hh data
+	* outputs clean data file ready for combination with wave 4 plot data
+	* outputs clean data file ready for combination with wave 4 hh data
 
 * assumes
 	* access to the raw data
@@ -212,9 +212,9 @@
 	keep 			hhid zone state lga hhid ea plotid plotsize
 
 * create unique household-plot identifier
-	sort				hhid plotid
-	egen				plot_id = group(hhid plotid)
-	lab var				plot_id "unique plot identifier"
+	sort			hhid plotid
+	egen			plot_id = group(hhid plotid)
+	lab var			plot_id "unique plot identifier"
 
 	compress
 	describe
@@ -222,10 +222,9 @@
 
 
 * save file
-		customsave , idvar(hhid) filename("ph_sect11a1.dta") ///
-			path("$export/`folder'") dofile(ph_sect11a1) user($user)
+	save 			"ph_sect11a1.dta", replace 
 
 * close the log
-	//log	close
+	log	close
 
 /* END */
