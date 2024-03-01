@@ -1,22 +1,22 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 27 Feb 24
+* Edited on: 29 Feb 24
 * Edited by: KCD
 * Stata v.18, mac
 
 * does
-	* reads Uganda wave 4 owned plot info (2019_AGSEC2A) for the 1st season
+	* reads Uganda wave 8 owned plot info (2019_AGSEC2A) for the 1st season
 	* ready to append to rented plot info (2019_AGSEC2B)
 	* owned plots are in A and rented plots are in B
-	* ready to be appended to 2019_AGSEC2B to make 2019_AGSEC2
+	* ready to be appended to 2019_AGSEC2B to make 2019_AGSEC2 
 
 * assumes
 	* access to the raw data
 	* mdesc.ado
 
 * TO DO:
-	* everything
+	* #4
 
 ***********************************************************************
 **# 0 - setup
@@ -28,15 +28,15 @@
 	global 	logout 		"$data/household_data/uganda/logs"
 	
 * open log	
-	cap log close
-	log using "$logout/2019_agsec2a", append
+	cap log 			close
+	log using 			"$logout/2019_agsec2a", append
 
 	
 ***********************************************************************
 **# 1 - clean up the key variables
 ***********************************************************************
 
-* import wave 4 season A
+* import wave 8 season A
 	use "$root/agric/agsec2a.dta", clear
 	
 	compress
@@ -56,7 +56,6 @@
 	replace			irr_any = 0 if irr_any == .
 	lab var			irr_any "Irrigation (=1)"
 	*** irrigation is q18 not q20 like in other rounds
-	*** there is an error that labels the question with soil type
 
 
 ***********************************************************************
@@ -186,8 +185,7 @@
 	summarize
 
 **# save file
-		customsave , idvar(hhid) filename("2019_AGSEC2A.dta") ///
-			path("`export'") dofile(2019_AGSEC2A) user($user)
+	save 			"$export/2019_agsec2a.dta", replace
 
 * close the log
 	log	close
