@@ -1,41 +1,43 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: ek
-* Stata v.16
+* Edited on 1 Mar 24
+* Edited by kd
+* Stata v.18, mac
 
 * does
 	* fertilizer use
-	* reads Uganda wave 3 fertilizer and pest info (2011_AGSEC3A) for the 1st season
+	* reads Uganda wave 3 fertilizer and pest info (2019_AGSEC3A) for the 1st season
 	* 3A - 5A are questionaires for the first planting season
 	* 3B - 5B are questionaires for the second planting season
 
 * assumes
-	* customsave.ado
+	* access to raw data 
 	* mdesc.ado
 
 * TO DO:
-	* complete
+	* everything
 	
 
 * **********************************************************************
-* 0 - setup
+**#0 - setup
 * **********************************************************************
 
 * define paths	
-	loc root 		= "$data/household_data/uganda/wave_3/raw"  
-	loc export 		= "$data/household_data/uganda/wave_3/refined"
+	loc root 		= "$data/household_data/uganda/wave_8/raw"  
+	loc export 		= "$data/household_data/uganda/wave_8/refined"
 	loc logout 		= "$data/household_data/uganda/logs"
 	
 * open log	
 	cap log 		close
-	log using 		"`logout'/2011_agsec3a", append
+	log using 		"$logout/2019_agsec3a", append
 	
 * **********************************************************************
-* 1 - import data and rename variables
+**#1 - import data and rename variables
 * **********************************************************************
 
 * import wave 2 season A
-	use 			"`root'/2011_AGSEC3A.dta", clear
+	use 			"$root/agsec3a.dta", clear
 	
 * unlike other waves, HHID is a numeric here
 	format 			%18.0g HHID
