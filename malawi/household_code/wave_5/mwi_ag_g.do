@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: alj
-* Edited on: 22 Feb 2024
+* Edited on: 5 March 2024
 * Edited by: alj 
 * Stata v.18
 
@@ -55,6 +55,26 @@
 	tabulate 		hassome 
 	*** 32677 total - 0 = 68 (0.21%), 1 = 32609 (99.8%) 
 	drop 			hasall hassome
+	
+* generate variables for merge with conversion factor database
+	generate 		unit_name = ag_g13b
+* about 600 observations with _oth - many with kgs but "odd sizes" 
+	generate		unit_other_conversion = . 
+	replace			unit 
+	generate 		condition = ag_g13c
+	replace  		condition = ag_g09c if missing(ag_g13c)
+	*drop 			if missing(crop_code,unit,condition)		
+	recode 			condition (1 2 = 3) if inlist(crop_code,5,28,31,32,33,37,42)
+	
+* prepare for converstion 
+* need district variables 
+	merge m:1 case_id using "`root'/hh_mod_a_filt.dta", keepusing(region) assert (2 3) keep (3) nogenerate
+	
+* bring in conversion file 
+	merge m:1 crop_code region unit_name condition conversion using "$root/ihs_seasonalcropconversion_factor_2020.dta", keep(1 3) generate(_conversion)
+	tabulate crop_code unit_name if _conversion==1
+	keep if _conversion==3
+	drop _conversion	
 	
 	
 * **********************************************************************
