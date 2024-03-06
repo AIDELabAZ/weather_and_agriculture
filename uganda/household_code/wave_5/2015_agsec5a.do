@@ -1,7 +1,9 @@
 * Project: WB Weather
-* Created on: Aug 2020
-* Created by: ek
-* Stata v.16
+* Created on: Feb 2024
+* Created by: rg
+* Edited on: 6 March 24
+* Edited by: rg
+* Stata v.18, mac
 
 * does
 	* Crop output
@@ -10,11 +12,10 @@
 	* 3B - 5B are questionaires for the second planting season
 
 * assumes
-	* customsave.ado
 	* mdesc.ado
 
 * TO DO:
-	*done
+	* everything
 
 	
 * **********************************************************************
@@ -22,22 +23,22 @@
 * **********************************************************************
 
 * define paths	
-	loc root 		= "$data/household_data/uganda/wave_3/raw"  
-	loc export 		= "$data/household_data/uganda/wave_3/refined"
-	loc logout 		= "$data/household_data/uganda/logs"
-	loc conv 		= "$data/household_data/uganda/conversion_files"  
+	global 	root  			"$data/household_data/uganda/wave_5/raw"  
+	global  export 			"$data/household_data/uganda/wave_5/refined"
+	global 	logout 			"$data/household_data/uganda/logs"
+	global 	conv 			"$data/household_data/uganda/conversion_files"  
 
 * open log	
-	cap log 		close
-	log using 		"`logout'/2011_AGSEC5A", append
+	cap log 				close
+	log using 				"$logout/2011_AGSEC5A", append
 
 	
 * **********************************************************************
 * 1 - import data and rename variables
 * **********************************************************************
 
-* import wave 2 season 1
-	use 			"`root'/2011_AGSEC5A.dta", clear
+* import wave 5 season 1
+	use 			"$root/agric/AGSEC5A.dta", clear
 		
 	rename 			cropID cropid
 	rename			plotID pltid
@@ -46,11 +47,6 @@
 	rename			a5aq6b condition
 	rename 			a5aq6e harvmonth
 		
-* one observation is missing pltid
-	*** the hhid is 4183002308
-	replace		pltid = 5 if HHID == 4183002308 & pltid == .
-	*** one change made
-
 * unlike other waves, HHID is a numeric here
 	format 			%18.0g HHID
 	tostring		HHID, gen(hhid) format(%18.0g)
