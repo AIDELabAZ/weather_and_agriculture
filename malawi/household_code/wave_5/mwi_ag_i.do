@@ -112,8 +112,6 @@ label define cropid
 
 	label 		values cropid cropid
 	inspect 	cropid	
-	
-
 
 * **********************************************************************
 * 3 - clean for harvest  
