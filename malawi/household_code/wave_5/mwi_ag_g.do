@@ -14,7 +14,7 @@
 	
 * TO DO:
 	* complete
-	* file merge issue line 98 
+	* file merge issue line 100 
 
 * **********************************************************************
 * 0 - setup
@@ -152,7 +152,7 @@ label define cropid
 	inspect 	cropid
 	
 * **********************************************************************
-* 2 - clean for harvest  
+* 3 - clean for harvest  
 * **********************************************************************
 		
 * make harvest quantity
