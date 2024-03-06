@@ -97,7 +97,7 @@
 	
 * bring in conversion file 
 * THIS ISN'T RUNNING?? says it can't find, unclear
-	merge m:1 crop_code region unit condition using "$`root'/ihs_seasonalcropconversion_factor_2020_up.dta", keep(1 3) generate(_conversion)
+	merge m:1 crop_code region unit condition using "`root'/ihs_seasonalcropconversion_factor_2020_up.dta", keep(1 3) generate(_conversion)
 	
 	tabulate 		crop_code unit if _conversion==1
 	*** could drop if == 1, but we know that we have some of these, from conversion_other - so will keep

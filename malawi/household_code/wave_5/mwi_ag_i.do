@@ -14,6 +14,8 @@
 	
 * TO DO:
 	* same issues as in mwi_ag_g - links not working???
+	*** lines 60, 64, 163
+	* NEED TO SEE IF THIS CODE RUNS - issue opened 6 March 
 
 * **********************************************************************
 * 0 - setup
@@ -23,6 +25,7 @@
 	loc		root 	= 	"$data/household_data/malawi/wave_5/raw"	
 	loc		export 	= 	"$data/household_data/malawi/wave_5/refined"
 	loc		logout 	= 	"$data/household_data/malawi/logs"
+	loc 	temp 	= 	"$data/household_data/malawi/wave_5/tmp"
 
 * open log
 	cap 	log			close
@@ -57,13 +60,30 @@
 	*** 272 observations redone
 
 * bring in spatial variables for merge merge to conversion factor database
-	merge m:1 case_id using "$`root'/hh_mod_a_filt.dta'", keepusing(region district reside) assert(2 3) keep(3) nogenerate
+	merge m:1 case_id using "`root'/hh_mod_a_filt.dta'", keepusing(region district reside) assert(2 3) keep(3) nogenerate
 	*** (all) 26120 matched
 	
 * bring in conversion factor to construct quantity 
-	merge m:1 crop_code region unit condition using "$`root'/ihs_seasonalcropconversion_factor_2020_up.dta", keep(1 3) generate(_conversion)	
+	merge m:1 crop_code region unit condition using "`root'/ihs_seasonalcropconversion_factor_2020_up.dta", keep(1 3) generate(_conversion)	
 	tabulate 		crop_code unit if _conversion==1
 	drop 			_conversion
+* also include other conversion code 
+	generate		conversion_other = . 
+	replace 		ag_i02b_oth = strlower(ag_i02b_oth)
+	*** 147 changes
+	*** making uppercase lowercase instead
+	replace			conversion_other = 90 if strpos(ag_i02b_oth, "90") > 0 
+	*** 61 changes
+	replace			conversion_other = 60 if strpos(ag_i02b_oth, "60") > 0 
+	*** 1 changes
+	replace			conversion_other = 70 if strpos(ag_i02b_oth, "70") > 0 
+	*** 11 changes
+	replace			conversion_other = 5 if strpos(ag_i02b_oth, "5") > 0 	
+	*** 3 changes 
+	replace			conversion_other = 30 if strpos(ag_i02b_oth, "30") > 0 
+	*** 2 changes
+	replace			conversion_other = 40 if strpos(ag_i02b_oth, "40") > 0 	
+	*** 1 change 
 	
 * **********************************************************************
 * 2 - clean for crop type 
@@ -110,108 +130,100 @@ label define cropid
 	;
 #delimit cr
 
-	label 		values cropid cropid
-	inspect 	cropid	
+	label 			values cropid cropid
+	inspect 		cropid	
 
 * **********************************************************************
 * 3 - clean for harvest  
 * **********************************************************************
 		
-*** carried code below
+* make sale quantity
+	generate 		quant = ag_i02a * conversion 
+	*** 5463 changes
+	replace			quant = ag_i02a * conversion_other if quant == .
+	*** 9 changes 
+	drop 			if quant == . 
+	tabstat 		quant, by(cropid) statistics(n min p50 max) columns(statistics) format(%9.3g)
+	bysort 			cropid : egen median = median(quant)
+	bysort 			cropid : egen stddev = sd(quant)
+	generate 		quantoutlier = ((quant > median+(3*stddev)) | (quant < median-(3*stddev)))
+	list 			cropid quant if quantoutlier==1 & !missing(quant), sepby(cropid) 
+	drop 			median stddev quantoutlier
+	*** we will do imputations with quantity / plot area 
 
-*	make sale quantity
-generate quant = ag_i02a * conversion
-tabstat quant, by(cropid) statistics(n min p50 max) columns(statistics) format(%9.3g)
-bysort cropid : egen median = median(quant)
-bysort cropid : egen stddev = sd(quant)
-generate quantoutlier = ((quant > median+(3*stddev)) | (quant < median-(3*stddev)))
-list cropid quant if quantoutlier==1 & !missing(quant), sepby(cropid) 
-drop median stddev quantoutlier
-	*	we will do imputations with quantity / plot area 
+* make self-reported unit value
+	generate 		cropprice = ag_i03 / quant
+	label 			variable cropprice	"Self-Reported unit value of crops sold"
+	tabstat 		cropprice, by(cropid) statistics(n min p50 max) columns(statistics) format(%9.3g) 
+	bysort 			cropid : egen median = median(cropprice)
+	bysort 			cropid : egen stddev = sd(cropprice)
+	generate 		croppriceoutlier = ((cropprice > median+(3*stddev)) | (cropprice < median-(3*stddev)))
+	list 			cropid quant ag_i03 cropprice if croppriceoutlier==1 & !missing(cropprice), sepby(cropid) 
+	drop 			median stddev croppriceoutlier
 
+* make datasets with crop price information
+* in other files "ta" exists, but that is not represented in wave 5, so omitted from this process 
 
-*	make self-reported unit value
-generate cropprice = ag_i03 / quant
-label variable cropprice	"Self-Reported unit value of crops sold"
-tabstat cropprice, by(cropid) statistics(n min p50 max) columns(statistics) format(%9.3g) 
-bysort cropid : egen median = median(cropprice)
-bysort cropid : egen stddev = sd(cropprice)
-generate croppriceoutlier = ((cropprice > median+(3*stddev)) | (cropprice < median-(3*stddev)))
-list cropid quant ag_i03 cropprice if croppriceoutlier==1 & !missing(cropprice), sepby(cropid) 
-drop median stddev croppriceoutlier
-
-
-*	make datasets with crop price information
 	preserve
-collapse (p50) p_ea=cropprice (count) n_ea=cropprice, by(cropid urban region district ta ea_id)
-save "${Malawi}/tmp/${database}/plot/ag_i1.dta", replace 
+		collapse (p50) p_ea = cropprice (count) n_ea=cropprice, by(cropid urban region district ta ea_id)
+		save "'temp'/ag_i1.dta", replace 
 	restore
-	preserve
-collapse (p50) p_ta=cropprice (count) n_ta=cropprice, by(cropid urban region district ta)
-save "${Malawi}/tmp/${database}/plot/ag_i2.dta", replace 
-	restore
-	preserve
-collapse (p50) p_dst=cropprice (count) n_dst=cropprice, by(cropid urban region district)
-save "${Malawi}/tmp/${database}/plot/ag_i3.dta", replace 
-	restore
-	preserve
-collapse (p50) p_rgn=cropprice (count) n_rgn=cropprice, by(cropid urban region)
-save "${Malawi}/tmp/${database}/plot/ag_i4.dta", replace 
-	restore
-	preserve
-collapse (p50) p_urb=cropprice (count) n_urb=cropprice, by(cropid urban)
-save "${Malawi}/tmp/${database}/plot/ag_i5.dta", replace 
-	restore
-	preserve
-collapse (p50) p_crop=cropprice (count) n_crop=cropprice, by(cropid)
-save "${Malawi}/tmp/${database}/plot/ag_i6.dta", replace 
-	restore
-
-
-*	merge price data back into dataset
-merge m:1 cropid urban region district ta ea_id using "${Malawi}/tmp/${database}/plot/ag_i1.dta", assert(3) nogenerate
-merge m:1 cropid urban region district ta       using "${Malawi}/tmp/${database}/plot/ag_i2.dta", assert(3) nogenerate
-merge m:1 cropid urban region district          using "${Malawi}/tmp/${database}/plot/ag_i3.dta", assert(3) nogenerate
-merge m:1 cropid urban region                   using "${Malawi}/tmp/${database}/plot/ag_i4.dta", assert(3) nogenerate
-merge m:1 cropid urban                          using "${Malawi}/tmp/${database}/plot/ag_i5.dta", assert(3) nogenerate
-merge m:1 cropid                                using "${Malawi}/tmp/${database}/plot/ag_i6.dta", assert(3) nogenerate
-
-*	make imputed price, using median price where we have at least 10 observations
-tabstat n_ea p_ea n_dst p_dst n_rgn p_rgn n_urb p_urb p_crop, by(cropid) longstub statistics(n min p50 max) columns(statistics) format(%9.3g) 
-generate croppricei = .
-replace croppricei = p_ea if n_ea>=10
-replace croppricei = p_ta if n_ta>=10 & missing(croppricei)
-replace croppricei = p_dst if n_dst>=10 & missing(croppricei)
-replace croppricei = p_rgn if n_rgn>=10 & missing(croppricei)
-replace croppricei = p_urb if n_urb>=10 & missing(croppricei)
-replace croppricei = p_crop if missing(croppricei)
-label variable croppricei	"Imputed unit value of crop"
-
-
-*	make total value of all household crop sales
-replace cropprice = croppricei if missing(cropprice) & !missing(quant) 
-bysort case_id (cropid) : egen cropsales_value = sum(quant * cropprice)
-label variable cropsales_value	"Self-reported value of crop sales" 
-bysort case_id (cropid) : egen cropsales_valuei = sum(quant * croppricei)
-label variable cropsales_valuei	"Implied value of crop sales" 
-
-
-*	restrict to one observation per crop
-bysort case_id (cropid) : keep if _n==1
-
-
-*	Restrict to variables of interest 
-keep  case_id cropsales_value cropsales_valuei
-order case_id cropsales_value cropsales_valuei
 	
+	preserve
+		collapse (p50) p_dst = cropprice (count) n_ta=cropprice, by(cropid urban region district)
+		save "'temp'/ag_i2.dta", replace 
+	restore
 	
+	preserve
+		collapse (p50) p_rgn = cropprice (count) n_dst=cropprice, by(cropid urban region)
+		save "'temp'/ag_i3.dta", replace 
+	restore
+	
+	preserve
+		collapse (p50) p_urb = cropprice (count) n_rgn=cropprice, by(cropid urban)
+		save "'temp'/ag_i4.dta", replace 
+	restore
+	
+	preserve
+		collapse (p50) p_crop = cropprice (count) n_urb=cropprice, by(cropid)
+		save "'temp'/ag_i5.dta", replace 
+	restore
+
+* merge price data back into dataset
+	merge m:1 cropid urban region district ea_id using "'temp'/ag_i1.dta", assert(3) nogenerate
+	merge m:1 cropid urban region district       using "'temp'/ag_i2.dta", assert(3) nogenerate
+	merge m:1 cropid urban region           	 using "'temp'/ag_i3.dta", assert(3) nogenerate
+	merge m:1 cropid urban                    	 using "'temp'/ag_i4.dta", assert(3) nogenerate
+	merge m:1 cropid                           	 using "'temp'/ag_i5.dta", assert(3) nogenerate
+
+* make imputed price, using median price where we have at least 10 observations
+	tabstat 		n_ea p_ea n_dst p_dst n_rgn p_rgn n_urb p_urb p_crop, ///
+						by(cropid) longstub statistics(n min p50 max) columns(statistics) format(%9.3g) 
+	generate 		croppricei = .
+	replace 		croppricei = p_ea if n_ea>=10
+	replace 		croppricei = p_dst if n_dst>=10 & missing(croppricei)
+	replace 		croppricei = p_rgn if n_rgn>=10 & missing(croppricei)
+	replace 		croppricei = p_urb if n_urb>=10 & missing(croppricei)
+	replace 		croppricei = p_crop if missing(croppricei)
+	label 			variable croppricei	"Imputed unit value of crop"
+
+* make total value of all household crop sales
+	replace 		cropprice = croppricei if missing(cropprice) & !missing(quant) 
+	bysort 			case_id (cropid) : egen cropsales_value = sum(quant * cropprice)
+	label 			variable cropsales_value	"self-reported value of crop sales" 
+	bysort 			case_id (cropid) : egen cropsales_valuei = sum(quant * croppricei)
+	label 			variable cropsales_valuei	"imputed value of crop sales" 
+
+* restrict to one observation per crop
+	bysort case_id (cropid) : keep if _n==1
+
 * **********************************************************************
 * ? - end matter, clean up to save
 * **********************************************************************
 
 * restrict to variables of interest 
-	*keep  			case_id HHID plotid gardenid cropid harvest harvest_losses intercrop_legume
-	*order 			case_id HHID plotid gardenid cropid harvest harvest_losses intercrop_legume
+	keep  			case_id cropsales_value cropsales_valuei
+	order 			case_id cropsales_value cropsales_valuei
 	
 	compress
 	describe
