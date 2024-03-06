@@ -6,13 +6,13 @@
 * Stata v.18
 
 * does
-	* 
+	* cleans crop plot size (gps and self-report)
 
 * assumes
-	* 
+	* access to MWI W5 raw data  
+	
 * TO DO:
 	* complete
-
 
 * **********************************************************************
 * 0 - setup
@@ -26,7 +26,6 @@
 * open log
 	cap 	log			close
 	log 	using 		"`logout'/mwi_ag_mod_c", append
-
 
 * **********************************************************************
 * 1 - clean plot area 

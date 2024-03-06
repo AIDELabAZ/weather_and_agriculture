@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: alj
-* Edited on: 5 March 2024
+* Edited on: 6 March 2024
 * Edited by: alj 
 * Stata v.18
 
@@ -10,7 +10,8 @@
 	* directly follow from ag_g code - by JB
 
 * assumes
-	* 
+	* access to MWI W5 raw data
+	
 * TO DO:
 	* complete
 	* file merge issue line 98 
