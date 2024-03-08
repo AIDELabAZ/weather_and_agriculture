@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: ek
-* Edited on 1 Mar 24
+* Edited on 8 Mar 24
 * Edited by kd
 * Stata v.18, mac
 
@@ -36,12 +36,12 @@
 **#1 - import data and rename variables
 * **********************************************************************
 
-* import wave 2 season A
-	use 			"$root/agsec3a.dta", clear
+* import wave 8 season A
+	use 			"$root/agric/agsec3a.dta", clear
 	
-* unlike other waves, HHID is a numeric here
+**#unlike other waves, HHID is a numeric here
 	format 			%18.0g HHID
-	tostring		HHID, gen(hhid) format(%18.0g)
+	tostring		hhid, gen(hhid) format(%18.0g)
 	
 	rename			parcelID prcid
 	rename			plotID pltid
