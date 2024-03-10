@@ -1,10 +1,12 @@
 * Project: WB Weather
-* Created on: May 2020
-* Created by: McG
-* Stata v.16
+* Created on: March 2024
+* Created by: reece
+* Edited on: March 10, 2024
+* Edited by: reece
+* Stata v.18
 
 * does
-	* cleans Tanzania household variables, wave 4 Ag sec4a
+	* cleans Tanzania household variables, wave 6 Ag sec4a
 	* kind of a crop roster, with harvest weights, long rainy season
 	* generates weight harvested, harvest month, percentage of plot planted with given crop, value of seed purchases
 	
@@ -13,36 +15,36 @@
 	* mdesc.ado
 
 * TO DO:
-	* completed
+	* everything
 
 	
 * **********************************************************************
-* 0 - setup
+**#0 - setup
 * **********************************************************************
 
 * define paths
-	loc root = "$data/household_data/tanzania/wave_4/raw"
-	loc export = "$data/household_data/tanzania/wave_4/refined"
-	loc logout = "$data/household_data/tanzania/logs"
+	global root 	"$data/household_data/tanzania/wave_6/raw"
+	global export 	"$data/household_data/tanzania/wave_6/refined"
+	global logout 	"$data/household_data/tanzania/logs"
 
-* open log
-	cap log close
-	log using "`logout'/wv4_AGSEC4A", append
+* open log 
+	cap log close 
+	log using "$logout/wv6_AGSEC4A", append
 
-
+	
 * ***********************************************************************
-* 1 - TZA 2014 (Wave 4) - Agriculture Section 4A 
-* *********************1*************************************************
+**#1 - prepare TZA 2020 (Wave 6) - Agriculture Section 4A 
+* ***********************************************************************
 
 * load data
-	use 			"`root'/ag_sec_4a", clear
+	use 		"$root/ag_sec_4a", clear
 
 * dropping duplicates
 	duplicates 		drop
 	*** 0 obs dropped
 
 * rename variables of interest
-	rename 			zaocode crop_code
+	rename 			cropid crop_code
 	
 * create percent of area to crops
 	gen				pure_stand = ag4a_01 == 1
@@ -57,11 +59,12 @@
 	replace			percent_field = 0.50 if ag4a_02==2
 	replace			percent_field = 0.75 if ag4a_02==3
 	replace			percent_field = 1 if pure_stand==1
-	duplicates		list y4_hhid plotnum crop_code
-	*** there are 6 duplicates
+	duplicates		list y5_hhid plotnum crop_code
+	*** there are _ duplicates
+	*** no plotnum in this file?
 	
 * drop the duplicates
-	duplicates		drop y4_hhid plotnum zaoname, force
+	duplicates		drop y5_hhid plotnum zaoname, force
 	*** percent_field and pure_stand variables are the same, so dropping duplicates
 	*** drops 4 duplicate obs, the 2 remaining are 'chilies' and 'OTHER'
 	*** since they're not maize, I will collapse at the end of the do-file
@@ -115,7 +118,7 @@
 
 	
 * ***********************************************************************
-* 2 - generate harvest variables
+**#2 - generate harvest variables
 * ***********************************************************************	
 
 * other variables of interest
@@ -191,7 +194,7 @@
 	
 	
 * **********************************************************************
-* 3 - end matter, clean up to save
+**#3 - end matter, clean up to save
 * **********************************************************************
 	
 * keep what we want, get rid of what we don't
