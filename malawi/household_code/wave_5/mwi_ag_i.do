@@ -158,6 +158,11 @@ label define cropid
 	generate 		croppriceoutlier = ((cropprice > median+(3*stddev)) | (cropprice < median-(3*stddev)))
 	list 			cropid quant ag_i03 cropprice if croppriceoutlier==1 & !missing(cropprice), sepby(cropid) 
 	drop 			median stddev croppriceoutlier
+	
+
+* **********************************************************************
+* 4 - prices
+* **********************************************************************
 
 * make datasets with crop price information
 * in other files "ta" exists, but that is not represented in wave 5, so omitted from this process 
@@ -222,7 +227,7 @@ label define cropid
 	*** 1554 observations deleted
 
 * **********************************************************************
-* ? - end matter, clean up to save
+* 5 - end matter, clean up to save
 * **********************************************************************
 
 * restrict to variables of interest 
