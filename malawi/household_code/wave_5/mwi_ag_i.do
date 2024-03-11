@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: March 2024
 * Created by: alj
-* Edited on: 6 March 2024
+* Edited on: 11 March 2024
 * Edited by: alj 
 * Stata v.18
 
@@ -13,9 +13,7 @@
 	* access to MWI W5 raw data
 	
 * TO DO:
-	* same issues as in mwi_ag_g - links not working???
-	*** lines 60, 64, 163
-	* NEED TO SEE IF THIS CODE RUNS - issue opened 6 March 
+	* done 
 
 * **********************************************************************
 * 0 - setup
@@ -60,7 +58,7 @@
 	*** 272 observations redone
 
 * bring in spatial variables for merge merge to conversion factor database
-	merge m:1 case_id using "`root'/hh_mod_a_filt.dta'", keepusing(region district reside) assert(2 3) keep(3) nogenerate
+	merge m:1 case_id using "`root'/hh_mod_a_filt.dta", keepusing(region district reside) assert(2 3) keep(3) nogenerate
 	*** (all) 26120 matched
 	
 * bring in conversion factor to construct quantity 
@@ -165,47 +163,52 @@ label define cropid
 * in other files "ta" exists, but that is not represented in wave 5, so omitted from this process 
 
 	preserve
-		collapse (p50) p_ea = cropprice (count) n_ea=cropprice, by(cropid urban region district ta ea_id)
-		save "'temp'/ag_i1.dta", replace 
+		collapse (p50) p_ea = cropprice (count) n_ea=cropprice, by(cropid reside region district HHID)
+		save "`temp'/ag_i1.dta", replace 
 	restore
 	
 	preserve
-		collapse (p50) p_dst = cropprice (count) n_ta=cropprice, by(cropid urban region district)
-		save "'temp'/ag_i2.dta", replace 
+		collapse (p50) p_dst = cropprice (count) n_ta=cropprice, by(cropid reside region district)
+		save "`temp'/ag_i2.dta", replace 
 	restore
 	
 	preserve
-		collapse (p50) p_rgn = cropprice (count) n_dst=cropprice, by(cropid urban region)
-		save "'temp'/ag_i3.dta", replace 
+		collapse (p50) p_rgn = cropprice (count) n_dst=cropprice, by(cropid reside region)
+		save "`temp'/ag_i3.dta", replace 
 	restore
 	
 	preserve
-		collapse (p50) p_urb = cropprice (count) n_rgn=cropprice, by(cropid urban)
-		save "'temp'/ag_i4.dta", replace 
+		collapse (p50) p_urb = cropprice (count) n_rgn=cropprice, by(cropid reside)
+		save "`temp'/ag_i4.dta", replace 
 	restore
 	
 	preserve
 		collapse (p50) p_crop = cropprice (count) n_urb=cropprice, by(cropid)
-		save "'temp'/ag_i5.dta", replace 
+		save "`temp'/ag_i5.dta", replace 
 	restore
 
 * merge price data back into dataset
-	merge m:1 cropid urban region district ea_id using "'temp'/ag_i1.dta", assert(3) nogenerate
-	merge m:1 cropid urban region district       using "'temp'/ag_i2.dta", assert(3) nogenerate
-	merge m:1 cropid urban region           	 using "'temp'/ag_i3.dta", assert(3) nogenerate
-	merge m:1 cropid urban                    	 using "'temp'/ag_i4.dta", assert(3) nogenerate
-	merge m:1 cropid                           	 using "'temp'/ag_i5.dta", assert(3) nogenerate
+	merge m:1 cropid reside region district HHID  using "`temp'/ag_i1.dta", assert(3) nogenerate
+	merge m:1 cropid reside region district       using "`temp'/ag_i2.dta", assert(3) nogenerate
+	merge m:1 cropid reside region           	  using "`temp'/ag_i3.dta", assert(3) nogenerate
+	merge m:1 cropid reside                    	  using "`temp'/ag_i4.dta", assert(3) nogenerate
+	merge m:1 cropid                           	  using "`temp'/ag_i5.dta", assert(3) nogenerate
 
 * make imputed price, using median price where we have at least 10 observations
 	tabstat 		n_ea p_ea n_dst p_dst n_rgn p_rgn n_urb p_urb p_crop, ///
 						by(cropid) longstub statistics(n min p50 max) columns(statistics) format(%9.3g) 
 	generate 		croppricei = .
 	replace 		croppricei = p_ea if n_ea>=10
+	*** 0 changes
 	replace 		croppricei = p_dst if n_dst>=10 & missing(croppricei)
+	*** 5288 changes
 	replace 		croppricei = p_rgn if n_rgn>=10 & missing(croppricei)
+	*** 138 changes
 	replace 		croppricei = p_urb if n_urb>=10 & missing(croppricei)
+	*** 22 changes
 	replace 		croppricei = p_crop if missing(croppricei)
-	label 			variable croppricei	"Imputed unit value of crop"
+	*** 24 changes
+	label 			variable croppricei	"imputed unit value of crop"
 
 * make total value of all household crop sales
 	replace 		cropprice = croppricei if missing(cropprice) & !missing(quant) 
@@ -216,6 +219,7 @@ label define cropid
 
 * restrict to one observation per crop
 	bysort case_id (cropid) : keep if _n==1
+	*** 1554 observations deleted
 
 * **********************************************************************
 * ? - end matter, clean up to save
