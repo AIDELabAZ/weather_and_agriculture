@@ -15,7 +15,6 @@
 	
 * TO DO:
 	* done 
-	* stop at line 93 rn 
 
 * **********************************************************************
 * 0 - setup
@@ -79,66 +78,61 @@
 	
 * erosion control 
 	tab 			ag_d25a, missing
-	tab				ag_d25a_oth
-	recode 			ag_d25a (9=1) if inlist(ag_d25a_os,"NO SOIL EROSION CONTROL")
-	recode 			ag_d25a (9=3) if inlist(ag_d25a_os,"BOX RIDGES","RIDGES")
-	recode 			ag_d25a (9=5) if inlist(ag_d25a_os,"PLANTED ELEPHANT GRASS","PLANTED GRASS SUGAR CANE","PLANTED KAPINGA","PLANTED KHONJE (SISAL)","PLANTED OTHER GRASS","PLANTED SISAL")
-	recode 			ag_d25a (9=6) if inlist(ag_d25a_os,"PLANTED BAMBOO")
-	recode 			ag_d25a (9=8) if inlist(ag_d25a_os,"WATER CHAINS","WATER WAY")
-	list 			ag_d25a ag_d25b ag_d25b_os if ag_d25a_os=="BOX RIDGES AND ELEPHANT GRASS"
-	recode 			ag_d25a (9=3) if ag_d25a_os=="BOX RIDGES AND ELEPHANT GRASS"
-	recode 			ag_d25b (9=5) if ag_d25a_os=="BOX RIDGES AND ELEPHANT GRASS"
-	tabulate 		ag_d25b_oth if ag_d25b=="Other (Specify)" 	
-	recode 			ag_d25b (9=5) if inlist(ag_d25b_os,"PLANTED ELEPHANT GRASS","PLANTED SISAL")
+	tab				ag_d25_oth
+	recode 			ag_d25a (9=1) if inlist(ag_d25_oth,"NO SOIL EROSION CONTROL")
+	recode 			ag_d25a (9=3) if inlist(ag_d25_oth,"BOX RIDGES","RIDGES")
+	recode 			ag_d25a (9=5) if inlist(ag_d25_oth,"PLANTED ELEPHANT GRASS","PLANTED GRASS SUGAR CANE","PLANTED KAPINGA","PLANTED KHONJE (SISAL)","PLANTED OTHER GRASS","PLANTED SISAL")
+	recode 			ag_d25a (9=6) if inlist(ag_d25_oth,"PLANTED BAMBOO")
+	recode 			ag_d25a (9=8) if inlist(ag_d25_oth,"WATER CHAINS","WATER WAY")
+	list 			ag_d25a ag_d25b ag_d25_oth if ag_d25_oth == "BOX RIDGES AND ELEPHANT GRASS"
+	recode 			ag_d25a (9=3) if ag_d25_oth =="BOX RIDGES AND ELEPHANT GRASS"
+	recode 			ag_d25b (9=5) if ag_d25_oth =="BOX RIDGES AND ELEPHANT GRASS"
+	recode 			ag_d25b (9=5) if inlist(ag_d25_oth,"PLANTED ELEPHANT GRASS","PLANTED SISAL")
+	*** effectively no changes made in this process 
 	
-	******** STOP HERE
+* make dummies for various erosion control structures 
+	egen 			swc_terrace = anymatch(ag_d25a ag_d25b), values(2)
+	label 			variable swc_terrace		"Plot has terraces to control erosion" 
+	egen 			swc_bund_ec = anymatch(ag_d25a ag_d25b), values(3)
+	label 			variable swc_bund_ec		"Plot has bunds to control erosion"
+	egen 			swc_bund_wh = anymatch(ag_d25a ag_d25b), values(7)
+	label 			variable swc_bund_wh		"Plot has bunds to harvest water"
 
-*	Make dummies for various erosion control structures 
-egen swc_terrace = anymatch(ag_d25a ag_d25b), values(2)
-label variable swc_terrace		"Plot has terraces to control erosion" 
-egen swc_bund_ec = anymatch(ag_d25a ag_d25b), values(3)
-label variable swc_bund_ec		"Plot has bunds to control erosion"
-egen swc_bund_wh = anymatch(ag_d25a ag_d25b), values(7)
-label variable swc_bund_wh		"Plot has bunds to harvest water"
-*	differentiation between bunds on basis of their intended use may be an overly fine distinction for some analyses 
-egen swc_bund_any = anymatch(ag_d25a ag_d25b), values(3 7)
-label variable swc_bund_any		"Plot has bunds"
-egen swc_gabion = anymatch(ag_d25a ag_d25b), values(4)
-label variable swc_gabion		"Plot has gabions/sandbags to control erosion"
-egen swc_vetiver = anymatch(ag_d25a ag_d25b), values(5)
-label variable swc_vetiver		"Plot has vetiver grass to control erosion"
-egen swc_treebelt = anymatch(ag_d25a ag_d25b), values(6)
-label variable swc_treebelt		"Plot has tree belts to control erosion"
-egen swc_drainage = anymatch(ag_d25a ag_d25b), values(8)
-label variable swc_drainage		"Plot has drainage ditches to control erosion"
+* differentiation between bunds on basis of their intended use may be an overly fine distinction for some analyses 
+	egen 			swc_bund_any = anymatch(ag_d25a ag_d25b), values(3 7)
+	label 			variable swc_bund_any "plot has bunds"
+	egen 			swc_gabion = anymatch(ag_d25a ag_d25b), values(4)
+	label 			variable swc_gabion	"plot has gabions/sandbags to control erosion"
+	egen 			swc_vetiver = anymatch(ag_d25a ag_d25b), values(5)
+	label 			variable swc_vetiver "plot has vetiver grass to control erosion"
+	egen 			swc_treebelt = anymatch(ag_d25a ag_d25b), values(6)
+	label 			variable swc_treebelt "plot has tree belts to control erosion"
+	egen 			swc_drainage = anymatch(ag_d25a ag_d25b), values(8)
+	label 			variable swc_drainage "plot has drainage ditches to control erosion"
 
-*	Make some overall categories 
-egen swc_any = anymatch(ag_d25a ag_d25b), values(2 3 4 5 6 7 8)
-label variable swc_any			"Plot has any erosion control structure"
-egen swc_mech = anymatch(ag_d25a ag_d25b), values(2 3 4 7 8)
-label variable swc_mech			"Plot has any mechanical erosion control structure"
-egen swc_bio = anymatch(ag_d25a ag_d25b), values(5 6)
-label variable swc_bio			"Plot has any biological erosion control measures"
+* make some overall categories 
+	egen 			swc_any = anymatch(ag_d25a ag_d25b), values(2 3 4 5 6 7 8)
+	label 			variable swc_any "plot has any erosion control structure"
+	egen 			swc_mech = anymatch(ag_d25a ag_d25b), values(2 3 4 7 8)
+	label 			variable swc_mech "plot has many mechanical erosion control structure"
+	egen 			swc_bio = anymatch(ag_d25a ag_d25b), values(5 6)
+	label 			variable swc_bio "plot has any biological erosion control measures"
 
+* slope of plot
+	tabulate 		ag_d26, missing
+	generate 		slope = ag_d26
+	label 			values slope slope
+	label 			variable slope "predominant slope of plot" 
+	bysort 			region: egen modeslope = mode(slope), minmode
+	replace 		slope = modeslope if missing(slope)
+	*** 59 changes 
+	drop 			modeslope 
 
-*	Slope of plot
-tabulate ag_d26, missing
-generate slope = ag_d26
-label copy AG_D20 slope
-label values slope slope
-label variable slope			"Predominant slope of plot" 
-bysort ea_id : egen modeslope = mode(slope), minmode
-replace slope = modeslope if missing(slope)
-drop modeslope 
-
-
-*	Plot is in dambo area
-tabulate ag_d27, missing
-generate dambo = (ag_d27=="Yes":AG_D21)
-label variable dambo			"Plot is in swamp/wetland" 
-
-
-
+* plot is in dambo area
+	tabulate 		ag_d27, missing
+	generate 		dambo = 1 if ag_d27 == 1
+	replace			dambo = 0 if dambo == . 
+	label 			variable dambo "plot is in swamp/wetland" 
 
 * **********************************************************************
 * ? - end matter, clean up to save
