@@ -28,7 +28,7 @@
 
 * open log
 	cap 	log			close
-	log 	using 		"`logout'/mwi_ag_mod_i", append
+	log 	using 		"`logout'/mwi_ag_mod_rsplot", append
 
 
 * **********************************************************************
@@ -144,7 +144,7 @@
 	summarize 
 	
 * save data
-	save 			"`export'/ag_mod_i.dta", replace
+	save 			"`export'/rs_plot.dta", replace
 
 * close the log
 	log			close
