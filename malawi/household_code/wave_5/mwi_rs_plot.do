@@ -7,7 +7,7 @@
 
 * does
 	* cleans crop price / sales information 
-	* directly follow from ag_i code - by JB
+	* directly follow from rs_plot code - by JB
 
 * assumes
 	* access to MWI W5 raw data
