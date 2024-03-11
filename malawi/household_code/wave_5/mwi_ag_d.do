@@ -14,7 +14,7 @@
 	* access to MWI W5 raw data
 	
 * TO DO:
-	* done 
+	* STOP AT 198 
 
 * **********************************************************************
 * 0 - setup
@@ -51,9 +51,8 @@
 	egen 			crop_cash = anymatch(ag_d20a ag_d20b ag_d20c ag_d20d ag_d20e), values(5/10 37/39 47) 
 	label 			variable crop_cash	"plot is planted withcash crops (tobacco, cotton, sunflower, paprika, sugar cane)"
 	
-	
 * **********************************************************************
-* 3 - soil and erosion 
+* 3 - soil and erosion and slope and wetlands
 * **********************************************************************
 
 * bring in spatial variables for merge merge to conversion factor database
@@ -133,10 +132,161 @@
 	generate 		dambo = 1 if ag_d27 == 1
 	replace			dambo = 0 if dambo == . 
 	label 			variable dambo "plot is in swamp/wetland" 
+	
+* **********************************************************************
+* 4 - fertilizer
+* **********************************************************************
+
+* omitting kgs of organic as there is no reliable conversion factor 
+
+* inorganic
+	tab 			ag_d38
+	describe 		ag_d38*
+	tabstat 		ag_d39a ag_d39b ag_d39d ag_d39e ag_d39f ag_d39g ag_d39i ag_d39j, by(ag_d38) statistics(n mean) columns(statistics) longstub format(%9.3g)
+	
+* as an intermediate step, make dummies for non-missing type and quantity 
+* details for a first application and second application. 
+	generate 		fert_inorg1 = (!missing(ag_d39a) & !missing(ag_d39b) & !missing(ag_d39c))	
+	*** type, quantity and unit for first application are non-missing
+	generate 		fert_inorg2 = (!missing(ag_d39f) & !missing(ag_d39g) & !missing(ag_d39h))	
+	*** type, quantity and unit for second application are non-missing
+
+	generate 		fert_inorg_any = (fert_inorg1==1 | fert_inorg2==1)
+	label 			variable fert_inorg_any	"inorganic fertilizer was applied on plot"
+
+	egen 			fert_inorg_n = rowtotal(fert_inorg1 fert_inorg2)
+	label 			variable fert_inorg_n "number of applications of inorganic fertilizer on plot"
+
+	drop 			fert_inorg1 fert_inorg2
+	
+
+* **********************************************************************
+* 5 - pesticide, insecticide, fungicide 
+* **********************************************************************
+
+* pesticide, disaggregating by type (insecticide, herbicide, fungicide) 
+	tabulate 		ag_d40, missing
+	describe 		ag_d41*
+	tabulate 		ag_d41a, missing
+	tabulate 		ag_d41a_oth if ag_d41a=="OTHER PESTICIDE/HERBICIDE(SPECIFY)":AG_D35A
+	recode 			ag_d41a (11=8) if inlist(ag_d41a_oth,"2.4D","BULLET","ROUNDUP")
+	summarize 		ag_d41b ag_d41c 
+
+* dummies for use of one of three pesticide types 
+	generate 		insecticide_any =	((ag_d41a == 7 & !missing(ag_d41b) & !missing(ag_d41c)) ///
+						| (ag_d41e == 7 & !missing(ag_d41f) & !missing(ag_d41g)))
+	label 			variable insecticide_any "insecticide was applied on plot" 
+	generate 		herbicide_any =	((ag_d41a == 8 & !missing(ag_d41b) & !missing(ag_d41c)) ///
+						| (ag_d41e == 8 & !missing(ag_d41f) & !missing(ag_d41g)))
+	label 			variable herbicide_any "herbicide was applied on plot" 
+	generate 		fungicide_any =	((ag_d41a == 9  & !missing(ag_d41b) & !missing(ag_d41c)) ///
+						| (ag_d41e == 9 & !missing(ag_d41f) & !missing(ag_d41g)))
+	label 			variable fungicide_any "fungicide was applied on plot" 
+
+* make overall pesticide dummy, which also includes fumigants and 'other, specify' types 
+	generate 		pesticide_any =	((!missing(ag_d41a) & !missing(ag_d41b) & !missing(ag_d41c)) ///
+						| (!missing(ag_d41e) & !missing(ag_d41f) & !missing(ag_d41g)))
+	label 			variable pesticide_any	"any pesticide was applied on plot" 
+	
+
+* **********************************************************************
+* 6 - labor days
+* **********************************************************************
+
+
+*** THIS WILL BE TROUBLE ***
+*** HOLDING HERE *** 
+
+* family labor days
+		describe 		ag_d42*	
+		*** family labor during land prep / planting
+		tabstat 		ag_d42b ag_d42c ag_d42f ag_d42g ag_d42j ag_d42k ag_d42n ag_d42o, statistics(n mean min p75 p90 p95 p99 max) columns(statistics) format(%9.3g) longstub
+		generate 		famlbrdays1_1 = ag_d42b*ag_d42c	
+		*** family labor, activity 1, member 1
+		generate 		famlbrdays1_2 = ag_d42f*ag_d42g	
+		*** family labor, activity 1, member 2
+		generate 		famlbrdays1_3 = ag_d42j*ag_d42k	
+		*** family labor, activity 1, member 3
+		generate 		famlbrdays1_4 = ag_d42n*ag_d42o	
+		*** family labor, activity 1, member 4
+		tabstat 		famlbrdays1_1 famlbrdays1_2 famlbrdays1_3 famlbrdays1_4, statistics(n mean min p75 p90 p95 p99 max) columns(statistics) format(%9.3g) longstub
+		egen 			famlbrdays1 = rowtotal(famlbrdays1_1 famlbrdays1_2 famlbrdays1_3 famlbrdays1_4)
+		
+		describe ag_d43*	//	family labor during weeding / fertilizing / other non-harvest activity
+		tabstat ag_d43b ag_d43c ag_d43f ag_d43g ag_d43j ag_d43k ag_d43n ag_d43o, statistics(n mean min p75 p90 p95 p99 max) columns(statistics) format(%9.3g) longstub
+		generate famlbrdays2_1 = ag_d43b*ag_d43c	//	family labor, activity 2, member 1
+		generate famlbrdays2_2 = ag_d43f*ag_d43g	//	family labor, activity 2, member 2
+		generate famlbrdays2_3 = ag_d43j*ag_d43k	//	family labor, activity 2, member 3
+		generate famlbrdays2_4 = ag_d43n*ag_d43o	//	family labor, activity 2, member 4
+		tabstat famlbrdays2_1 famlbrdays2_2 famlbrdays2_3 famlbrdays2_4, statistics(n mean min p75 p90 p95 p99 max) columns(statistics) format(%9.3g) longstub
+		egen famlbrdays2 = rowtotal(famlbrdays2_1 famlbrdays2_2 famlbrdays2_3 famlbrdays2_4)
+		
+		describe ag_d44*	//	family labor during harvest 
+		tabstat ag_d44b ag_d44c ag_d44f ag_d44g ag_d44j ag_d44k ag_d44n ag_d44o, statistics(n mean min p75 p90 p95 p99 max) columns(statistics) format(%9.3g) longstub
+		generate famlbrdays3_1 = ag_d44b*ag_d44c	//	family labor, activity 3, member 1
+		generate famlbrdays3_2 = ag_d44f*ag_d44g	//	family labor, activity 3, member 2
+		generate famlbrdays3_3 = ag_d44j*ag_d44k	//	family labor, activity 3, member 3
+		generate famlbrdays3_4 = ag_d44n*ag_d44o	//	family labor, activity 3, member 4
+		tabstat famlbrdays3_1 famlbrdays3_2 famlbrdays3_3 famlbrdays3_4, statistics(n mean min p75 p90 p95 p99 max) columns(statistics) format(%9.3g) longstub
+		egen famlbrdays3 = rowtotal(famlbrdays3_1 famlbrdays3_2 famlbrdays3_3 famlbrdays3_4)
+	
+		egen famlbrdays = rowtotal(famlbrdays1 famlbrdays2 famlbrdays3)
+		summarize famlbrdays, detail
+		list case_id ag_d00 famlbrdays1 famlbrdays2 famlbrdays3 if famlbrdays>300, sepby(ea_id)
+	
+* hired labor days
+		describe ag_d47*	//	panel - hired labor during non-harvest activities, for adult males, adult females, and children 
+		tabstat ag_d47a ag_d47c ag_d47e, statistics(n mean min p90 p95 max) columns(statistics) format(%9.3g) longstub
+		egen hirelbrdays1_pnl = rowtotal(ag_d47a ag_d47c ag_d47e)	//	hired labor, non-harvest, panel
+
+		describe ag_d48*	//	panel - hired labor during harvest, for adult males, adult females, and children 
+		tabstat ag_d48a ag_d48c ag_d48e, statistics(n mean min p90 p95 max) columns(statistics) format(%9.3g) longstub
+		egen hirelbrdays2_pnl = rowtotal(ag_d48a ag_d48c ag_d48e)	//	hired labor, harvest, panel
+		
+		egen hirelbrdays = rowtotal(hirelbrdays1_pnl hirelbrdays2_pnl)
+		summarize hirelbrdays, detail
+		list case_id ag_d00 hirelbrdays1_pnl hirelbrdays2_pnl if hirelbrdays>100, sepby(ea_id)
+		
+		
+* free labor days
+		describe ag_d52*	//	panel - free labor, non-harvest activities, for adult males, adult females, and children
+		tabstat ag_d52a ag_d52b ag_d52c, statistics(n mean min p90 p95 max) columns(statistics) format(%9.3g) longstub
+		egen freelbrdays1_pnl = rowtotal(ag_d52a ag_d52b ag_d52c)		//	free labor, non-harvest, panel
+
+		describe ag_d54*	//	panel - free labor, non-harvest activities, for adult males, adult females, and children
+		tabstat ag_d54a ag_d54b ag_d54c, statistics(n mean min p90 p95 max) columns(statistics) format(%9.3g) longstub
+		egen freelbrdays2_pnl = rowtotal(ag_d54a ag_d54b ag_d54c)		//	free labor, havest, panel
+
+		egen freelbrdays = rowtotal(freelbrdays1_pnl freelbrdays2_pnl)
+		summarize freelbrdays, detail
+		list case_id ag_d00 freelbrdays1_pnl freelbrdays2_pnl if freelbrdays>50, sepby(ea_id)
+		
+		
+* total days of labor on all activities from all sources
+		egen labordays = rowtotal(famlbrdays hirelbrdays freelbrdays)
+		summarize labordays, detail
+		list case_id ag_d00 famlbrdays hirelbrdays freelbrdays if labordays>300, sepby(ea_id)
+
+* outlier checks without add'l information
+		label variable labordays		"Days of labor on plot" 
+
+* hire labor dummy
+	generate hirelabor_any = (hirelbrdays>0)
+	label variable hirelabor_any	"Any labor hired on plot" 
+
+
+* the cover crop and tillage questions are not available in IHS3
+* not included here in line with that
+* and we do not really use in this project
 
 * **********************************************************************
 * ? - end matter, clean up to save
 * **********************************************************************
+
+	keep  			case_id plotid crop_cash soiltype swc_* slope dambo irrigation_any fert_org_any fert_inorg_any ///
+						fert_inorg_n insecticide_any herbicide_any fungicide_any pesticide_any labordays hirelabor_any
+	order 			case_id plotid crop_cash soiltype swc_* slope dambo irrigation_any fert_org_any fert_inorg_any ///
+						fert_inorg_n insecticide_any herbicide_any fungicide_any pesticide_any labordays hirelabor_any
 
 	compress
 	describe
