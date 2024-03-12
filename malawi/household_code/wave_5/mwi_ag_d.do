@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: March 2024
 * Created by: alj
-* Edited on: 11 March 2024
+* Edited on: 12 March 2024
 * Edited by: alj 
 * Stata v.18
 
@@ -14,7 +14,7 @@
 	* access to MWI W5 raw data
 	
 * TO DO:
-	* STOP AT 198 
+	* STOP AT 264 at labor days 
 
 * **********************************************************************
 * 0 - setup
@@ -193,49 +193,80 @@
 * 6 - labor days
 * **********************************************************************
 
-
-*** THIS WILL BE TROUBLE ***
-*** HOLDING HERE *** 
-
 * family labor days
+		describe 		ag_d42*	ag_d43* ag_d44* 
+		*** includes land prep and planting; weeding, fertilizing, other non-harvest; and harvest 
+
+* family labor during land prep / planting
 		describe 		ag_d42*	
-		*** family labor during land prep / planting
-		tabstat 		ag_d42b ag_d42c ag_d42f ag_d42g ag_d42j ag_d42k ag_d42n ag_d42o, statistics(n mean min p75 p90 p95 p99 max) columns(statistics) format(%9.3g) longstub
-		generate 		famlbrdays1_1 = ag_d42b*ag_d42c	
-		*** family labor, activity 1, member 1
-		generate 		famlbrdays1_2 = ag_d42f*ag_d42g	
-		*** family labor, activity 1, member 2
-		generate 		famlbrdays1_3 = ag_d42j*ag_d42k	
-		*** family labor, activity 1, member 3
-		generate 		famlbrdays1_4 = ag_d42n*ag_d42o	
-		*** family labor, activity 1, member 4
-		tabstat 		famlbrdays1_1 famlbrdays1_2 famlbrdays1_3 famlbrdays1_4, statistics(n mean min p75 p90 p95 p99 max) columns(statistics) format(%9.3g) longstub
-		egen 			famlbrdays1 = rowtotal(famlbrdays1_1 famlbrdays1_2 famlbrdays1_3 famlbrdays1_4)
+		generate 		famlbrdays1_1 = ag_d42b1*ag_d42c1	
+		generate 		famlbrdays1_2 = ag_d42b2*ag_d42c2 	
+		generate 		famlbrdays1_3 = ag_d42b3*ag_d42c3 	
+		generate 		famlbrdays1_4 = ag_d42b4*ag_d42c4 	
+		generate 		famlbrdays1_5 = ag_d42b5*ag_d42c5 	
+		generate 		famlbrdays1_6 = ag_d42b6*ag_d42c6 	
+		generate 		famlbrdays1_7 = ag_d42b7*ag_d42c7 	
+		generate 		famlbrdays1_8 = ag_d42b8*ag_d42c8 	
+		generate 		famlbrdays1_9 = ag_d42b9*ag_d42c9 	
+		generate 		famlbrdays1_10 = ag_d42b10*ag_d42c10 	
+		generate 		famlbrdays1_11 = ag_d42b11*ag_d42c11 	
+		tabstat 		famlbrdays1_1 famlbrdays1_2 famlbrdays1_3 famlbrdays1_4 famlbrdays1_5 famlbrdays1_6 ///
+							famlbrdays1_7 famlbrdays1_8 famlbrdays1_9 famlbrdays1_10 famlbrdays1_11 , ///
+							statistics(n mean min p75 p90 p95 p99 max) columns(statistics) format(%9.3g) longstub
+		egen famlbrdays1 = rowtotal(famlbrdays1_1 famlbrdays1_2 famlbrdays1_3 famlbrdays1_4 famlbrdays1_5 famlbrdays1_6 ///
+							famlbrdays1_7 famlbrdays1_8 famlbrdays1_9 famlbrdays1_10 famlbrdays1_11)
 		
-		describe ag_d43*	//	family labor during weeding / fertilizing / other non-harvest activity
-		tabstat ag_d43b ag_d43c ag_d43f ag_d43g ag_d43j ag_d43k ag_d43n ag_d43o, statistics(n mean min p75 p90 p95 p99 max) columns(statistics) format(%9.3g) longstub
-		generate famlbrdays2_1 = ag_d43b*ag_d43c	//	family labor, activity 2, member 1
-		generate famlbrdays2_2 = ag_d43f*ag_d43g	//	family labor, activity 2, member 2
-		generate famlbrdays2_3 = ag_d43j*ag_d43k	//	family labor, activity 2, member 3
-		generate famlbrdays2_4 = ag_d43n*ag_d43o	//	family labor, activity 2, member 4
-		tabstat famlbrdays2_1 famlbrdays2_2 famlbrdays2_3 famlbrdays2_4, statistics(n mean min p75 p90 p95 p99 max) columns(statistics) format(%9.3g) longstub
-		egen famlbrdays2 = rowtotal(famlbrdays2_1 famlbrdays2_2 famlbrdays2_3 famlbrdays2_4)
-		
-		describe ag_d44*	//	family labor during harvest 
-		tabstat ag_d44b ag_d44c ag_d44f ag_d44g ag_d44j ag_d44k ag_d44n ag_d44o, statistics(n mean min p75 p90 p95 p99 max) columns(statistics) format(%9.3g) longstub
-		generate famlbrdays3_1 = ag_d44b*ag_d44c	//	family labor, activity 3, member 1
-		generate famlbrdays3_2 = ag_d44f*ag_d44g	//	family labor, activity 3, member 2
-		generate famlbrdays3_3 = ag_d44j*ag_d44k	//	family labor, activity 3, member 3
-		generate famlbrdays3_4 = ag_d44n*ag_d44o	//	family labor, activity 3, member 4
-		tabstat famlbrdays3_1 famlbrdays3_2 famlbrdays3_3 famlbrdays3_4, statistics(n mean min p75 p90 p95 p99 max) columns(statistics) format(%9.3g) longstub
-		egen famlbrdays3 = rowtotal(famlbrdays3_1 famlbrdays3_2 famlbrdays3_3 famlbrdays3_4)
-	
-		egen famlbrdays = rowtotal(famlbrdays1 famlbrdays2 famlbrdays3)
-		summarize famlbrdays, detail
-		list case_id ag_d00 famlbrdays1 famlbrdays2 famlbrdays3 if famlbrdays>300, sepby(ea_id)
-	
+* family labor during weeding / fertilizing / other non-harvest activity	
+		describe 		ag_d43*	
+		generate 		famlbrdays2_1 = ag_d43b1*ag_d43c1	
+		generate 		famlbrdays2_2 = ag_d43b2*ag_d43c2 	
+		generate 		famlbrdays2_3 = ag_d43b3*ag_d43c3 	
+		generate 		famlbrdays2_4 = ag_d43b4*ag_d43c4 	
+		generate 		famlbrdays2_5 = ag_d43b5*ag_d43c5 	
+		generate 		famlbrdays2_6 = ag_d43b6*ag_d43c6 	
+		generate 		famlbrdays2_7 = ag_d43b7*ag_d43c7 	
+		generate 		famlbrdays2_8 = ag_d43b8*ag_d43c8 	
+		generate 		famlbrdays2_9 = ag_d43b9*ag_d43c9 	
+		generate 		famlbrdays2_10 = ag_d43b10*ag_d43c10 	
+		generate 		famlbrdays2_11 = ag_d43b11*ag_d43c11 	
+		tabstat 		famlbrdays2_1 famlbrdays2_2 famlbrdays2_3 famlbrdays2_4 famlbrdays2_5 famlbrdays2_6 ///
+							famlbrdays2_7 famlbrdays2_8 famlbrdays2_9 famlbrdays2_10 famlbrdays2_11 , ///
+							statistics(n mean min p75 p90 p95 p99 max) columns(statistics) format(%9.3g) longstub
+		egen famlbrdays2 = rowtotal(famlbrdays2_1 famlbrdays2_2 famlbrdays2_3 famlbrdays2_4 famlbrdays2_5 famlbrdays2_6 ///
+							famlbrdays2_7 famlbrdays2_8 famlbrdays2_9 famlbrdays2_10 famlbrdays2_11)
+
+* family labor during harvest
+		describe 		ag_d44* 	
+		generate 		famlbrdays3_1 = ag_d44b1*ag_d44c1	
+		generate 		famlbrdays3_2 = ag_d44b2*ag_d44c2 	
+		generate 		famlbrdays3_3 = ag_d44b3*ag_d44c3 	
+		generate 		famlbrdays3_4 = ag_d44b4*ag_d44c4 	
+		generate 		famlbrdays3_5 = ag_d44b5*ag_d44c5 	
+		generate 		famlbrdays3_6 = ag_d44b6*ag_d44c6 	
+		generate 		famlbrdays3_7 = ag_d44b7*ag_d44c7 	
+		generate 		famlbrdays3_8 = ag_d44b8*ag_d44c8 	
+		generate 		famlbrdays3_9 = ag_d44b9*ag_d44c9 	
+		generate 		famlbrdays3_10 = ag_d44b10*ag_d44c10 	
+		generate 		famlbrdays3_11 = ag_d44b11*ag_d44c11 	
+		tabstat 		famlbrdays3_1 famlbrdays3_2 famlbrdays3_3 famlbrdays3_4 famlbrdays3_5 famlbrdays3_6 ///
+							famlbrdays3_7 famlbrdays3_8 famlbrdays3_9 famlbrdays3_10 famlbrdays3_11 , ///
+							statistics(n mean min p75 p90 p95 p99 max) columns(statistics) format(%9.3g) longstub
+		egen famlbrdays3 = rowtotal(famlbrdays3_1 famlbrdays3_2 famlbrdays3_3 famlbrdays3_4 famlbrdays3_5 famlbrdays3_6 ///
+							famlbrdays3_7 famlbrdays3_8 famlbrdays3_9 famlbrdays3_10 famlbrdays3_11)
+
+* aggregate family labor 							
+		egen 			famlbrdays = rowtotal(famlbrdays1 famlbrdays2 famlbrdays3)
+		summarize 		famlbrdays, detail
+		list 			case_id plotid famlbrdays1 famlbrdays2 famlbrdays3 if famlbrdays>300
+		*** does not address at this point in the code 
+		*** somewhere in the neighbhorhood of 85 or so? 
+				
 * hired labor days
-		describe ag_d47*	//	panel - hired labor during non-harvest activities, for adult males, adult females, and children 
+		describe ag_d46* ag_d47* ag_d48*
+		*** includes land prep and planting; weeding, fertilizing, other non-harvest; and harvest 
+		*** includes adult males, adult females, and children 
+		
+		
 		tabstat ag_d47a ag_d47c ag_d47e, statistics(n mean min p90 p95 max) columns(statistics) format(%9.3g) longstub
 		egen hirelbrdays1_pnl = rowtotal(ag_d47a ag_d47c ag_d47e)	//	hired labor, non-harvest, panel
 
@@ -249,6 +280,7 @@
 		
 		
 * free labor days
+**# Bookmark #1
 		describe ag_d52*	//	panel - free labor, non-harvest activities, for adult males, adult females, and children
 		tabstat ag_d52a ag_d52b ag_d52c, statistics(n mean min p90 p95 max) columns(statistics) format(%9.3g) longstub
 		egen freelbrdays1_pnl = rowtotal(ag_d52a ag_d52b ag_d52c)		//	free labor, non-harvest, panel
