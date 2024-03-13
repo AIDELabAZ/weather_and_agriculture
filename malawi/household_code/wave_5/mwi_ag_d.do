@@ -262,50 +262,61 @@
 		*** somewhere in the neighbhorhood of 85 or so? 
 				
 * hired labor days
-		describe ag_d46* ag_d47* ag_d48*
+		describe 		ag_d46* ag_d47* ag_d48*
 		*** includes land prep and planting; weeding, fertilizing, other non-harvest; and harvest 
 		*** includes adult males, adult females, and children 
 		
+* hired labor during land prep and planting 		
+		egen 			hirelbrdays1 = rowtotal(ag_d46a1 ag_d46a2 ag_d46a3)	
+		tabstat 		hirelbrdays1, statistics(n mean min p75 p90 p95 p99 max) columns(statistics) format(%9.3g) longstub
 		
-		tabstat ag_d47a ag_d47c ag_d47e, statistics(n mean min p90 p95 max) columns(statistics) format(%9.3g) longstub
-		egen hirelbrdays1_pnl = rowtotal(ag_d47a ag_d47c ag_d47e)	//	hired labor, non-harvest, panel
+* hired labor during weeding, fertilizing, and other non-harvest 
+		egen 			hirelbrdays2 = rowtotal(ag_d47a1 ag_d47a2 ag_d47a3)	
+		tabstat 		hirelbrdays2, statistics(n mean min p75 p90 p95 p99 max) columns(statistics) format(%9.3g) longstub
+		
+* hired labor during harvest
+		egen 			hirelbrdays3 = rowtotal(ag_d48a1 ag_d48a2 ag_d48a3)	
+		tabstat 		hirelbrdays3, statistics(n mean min p75 p90 p95 p99 max) columns(statistics) format(%9.3g) longstub
+		
+* aggregate hired labor 
+		egen 			hirelbrdays = rowtotal(hirelbrdays1 hirelbrdays2 hirelbrdays3)
+		summarize 		hirelbrdays, detail
+		list 			case_id plotid hirelbrdays1 hirelbrdays2 hirelbrdays3 if hirelbrdays>100
+		*** about 106 total 
+		list 			case_id plotid hirelbrdays1 hirelbrdays2 hirelbrdays3 if hirelbrdays>150
+		*** about 59 total 
+		
+		
+* free labor / exchange days
+		describe 		ag_d50* ag_d51*	
+		*** all activities, for adult males, adult females, and children
 
-		describe ag_d48*	//	panel - hired labor during harvest, for adult males, adult females, and children 
-		tabstat ag_d48a ag_d48c ag_d48e, statistics(n mean min p90 p95 max) columns(statistics) format(%9.3g) longstub
-		egen hirelbrdays2_pnl = rowtotal(ag_d48a ag_d48c ag_d48e)	//	hired labor, harvest, panel
-		
-		egen hirelbrdays = rowtotal(hirelbrdays1_pnl hirelbrdays2_pnl)
-		summarize hirelbrdays, detail
-		list case_id ag_d00 hirelbrdays1_pnl hirelbrdays2_pnl if hirelbrdays>100, sepby(ea_id)
-		
-		
-* free labor days
-**# Bookmark #1
-		describe ag_d52*	//	panel - free labor, non-harvest activities, for adult males, adult females, and children
-		tabstat ag_d52a ag_d52b ag_d52c, statistics(n mean min p90 p95 max) columns(statistics) format(%9.3g) longstub
-		egen freelbrdays1_pnl = rowtotal(ag_d52a ag_d52b ag_d52c)		//	free labor, non-harvest, panel
+* exchange days 		
+		egen 			freelbrdays1 = rowtotal(ag_d50a ag_d50b ag_d50c)		
+		tabstat 		freelbrdays1, statistics(n mean min p75 p90 p95 p99 max) columns(statistics) format(%9.3g) longstub
 
-		describe ag_d54*	//	panel - free labor, non-harvest activities, for adult males, adult females, and children
-		tabstat ag_d54a ag_d54b ag_d54c, statistics(n mean min p90 p95 max) columns(statistics) format(%9.3g) longstub
-		egen freelbrdays2_pnl = rowtotal(ag_d54a ag_d54b ag_d54c)		//	free labor, havest, panel
+* free days 
+		egen 			freelbrdays2 = rowtotal(ag_d51a ag_d51b ag_d51c)		
+		tabstat 		freelbrdays2, statistics(n mean min p75 p90 p95 p99 max) columns(statistics) format(%9.3g) longstub
 
-		egen freelbrdays = rowtotal(freelbrdays1_pnl freelbrdays2_pnl)
-		summarize freelbrdays, detail
-		list case_id ag_d00 freelbrdays1_pnl freelbrdays2_pnl if freelbrdays>50, sepby(ea_id)
-		
+* aggregate free labor
+		egen 			freelbrdays = rowtotal(freelbrdays1 freelbrdays2)
+		summarize 		freelbrdays, detail
+		list 			case_id plotid freelbrdays1 freelbrdays2 if freelbrdays>50
+		*** 29 total 
 		
 * total days of labor on all activities from all sources
-		egen labordays = rowtotal(famlbrdays hirelbrdays freelbrdays)
-		summarize labordays, detail
-		list case_id ag_d00 famlbrdays hirelbrdays freelbrdays if labordays>300, sepby(ea_id)
+		egen 			labordays = rowtotal(famlbrdays hirelbrdays freelbrdays)
+		summarize 		labordays, detail
+		list 			case_id plotid famlbrdays hirelbrdays freelbrdays if labordays>300
+		*** somewhere aroudn 120-130 
 
 * outlier checks without add'l information
-		label variable labordays		"Days of labor on plot" 
+		label 			variable labordays		"days of labor on plot" 
 
 * hire labor dummy
-	generate hirelabor_any = (hirelbrdays>0)
-	label variable hirelabor_any	"Any labor hired on plot" 
-
+	generate 			hirelabor_any = (hirelbrdays>0)
+	label 				variable hirelabor_any	"any labor hired on plot" 
 
 * the cover crop and tillage questions are not available in IHS3
 * not included here in line with that
