@@ -159,9 +159,18 @@
 
 	drop 			fert_inorg1 fert_inorg2
 	
+* **********************************************************************
+* 5 - irrigation
+* **********************************************************************
+	
+	tabulate 		ag_d28a ag_d28b, missing
+	tabulate 		ag_d28_oth 
+	egen 			irrigation_any = anymatch(ag_d28a ag_d28b), values(1 2 3 4 5 6 8) 
+	replace			irrigation_any = 0 if ag_d28a == 7
+	label 			variable irrigation_any	"plot has any system of irrigation" 
 
 * **********************************************************************
-* 5 - pesticide, insecticide, fungicide 
+* 6 - pesticide, insecticide, fungicide 
 * **********************************************************************
 
 * pesticide, disaggregating by type (insecticide, herbicide, fungicide) 
@@ -190,7 +199,7 @@
 	
 
 * **********************************************************************
-* 6 - labor days
+* 7 - labor days
 * **********************************************************************
 
 * family labor days
@@ -323,12 +332,12 @@
 * and we do not really use in this project
 
 * **********************************************************************
-* ? - end matter, clean up to save
+* 8 - end matter, clean up to save
 * **********************************************************************
 
-	keep  			case_id plotid crop_cash soiltype swc_* slope dambo irrigation_any fert_org_any fert_inorg_any ///
+	keep  			case_id plotid crop_cash soiltype swc_* slope dambo irrigation_any fert_inorg_any ///
 						fert_inorg_n insecticide_any herbicide_any fungicide_any pesticide_any labordays hirelabor_any
-	order 			case_id plotid crop_cash soiltype swc_* slope dambo irrigation_any fert_org_any fert_inorg_any ///
+	order 			case_id plotid crop_cash soiltype swc_* slope dambo irrigation_any fert_inorg_any ///
 						fert_inorg_n insecticide_any herbicide_any fungicide_any pesticide_any labordays hirelabor_any
 
 	compress
