@@ -256,8 +256,8 @@
 	compress
 	describe
 	summarize 
-	sort plot_id
-	save 		"$export/2020_AGSEC2A.dta", replace
+	sort 			plot_id
+	save 			"$export/2020_AGSEC2A.dta", replace
 
 * close the log
 	log	close
