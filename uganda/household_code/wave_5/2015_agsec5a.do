@@ -1,13 +1,13 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 6 March 24
+* Edited on: 14 March 24
 * Edited by: rg
 * Stata v.18, mac
 
 * does
 	* Crop output
-	* reads Uganda wave 3 crop output (2011_AGSEC5A) for the 1st season
+	* reads Uganda wave 3 crop output (2015_AGSEC5B) for the 1st season
 	* 3A - 5A are questionaires for the first planting season
 	* 3B - 5B are questionaires for the second planting season
 
@@ -15,12 +15,12 @@
 	* mdesc.ado
 
 * TO DO:
-	* everything
+	* section 2 and beyond
 
 	
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+***********************************************************************
+**# 0 - setup
+***********************************************************************
 
 * define paths	
 	global 	root  			"$data/household_data/uganda/wave_5/raw"  
@@ -33,45 +33,46 @@
 	log using 				"$logout/2011_AGSEC5A", append
 
 	
-* **********************************************************************
-* 1 - import data and rename variables
-* **********************************************************************
+***********************************************************************
+**# 1 - import data and rename variables
+***********************************************************************
 
 * import wave 5 season 1
-	use 			"$root/agric/AGSEC5A.dta", clear
+	*** for some reason 1st season is agsec5b not 5a
+	
+	use 			"$root/agric/AGSEC5B.dta", clear
 		
 	rename 			cropID cropid
 	rename			plotID pltid
 	rename			parcelID prcid
-	rename 			a5aq6c unit
-	rename			a5aq6b condition
-	rename 			a5aq6e harvmonth
-		
-* unlike other waves, HHID is a numeric here
-	format 			%18.0g HHID
-	tostring		HHID, gen(hhid) format(%18.0g)
+	rename 			a5bq6c unit
+	rename			a5bq6b condition
+	rename 			a5bq6e harvmonth
+	rename			HHID hhid
 	
 	sort 			hhid prcid pltid cropid
 	
 * drop observations from plots that did not harvest because crop was immature
-	drop if a5aq5_2 == 1
-	*** 1484 observations deleted
+	drop 			if a5bq5_2 == 1
+	*** 2 observations deleted
 
 * missing cropid's also lack crop names, drop those observations
 	mdesc 			cropid
-	*** 0 obs
+	*** 8 observations missing
+	drop			if cropid ==.
+	** 8 obs deleted
 	
 * drop cropid is other, fallow, pasture, and trees
 	drop 			if cropid > 880
-	*** 93 observations dropped
+	*** 18 observations dropped
 	
 * replace harvests with 99999 with a 0, 99999 is code for missing
-	replace 		a5aq6a = 0 if a5aq6a == 99999
+	replace 		a5bq6a = 0 if a5bq6a == 99999
 	*** 0 changed to zero
 	
 * replace missing cropharvests with 0
-	replace 		a5aq6a = 0 if a5aq6a == .
-	*** 19 changed to zero
+	replace 		a5bq6a = 0 if a5bq6a == .
+	*** 0 changed to zero
 
 * missing prcid and pltid don't allow for unique id, drop missing
 	drop			if prcid == .
@@ -80,24 +81,28 @@
 	*** zero dropped, still not unique ID
 	
 	
-* **********************************************************************
-* 2 - merge kg conversion file and create harvested quantity
-* **********************************************************************
+***********************************************************************
+**# 2 - merge kg conversion file and create harvested quantity
+***********************************************************************
 	
 	merge m:1 		cropid unit condition using ///
-						"`conv'/ValidCropUnitConditionCombinations.dta" 
-	*** unmatched 413 from master 
+						"$conv/ValidCropUnitConditionCombinations.dta" 
+	*** unmatched 198 from master 
+	*** unmatched 717 from using
+	*** total unmatched, 915
+	
 	
 * drop from using
 	drop 			if _merge == 2
+	** 717 obs dropped
 
 * how many unmatched had a harvest of 0
-	tab 			a5aq6a if _merge == 1
-	*** 97% have a harvest of 0
+	tab 			a5bq6a if _merge == 1
+	*** 0% have a harvest of 0
 	
 * how many unmatched because they used "other" to categorize the state of harvest?
 	tab 			condition if _merge == 1
-	*** 92% say the condition was "other(99)"
+	*** 0% say the condition was "other(99)"
 	
 	tab 			cropid condition if condition != 99 & _merge == 1 & condition !=.
 	
@@ -105,8 +110,8 @@
 	
 
 * replace ucaconversion to 1 if the harvest is 0
-	replace 		ucaconversion = 1 if a5aq6a == 0 & _merge == 1
-	*** 404 changes
+	replace 		ucaconversion = 1 if a5bq6a == 0 & _merge == 1
+	*** 0 changes
 
 * manually replace conversion for the kilograms and sacks 
 * if the condition is other condition and the observation is unmatched
@@ -169,9 +174,9 @@
 	*** 241 mean, 18000 max
 	
 	
-* **********************************************************************
-* 3 - value of harvest
-* **********************************************************************
+***********************************************************************
+**# 3 - value of harvest
+***********************************************************************
 
 * value of crop sold in shillings
 	rename			a5aq8 harvvlush
@@ -193,9 +198,9 @@
 	*** mean 100.5, min 0, max 8304
 	
 	
-* **********************************************************************
-* 4 - generate sold harvested values
-* **********************************************************************
+***********************************************************************
+**# 4 - generate sold harvested values
+***********************************************************************
 
 * drop converstion factor variables
 	drop			crop_code unit_code condition_code ucaconversion ///
@@ -257,9 +262,9 @@
 	replace 		harvkgsold = . if harvkgsold == 0	
 	
 	
-* ********************************************************************
-* 5 - generate price data
-* ********************************************************************	
+*********************************************************************
+**# 5 - generate price data
+*********************************************************************	
 	
 * merge the location identification
 	merge m:1 		hhid using "`export'/2011_GSEC1"
@@ -398,9 +403,9 @@
 	*** mean = 0.316, max = 32.97
 
 	
-* **********************************************************************
-* 6 - impute harvqtykg
-* **********************************************************************
+***********************************************************************
+**# 6 - impute harvqtykg
+***********************************************************************
 
 * summarize harvest quantity prior to imputations
 	sum				harvqtykg
@@ -434,9 +439,9 @@
 	drop 				harvqtykg_1_ mi_miss
 	
 	
-* ***********************************************************************
-* 7 - impute cropvl
-* ***********************************************************************	
+************************************************************************
+**# 7 - impute cropvl
+************************************************************************	
 
 * summarize value of sales prior to imputations
 	sum				cropvl
@@ -472,9 +477,9 @@
 	*** 397 changes made
 	
 		
-* ********************************************************************
-* 8 - impute cropvalue from sales
-* ********************************************************************	
+*********************************************************************
+**# 8 - impute cropvalue from sales
+*********************************************************************	
 	
 * generate value of harvest 
 	gen				cropvalue = harvqtykg * croppricei
@@ -517,9 +522,9 @@
 	drop 			cropvalue_1_ mi_miss
 
 	
-* **********************************************************************
-* 9 - end matter, clean up to save
-* **********************************************************************
+***********************************************************************
+**# 9 - end matter, clean up to save
+***********************************************************************
 
 * summarize crop value, imputed crop value, and maize harvest
 	sum				cropvl
