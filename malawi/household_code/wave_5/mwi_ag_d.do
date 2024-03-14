@@ -335,9 +335,9 @@
 * 8 - end matter, clean up to save
 * **********************************************************************
 
-	keep  			case_id plotid crop_cash soiltype swc_* slope dambo irrigation_any fert_inorg_any ///
+	keep  			case_id plotid gardenid HHID crop_cash soiltype swc_* slope dambo irrigation_any fert_inorg_any ///
 						fert_inorg_n insecticide_any herbicide_any fungicide_any pesticide_any labordays hirelabor_any
-	order 			case_id plotid crop_cash soiltype swc_* slope dambo irrigation_any fert_inorg_any ///
+	order 			case_id plotid gardenid HHID crop_cash soiltype swc_* slope dambo irrigation_any fert_inorg_any ///
 						fert_inorg_n insecticide_any herbicide_any fungicide_any pesticide_any labordays hirelabor_any
 
 	compress

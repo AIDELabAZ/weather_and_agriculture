@@ -133,8 +133,12 @@
 * save temporary file for merge below
 	save "`temp'/mods_g_i_plotlevel.dta", replace 
 	
-	*** PAUSE HERE NEED C AND D... 
-
+* create plot-level datasets
+	use 			"`export'/ag_mod_c.dta", clear
+	merge 			1:1 case_id plotid gardenid HHID using "`export'/ag_mod_d.dta", generate(_D)
+	*** 17657 matched
+	*** 36 unmatched from using 
+	
 * **********************************************************************
 * ? - end matter, clean up to save
 * **********************************************************************
