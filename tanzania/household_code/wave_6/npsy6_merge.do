@@ -1,7 +1,9 @@
 * Project: WB Weather
-* Created on: May 2020
-* Created by: McG
-* Stata v.16
+* Created on: March 13, 2024
+* Created by: reece
+* Edited on: March 13, 2024
+* Edited by: reece
+* Stata v.18
 
 * does
 	* merges individual cleaned plot datasets together
@@ -13,7 +15,7 @@
 	* customsave.ado
 
 * TO DO:
-	* complete
+	* everything
 
 
 * **********************************************************************
@@ -21,13 +23,13 @@
 * **********************************************************************
 
 * define paths
-	loc		root	=	"$data/household_data/tanzania/wave_4/refined"
-	loc		export	=	"$data/household_data/tanzania/wave_4/refined"
-	loc		logout	=	"$data/merged_data/tanzania/logs"
+	global root 	"$data/household_data/tanzania/wave_6/refined"
+	global export 	"$data/household_data/tanzania/wave_6/refined"
+	global logout 	"$data/household_data/tanzania/logs"
 
-* open log
-	cap log close
-	log		using	"`logout'/npsy4_merge", append
+* open log 
+	cap log close 
+	log using "$logout/npsy6_merge", append
 
 
 * **********************************************************************
@@ -35,16 +37,17 @@
 * **********************************************************************
 
 * start by loading harvest quantity and value, since this is our limiting factor
-	use 			"`root'/AG_SEC4A", clear
+	use 		"$root/2020_AGSEC4A", clear
 
 	isid			crop_id
 
 * merge in plot size data
-	merge 			m:1 plot_id using "`root'/AG_SEC2A", generate(_2A)
-	*** 0 out of 5,398 missing in master 
-	*** all unmerged obs came from using data 
-	*** meaning we lacked production data
+	merge 			m:1 plot_id using "$root/2020_AGSEC2A", generate(_2A)
+	*** 2643 out of 2660 missing in master 
+	*** most unmatched data came from master, not sure what this means? revisit
+	*** only matched 2660/5460? seems low?
 	*** per Malawi (rs_plot) we drop all unmerged observations
+	
 	
 	drop			if _2A != 3
 	
@@ -52,8 +55,8 @@
 	replace			plotsize = percent_field * plotsize if percent_field != .
 	
 * merging in production inputs data
-	merge			m:1 plot_id using "`root'/AG_SEC3A", generate(_3A)
-	*** 0 out of 5,398 missing in master 
+	merge			m:1 plot_id using "$root/2020_AGSEC3A", generate(_3A)
+	*** 0 out of 2660 missing in master 
 	*** all unmerged obs came from using data 
 	*** meaning we lacked production data
 
@@ -102,7 +105,7 @@
 						mz_hrv mz_lnd mz_lab mz_frt ///
 			 (max)	pest_any herb_any irr_any  ///
 						mz_pst mz_hrb mz_irr mz_damaged, ///
-						by(y4_hhid plotnum plot_id clusterid strataid ///
+						by(y5_hhid plotnum plot_id clusterid strataid ///
 						hhweight region district ward ea)
 						
 * replace non-maize harvest values as missing

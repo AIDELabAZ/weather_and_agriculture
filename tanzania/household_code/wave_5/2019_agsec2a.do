@@ -1,41 +1,44 @@
 * Project: WB Weather
-* Created on: May 2020
-* Created by: McG
-* Stata v.16
+* Created on: March 13, 2024
+* Created by: reece
+* Edited on: March 13, 2024
+* Edited by: reece
+* Stata v.18
 
 * does
-	* cleans Tanzania household variables, wave 4 Ag sec2a
+	* cleans Tanzania household variables, wave 6 Ag sec2a
 	* looks like a parcel roster, long rainy season
 	* generates imputed plot sizes
 	
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* distinct.ado
+	* cleaned HH_SECA data
 
 * TO DO:
-	* completed
+
 
 	
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+************************************************************************
+**# 0 - setup
+************************************************************************
 
 * define paths
-	loc root = "$data/household_data/tanzania/wave_4/raw"
-	loc export = "$data/household_data/tanzania/wave_4/refined"
-	loc logout = "$data/household_data/tanzania/logs"
+	global root 	"$data/household_data/tanzania/wave_5/raw"
+	global export 	"$data/household_data/tanzania/wave_5/refined"
+	global logout 	"$data/household_data/tanzania/logs"
 
 * open log 
 	cap log close 
-	log using "`logout'/wv4_AGSEC2A", append
+	log using "$logout/wv5_AGSEC2A", append
 
 	
-* ***********************************************************************
-* 1 - prepare TZA 2014 (Wave 4) - Agriculture Section 2A 
-* ***********************************************************************
+*************************************************************************
+**# 1 - prepare TZA 2020 (Wave 6) - Agriculture Section 2 
+*************************************************************************
 
 * load data
-	use 		"`root'/ag_sec_2a", clear
+	use 		"$root/ag_sec_02", clear
 
 * dropping duplicates
 	duplicates 	drop
