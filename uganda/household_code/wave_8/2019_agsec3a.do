@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: ek
-* Edited on 8 Mar 24
+* Edited on 15 Mar 24
 * Edited by kd
 * Stata v.18, mac
 
@@ -39,12 +39,16 @@
 * import wave 8 season A
 	use 			"$root/agric/agsec3a.dta", clear
 	
-**#unlike other waves, HHID is a numeric here
-	format 			%18.0g HHID
-	tostring		hhid, gen(hhid) format(%18.0g)
+* Change hhid to str as hhide, rename hhide to hhid for simplicity 
 	
+	encode 			hhid, gen(hhide)
+	rename 			hhid hhid_old
+	rename			hhide hhid
+	
+
+	
+*	rename			parcelID prcid
 	rename			parcelID prcid
-	rename			plotID pltid
 
 	replace			prcid = 1 if prcid == .
 	
@@ -53,11 +57,11 @@
 
 	
 * **********************************************************************
-* 2 - merge location data
+**#2 - merge location data
 * **********************************************************************	
 	
 * merge the location identification
-	merge m:1 		hhid using "`export'/2011_GSEC1"
+	merge m:1 		hhid using "$`export'/2019_gsec1"
 	*** 1054 unmatched from master
 	
 	drop if			_merge != 3
