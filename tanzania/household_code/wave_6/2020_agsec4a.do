@@ -45,14 +45,8 @@
 * rename variables of interest
 	rename 			cropid crop_code
 
-* create plotnum
-	rename			plot_id plot_id_old
-	tostring 		plot_id_old, replace
-	gen				plot_id_m = "M"
-	gen 			plotnum = plot_id_m+plot_id_old
-	*** plotnum in this file differs slightly from previous files
-	*** for example in previous files where plotnum is coded as "M1", it is coded as "1" here as plot_id
-	*** need to add an "M" proceeding plot_id to match previous files
+* check unique identifiers
+	isid			y5_hhid plot_id crop_code
 	
 * create percent of area to crops
 	gen				pure_stand = ag4a_01 == 1
@@ -67,11 +61,11 @@
 	replace			percent_field = 0.50 if ag4a_02==2
 	replace			percent_field = 0.75 if ag4a_02==3
 	replace			percent_field = 1 if pure_stand==1
-	duplicates		list y5_hhid plotnum crop_code
+	duplicates		list y5_hhid plot_id crop_code
 	*** there are 0 duplicates
 
 * create total area on field (total on plot across ALL crops)
-	bys 			y5_hhid plotnum: egen total_percent_field = total(percent_field)
+	bys 			y5_hhid plot_id: egen total_percent_field = total(percent_field)
 	replace			percent_field = percent_field / total_percent_field ///
 						if total_percent_field > 1	
 	*** 2260 changes made
@@ -92,16 +86,6 @@
 * replace missing weight 
 	replace 			ag4a_27 = 0 if ag4a_27 == .
 	*** no changes made	
-
-* generate hh x plot x crop identifier
-*	isid				y5_hhid plotnum crop_code // no unique id, mentioned above
-	gen		 			plot_id = y5_hhid + " " + plotnum
-	lab var				plot_id "plot id"
-	tostring 			crop_code, generate(crop_num)
-	gen str23 			crop_id = y5_hhid + " " + plotnum + " " + crop_num
-	duplicates report 	crop_id
-	lab var				crop_id "unique crop id"
-	*** 1 duplicate crop_id	
 	
 * must merge in regional identifiers from 2008_HHSECA to impute
 	merge			m:1 y5_hhid using "$export/HH_SECA"
@@ -144,7 +128,7 @@
 	mi set 			wide 	// declare the data to be wide.
 	mi xtset		, clear 	// clear any xtset that may have had in place previously
 	mi register		imputed hvst_value // identify kilo_fert as the variable being imputed
-	sort			y5_hhid plotnum crop_num, stable // sort to ensure reproducability of results
+	sort			y5_hhid plot_id crop_code, stable // sort to ensure reproducability of results
 	mi impute 		pmm hvst_value i.uq_dist i.crop_code, add(1) rseed(245780) ///
 						noisily dots force knn(5) bootstrap
 	mi 				unset	
@@ -178,7 +162,7 @@
 	mi set 			wide 	// declare the data to be wide.
 	mi xtset		, clear 	// clear any xtset that may have had in place previously
 	mi register		imputed mz_hrv // identify kilo_fert as the variable being imputed
-	sort			y5_hhid plotnum crop_num, stable // sort to ensure reproducability of results
+	sort			y5_hhid plot_id crop_code, stable // sort to ensure reproducability of results
 	mi impute 		pmm mz_hrv i.uq_dist if crop_code == 11, add(1) rseed(245780) ///
 						noisily dots force knn(5) bootstrap
 	mi 				unset	
@@ -199,19 +183,18 @@
 * **********************************************************************
 	
 * keep what we want, get rid of what we don't
-	keep 				y5_hhid plotnum plot_id crop_code crop_id clusterid ///
+	keep 				y5_hhid plot_id crop_code clusterid ///
 							strataid hhweight region district  ///
 							any_* pure_stand percent_field mz_hrv hvst_value ///
 							mz_damaged y5_rural
 
-	order				y5_hhid plotnum plot_id crop_code crop_id clusterid ///
+	order				y5_hhid plot_id crop_code clusterid ///
 							strataid hhweight region district 
 	
 * renaming and relabelling variables
 	lab var			y5_hhid "Unique Household Identification NPS Y5"
 	lab var			y5_rural "Cluster Type"
 	lab var			hhweight "Household Weights (Trimmed & Post-Stratified)"
-	lab var			plotnum "Plot ID Within household"
 	lab var			plot_id "Plot Identifier"
 	lab var			clusterid "Unique Cluster Identification"
 	lab var			strataid "Design Strata"
@@ -221,24 +204,23 @@
 	lab var			mz_damaged "Was Maize Harvest Damaged to the Point of No Yield"
 	lab var			hvst_value "Value of Harvest (2010 USD)"
 	lab var 		crop_code "Crop Identifier"
-	lab var			crop_id "Unique Crop ID Within Plot"
 	lab var			pure_stand "Is Crop Planted in Full Area of Plot (Purestand)?"
 	lab var			any_pure "Is Crop Planted in Full Area of Plot (Purestand)?"
 	lab var			any_mixed "Is Crop Planted in Less Than Full Area of Plot?"
 	lab var			percent_field "Percent of Field Crop Was Planted On"
 						
 * check for duplicates
-	duplicates		report y5_hhid plotnum crop_code
-	*** there is 1 duplicate
+	duplicates		report y5_hhid plot_id crop_code
+	*** there is 0 duplicate
 	
-	collapse (sum)	hvst_value percent_field , by(y5_hhid ///
-						plotnum plot_id crop_code crop_id clusterid ///
+	collapse (sum)	hvst_value percent_field, by(y5_hhid ///
+						plot_id crop_code clusterid ///
 						strataid hhweight region district ///
 						any_* pure_stand mz_hrv mz_damaged)
 	** 0 fewer obs
 
 * prepare for export
-	isid			y5_hhid plotnum crop_code
+	isid			y5_hhid plot_id crop_code
 	compress
 	describe
 	summarize 

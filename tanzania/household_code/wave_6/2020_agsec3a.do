@@ -45,19 +45,13 @@
 
 * check for uniquie identifiers
 	rename 			prevplot_id plotnum
-	drop			if plotnum == ""
-	isid			y5_hhid plotnum
-	*** 2774 obs dropped
+	isid			y5_hhid plot_id
 
-* generate unique observation id
-	rename			plot_id plot_id_wb
-	gen				plot_id = y5_hhid + " " + plotnum
-	isid			plot_id
 	
 * must merge in regional identifiers from 2020_HHSECA to impute
 	merge			m:1 y5_hhid using "$export/HH_SECA"
 	tab				_merge
-	*** 2878 not matched, from using
+	*** 1,780 not matched, from using
 
 	drop if			_merge == 2
 	drop			_merge
@@ -66,16 +60,16 @@
 	sort			region district
 	egen			uq_dist = group(region district)
 	distinct		uq_dist
-	*** 172 distinct districts
+	*** 195 distinct districts
 
 * record if field was cultivated during long rains
-	gen 			status = ag3a_03==1 if ag3a_03!=.
+	gen 			status = ag3a_03 == 1 if ag3a_03 != .
 	lab var			status "=1 if field cultivated during long rains"
-	*** 1926 observations were cultivated (92%)
+	*** 3,838 observations were cultivated (68.5%)
 
 * drop uncultivated plots
 	drop			if status == 0	
-	*** 908 obs deleted
+	*** 1,765 obs deleted
 	
 	
 * ***********************************************************************
@@ -86,7 +80,7 @@
 	rename			ag3a_47 fert_any
 	replace			fert_any = 2 if fert_any == .
 	*** assuming missing values mean no fertilizer was used
-	*** 952 changes made
+	*** 957 changes made
 	
 	replace			ag3a_49 = 0 if ag3a_49 == .
 	replace			ag3a_56 = 0 if ag3a_56 == .
@@ -95,22 +89,22 @@
 
 * summarize fertilizer
 	sum				kilo_fert, detail
-	*** median 0, mean 8.513, max 1000, s.d. 43.462
-	*** the top two obs are 1000 kg and 700 kg
-	*** the next highest ob is 600
+	*** median 0, mean 10.98, max 2000, s.d. 59.74
+	*** the top three obs are 1000+ kg
+	*** the next highest ob is 900
 
 * replace any +3 s.d. away from median as missing
-	replace			kilo_fert = . if kilo_fert > 5000
+	replace			kilo_fert = . if kilo_fert > 1000
 	sum				kilo_fert, detail
 	replace			kilo_fert = . if kilo_fert > `r(p50)'+(3*`r(sd)')
 	sum				kilo_fert, detail
-	*** replaced 48 values, max is now 130
+	*** replaced 89 values, max is now 130
 	
 * impute missing values
 	mi set 			wide 	// declare the data to be wide.
 	mi xtset		, clear 	// clear any xtset that may have had in place previously
 	mi register		imputed kilo_fert // identify kilo_fert as the variable being imputed
-	sort			y5_hhid plotnum, stable // sort to ensure reproducability of results
+	sort			y5_hhid plot_id, stable // sort to ensure reproducability of results
 	mi impute 		pmm kilo_fert i.uq_dist, add(1) rseed(245780) ///
 						noisily dots force knn(5) bootstrap
 	mi 				unset
@@ -122,7 +116,7 @@
 						longstub format(%9.3g) 
 	replace			kilo_fert = kilo_fert_1_
 	drop			kilo_fert_1_
-	*** imputed 46 values out of 2878 total observations	
+	*** imputed 91 values out of 4,795 total observations	
 
 	
 * ***********************************************************************
@@ -132,7 +126,7 @@
 * renaming irrigation
 	rename			ag3a_18 irrigated 
 	replace			irrigated = 2 if irrigated == .
-	*** 952 changes
+	*** 957 changes
 	
 * constructing pesticide/herbicide variables
 	gen				pesticide_any = 2
@@ -142,9 +136,8 @@
 	lab define		pesticide_any 1 "Yes" 2 "No"
 	lab values		pesticide_any pesticide_any
 	lab values		herbicide_any pesticide_any	
-	*** 319 used pesticide, 155 used herbicide_any
+	*** 605 used pesticide, 286 used herbicide_any
 	
-
 
 * ***********************************************************************
 **#4 - generate labor variables
@@ -171,8 +164,7 @@
 						ag3a_72g_1 ag3a_72g_2 ag3a_72g_3 ag3a_72g_4 ///
 						ag3a_72g_5 ag3a_72g_6 ag3a_72g_7 ag3a_72g_8 ag3a_72g_9 ag3a_72g_10 ///
 						ag3a_72k_1 ag3a_72k_2 ag3a_72k_3 ag3a_72k_4 ///
-						ag3a_72k_5 ag3a_72k_6 ag3a_72k_7 ag3a_72k_8 ag3a_72k_9 ag3a_72k_10, mv(0)
-						
+						ag3a_72k_5 ag3a_72k_6 ag3a_72k_7 ag3a_72k_8 ag3a_72k_9 ag3a_72k_10, mv(0)						
 	*** this allows us to impute only the variables we change to missing
 	*** in wave6 there are 10 members (wave4 had 6), however basic info doc says there should be 6 members here as well- revisit
 						
@@ -184,7 +176,7 @@
 * summarize household individual labor for weeding/ridging to look for outliers
 	sum				ag3a_72g_1 ag3a_72g_2 ag3a_72g_3 ag3a_72g_4 ///
 						ag3a_72g_5 ag3a_72g_6 ag3a_72g_7 ag3a_72g_8 ag3a_72g_9 ag3a_72g_10 
-	*** no obs > 90, two obs = 90
+	*** one obs at 228
 	
 * summarize household individual labor for harvest to look for outliers
 	sum				ag3a_72k_1 ag3a_72k_2 ag3a_72k_3 ag3a_72k_4 ///
@@ -203,7 +195,7 @@
 						ag3a_72k_1 ag3a_72k_2 ag3a_72k_3 ag3a_72k_4 ///
 						ag3a_72k_5 ag3a_72k_6 ag3a_72k_7 ag3a_72k_8 ag3a_72k_9 ag3a_72k_10)
 	*** seems pretty comparable to wave4
-	*** however there are many missing obs (989) compared to wave4 (122)
+	*** no missing values
 
 * generate hired labor by gender and activity
 	gen				plant_w = ag3a_74_1a
@@ -230,25 +222,25 @@
 	
 	* impute women's planting labor
 		mi register		imputed plant_w // identify kilo_fert as the variable being imputed
-		sort			y5_hhid plotnum, stable // sort to ensure reproducability of results
+		sort			y5_hhid plot_id, stable // sort to ensure reproducability of results
 		mi impute 		pmm plant_w i.uq_dist if ag3a_73 == 1, add(1) rseed(245780) ///
 							noisily dots force knn(5) bootstrap
 	
 	* impute women's harvest labor
 		mi register		imputed hrvst_w // identify kilo_fert as the variable being imputed
-		sort			y5_hhid plotnum, stable // sort to ensure reproducability of results
+		sort			y5_hhid plot_id, stable // sort to ensure reproducability of results
 		mi impute 		pmm hrvst_w i.uq_dist if ag3a_73 == 1, add(1) rseed(245780) ///
 							noisily dots force knn(5) bootstrap
 
 	* impute men's planting labor
 		mi register		imputed plant_m // identify kilo_fert as the variable being imputed
-		sort			y5_hhid plotnum, stable // sort to ensure reproducability of results
+		sort			y5_hhid plot_id, stable // sort to ensure reproducability of results
 		mi impute 		pmm plant_m i.uq_dist if ag3a_73 == 1, add(1) rseed(245780) ///
 							noisily dots force knn(5) bootstrap
 	
 	* impute men's harvest labor
 		mi register		imputed hrvst_m // identify kilo_fert as the variable being imputed
-		sort			y5_hhid plotnum, stable // sort to ensure reproducability of results
+		sort			y5_hhid plot_id, stable // sort to ensure reproducability of results
 		mi impute 		pmm hrvst_m i.uq_dist if ag3a_73 == 1, add(1) rseed(245780) ///
 							noisily dots force knn(5) bootstrap
 							
@@ -277,14 +269,14 @@
 						pesticide_any herbicide_any labor_days plotnum ///
 						region district y5_rural clusterid strataid ///
 						hhweight
-	order			y5_hhid plotnum plot_id
+	order			y5_hhid plot_id plotnum
 	
 * renaming and relabelling variables
 	lab var			y5_hhid "Unique Household Identification NPS Y5"
 	lab var			y5_rural "Cluster Type"
 	lab var			hhweight "Household Weights (Trimmed & Post-Stratified)"
-	lab var			plotnum "Plot ID Within household"
-	lab var			plot_id "Unique Plot Identifier"
+	lab var			plotnum "Old plot number"
+	lab var			plot_id "Plot Identifier"
 	lab var			clusterid "Unique Cluster Identification"
 	lab var			strataid "Design Strata"
 	lab var			region "Region Code"
@@ -296,12 +288,12 @@
 	lab var			kilo_fert "Fertilizer Use (kg), Imputed"
 	
 * prepare for export
-	isid			y5_hhid plotnum
+	isid			y5_hhid plot_id
 	compress
 	describe
 	summarize 
-	sort plot_id
-	save 		"$export/2020_AGSEC3A.dta", replace
+	sort 			y5_hhid plot_id
+	save 			"$export/2020_AGSEC3A.dta", replace
 
 * close the log
 	log	close

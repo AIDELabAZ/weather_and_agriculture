@@ -28,8 +28,8 @@
 	global logout 	"$data/household_data/tanzania/logs"
 
 * open log 
-	cap log close 
-	log using "$logout/npsy6_merge", append
+	cap log 		close 
+	log 			using "$logout/npsy6_merge", append
 
 
 * **********************************************************************
@@ -37,17 +37,14 @@
 * **********************************************************************
 
 * start by loading harvest quantity and value, since this is our limiting factor
-	use 		"$root/2020_AGSEC4A", clear
+	use 			"$root/2020_AGSEC4A", clear
 
-	isid			crop_id
+	isid			y5_hhid plot_id crop_code
 
 * merge in plot size data
-	merge 			m:1 plot_id using "$root/2020_AGSEC2A", generate(_2A)
-	*** 2643 out of 2660 missing in master 
-	*** most unmatched data came from master, not sure what this means? revisit
-	*** only matched 2660/5460? seems low?
+	merge 			m:1 y5_hhid plot_id using "$root/2020_AGSEC2A", generate(_2A)
+	*** 271 out of 5,574 missing in using 
 	*** per Malawi (rs_plot) we drop all unmerged observations
-	
 	
 	drop			if _2A != 3
 	
@@ -55,8 +52,8 @@
 	replace			plotsize = percent_field * plotsize if percent_field != .
 	
 * merging in production inputs data
-	merge			m:1 plot_id using "$root/2020_AGSEC3A", generate(_3A)
-	*** 0 out of 2660 missing in master 
+	merge			m:1 y5_hhid plot_id using "$root/2020_AGSEC3A", generate(_3A)
+	*** 1,228 out of 6,531 missing in using 
 	*** all unmerged obs came from using data 
 	*** meaning we lacked production data
 

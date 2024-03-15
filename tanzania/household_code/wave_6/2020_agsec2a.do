@@ -47,27 +47,18 @@
 * must merge in regional identifiers from 2012_AG_SEC_3A to impute
 	rename 		ag2a_05 prevplot_id
 	
-	merge		m:m y5_hhid prevplot_id using "$root/ag_sec_3a"
+	merge		1:1 y5_hhid plot_id using "$root/ag_sec_3a"
 	drop		_merge
-	*** merging m:m unique identifer for missing values, renaming ag2a_05 to prevplot_id to merge plotnum
+	*** all merged
 	
 * renaming variables of interest
 	rename 		ag2a_04 plotsize_self_ac
 	rename 		ag2a_09 plotsize_gps_ac
+	rename 		prevplot_id plotnum
 
 * check for unique identifiers
-	rename 		prevplot_id plotnum
-	drop		if plotnum == ""
-	isid		y5_hhid plotnum
-	*** 2,774 obs dropped
-	
-* generating unique observation id for each ob
-	rename		plot_id plot_id_wb
-	generate 	plot_id = y5_hhid + " " + plotnum
-	lab var		plot_id "Unique plot identifier"
-	isid 		plot_id
-	*** already a "plot_id" in the data, should this be renamed?
-	*** renamed plot_id_wb
+	isid		y5_hhid plot_id
+	lab var		plot_id "Plot identifier"
 	
 * convert from acres to hectares
 	generate	plotsize_self = plotsize_self_ac * 0.404686
@@ -77,7 +68,7 @@
 	drop		plotsize_gps_ac plotsize_self_ac
 
 	tab 		plotsize_gps
-	*** two large outliers (1575.24 and 4833.17) 
+	*** several large outliers (1575.24 +) 
 	
 * ***********************************************************************
 **#2 - merge in regional ID and cultivation status
@@ -86,7 +77,7 @@
 * must merge in regional identifiers from 2020_HHSECA to impute
 	merge		m:1 y5_hhid using "$export/HH_SECA"
 	tab			_merge
-	*** 2878 not merged from using, out of 6664, (dropped obs from line 45)
+	*** 1,780 not merged from using, out of 8,340, (dropped obs from line 45)
 	
 	drop		if _merge == 2
 	drop		_merge
@@ -205,7 +196,7 @@
 	mi set 		wide 	// declare the data to be wide.
 	mi xtset	, clear 	// clear any xtset in place previously
 	mi register	imputed plotsize_gps // identify plotsize_GPS as the variable being imputed
-	sort		y5_hhid plotnum, stable // sort to ensure reproducability of results
+	sort		y5_hhid plot_id, stable // sort to ensure reproducability of results
 	mi impute 	pmm plotsize_gps plotsize_self i.uq_dist, add(1) rseed(245780) ///
 					noisily dots force knn(5) bootstrap
 	mi 			unset
@@ -234,9 +225,9 @@
 * **********************************************************************
 	
 * keep what we want, get rid of the rest
-	keep		y5_hhid plotnum plot_id plotsize clusterid strataid ///
+	keep		y5_hhid plot_id plotnum plotsize clusterid strataid ///
 					hhweight region district y5_rural
-	order		y5_hhid plotnum plot_id clusterid strataid hhweight ///
+	order		y5_hhid plot_id plotnum clusterid strataid hhweight ///
 					region district plotsize
 					
 * renaming and relabeling variables
@@ -244,7 +235,7 @@
 	lab var		y5_rural "Cluster Type"
 	lab var		hhweight "Household Weights (Trimmed & Post-Stratified)"
 	lab var		plotnum "Plot ID Within household"
-	lab var		plot_id "Unique Plot Identifier"
+	lab var		plot_id "Plot Identifier"
 	lab var		plotsize "Plot size (ha), imputed"
 	lab var		clusterid "Unique Cluster Identification"
 	lab var		strataid "Design Strata"
@@ -252,7 +243,7 @@
 	lab var		district "District Code"
 
 * prepare for export
-	isid			y5_hhid plotnum
+	isid			y5_hhid plot_id
 	compress
 	describe
 	summarize 
