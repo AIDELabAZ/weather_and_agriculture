@@ -43,11 +43,11 @@
 	rename 			cropID cropid
 	rename			plotID pltid
 	rename			parcelID prcid
-	rename 			a5aq6b unit
-	rename			a5aq6c condition
+	rename 			a5aq6c unit
+	rename			a5aq6b condition
 	rename 			a5aq6e harvmonth
 	*** during this wave condition = a5aq6b not c
-	*** also condition is c not b
+	*** unit is c not b
 	
 * two observations are missing pltid
 	*** the hhids are 163060401 and 172100401
@@ -59,8 +59,7 @@
 * unlike other waves, HHID is a numeric here
 	format 			%18.0g HHID
 	tostring		HHID, gen(hhid) format(%18.0g)
-	
-	sort 			hhid prcid pltid cropid
+
 	
 * drop observations from plots that did not harvest because crop was immature
 	drop if 		a5aq5_2 == 1
@@ -89,6 +88,10 @@
 	drop			if pltid == .
 	duplicates 		drop
 	*** zero dropped, still not unique ID
+
+* unique identifier
+	isid 			hhid prcid pltid Production_ID cropid
+	sort 			hhid prcid pltid Production_ID cropid	
 	
 	
 ***********************************************************************
