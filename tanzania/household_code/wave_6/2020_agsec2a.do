@@ -86,17 +86,17 @@
 	sort		region district
 	egen		uq_dist = group(region district)
 	distinct 	uq_dist
-	*** 172 distinct districts
+	*** 195 distinct districts
 	
 * record if field was cultivated during long rainy
 	gen 		status = ag3a_03==1 if ag3a_03!=.
 	lab var		status "=1 if field cultivated during long rain"
-	*** 1926 obs were cultivated (68%)
-	*** 952 missing
+	*** 3838 obs were cultivated (68.5%)
+	*** 957 missing
 	
 * drop any obs that weren't cultivated
 	drop if		status != 1
-	*** dropped 1860 not cultivated during long rainy
+	*** dropped 2722 not cultivated during long rainy
 	
 	order plot_id plotsize_self plotsize_gps region district y5_rural clusterid strataid hhweight uq_dist, after(plotnum)
 	
@@ -109,84 +109,84 @@
 	
 * interrogating plotsize variables
 	count 		if plotsize_gps != . & plotsize_self != .
-	*** 1556 missing out of 1926
+	*** 2656 not missing out of 3838
 	
 	pwcorr 		plotsize_gps plotsize_self
-	*** low correlation (0.0026)
+	*** low correlation (0.0065)
 	
-	replace 	plotsize_gps = . if plotsize_gps > 55
+	replace 	plotsize_gps = . if plotsize_gps > 160
 	pwcorr		plotsize_gps plotsize_self
-	*** correlation much higher after dropping two outliers (0.7335)
-	*** 2 replaced as missing
+	*** correlation much higher after dropping five outliers (0.8884)
+	*** 5 replaced as missing
 	
 * inverstingating the high and low end of gps measurments
 	* high end
 		tab			plotsize_gps
 		sum			plotsize_gps, detail
-		*** mean = 1.33
-		*** 90% of obs < 2.9
+		*** mean = 1.29
+		*** 90% of obs < 2.59
 		
 		sort		plotsize_gps
-		sum 		plotsize_gps if plotsize_gps>2.9
-		*** 159 obs > 2.9
+		sum 		plotsize_gps if plotsize_gps>2.59
+		*** 266 obs > 2.59
 		
-		list		plotsize_gps plotsize_self if plotsize_gps>2.9 & ///
+		list		plotsize_gps plotsize_self if plotsize_gps>2.59 & ///
 						!missing(plotsize_gps), sep(0)
-		pwcorr		plotsize_gps plotsize_self if plotsize_gps>2.9 & ///
+		pwcorr		plotsize_gps plotsize_self if plotsize_gps>2.59 & ///
 						!missing(plotsize_gps)
-		*** corr = 0.6439 (pretty high correlation)
+		*** corr = 0.8953 (high correlation)
 		
-		sum 		plotsize_gps if plotsize_gps>4.60
-		*** 95% of obs < 4.60, 77 obs > 4.22
+		sum 		plotsize_gps if plotsize_gps>4.25
+		*** 95% of obs < 4.25, 135 obs > 4.25
 		
-		list		plotsize_gps plotsize_self if plotsize_gps>4.22 & ///
+		list		plotsize_gps plotsize_self if plotsize_gps>4.25 & ///
 						!missing(plotsize_gps), sep(0)
-		pwcorr		plotsize_gps plotsize_self if plotsize_gps>4.22 & ///
+		pwcorr		plotsize_gps plotsize_self if plotsize_gps>4.25 & ///
 						!missing(plotsize_gps)
-		*** corr = 0.5944 
+		*** corr = 0.8991 
 		
 		count 		if plotsize_gps > 20 & plotsize_gps != .
-		*** 5 obs >= 20
+		*** 15 obs >= 20
 		
 		list		plotsize_gps plotsize_self if plotsize_gps>20 & ///
 						!missing(plotsize_gps), sep(0)
 		pwcorr		plotsize_gps plotsize_self if plotsize_gps>20 & ///
 						!missing(plotsize_gps)
-		*** corr at 0.2894
+		*** corr at 0.9264
 
 	* low end
 		tab			plotsize_gps
 		*hist		plotsize_gps if plotsize_gps < 0.5
 		sum			plotsize_gps, detail
-		*** mean = 1.189
-		*** 10% of obs < 0.085
+		*** mean = 1.29
+		*** 10% of obs < 0.073
 		
-		sum 		plotsize_gps if plotsize_gps<0.085
-		*** 161 obs < 0.085
+		sum 		plotsize_gps if plotsize_gps<0.073
+		*** 267 obs < 0.073
 		
-		list		plotsize_gps plotsize_self if plotsize_gps<0.085 & ///
+		list		plotsize_gps plotsize_self if plotsize_gps<0.073 & ///
 						!missing(plotsize_gps), sep(0)
-		pwcorr		plotsize_gps plotsize_self if plotsize_gps<0.085 & ///
+		pwcorr		plotsize_gps plotsize_self if plotsize_gps<0.073 & ///
 						!missing(plotsize_gps)
-		*** corr = 0.0791 (correlation very low)
+		*** corr = 0.1228 (correlation very low)
 		
-		sum 		plotsize_gps if plotsize_gps<0.049
-		*** 88 obs < 0.049
+		sum 		plotsize_gps if plotsize_gps<0.040
+		*** 129 obs < 0.040
 	
-		list		plotsize_gps plotsize_self if plotsize_gps<0.049 & ///
+		list		plotsize_gps plotsize_self if plotsize_gps<0.040 & ///
 						!missing(plotsize_gps), sep(0)
-		pwcorr		plotsize_gps plotsize_self if plotsize_gps<0.049 & ///
+		pwcorr		plotsize_gps plotsize_self if plotsize_gps<0.040 & ///
 						!missing(plotsize_gps)
-		*** corr = 0.0346
+		*** corr = -0.0942
 	
 	* dropping any '0' values, to be imputed later
 		replace 	plotsize_gps = . if plotsize_gps == 0
-		*** 0 changes made
+		*** 1 change made, to missing
 		
 		count		if plotsize_gps < 0.01 & plotsize_gps != .
 		list		plotsize_gps plotsize_self if plotsize_gps<0.01 & ///
 						!missing(plotsize_gps), sep(0)
-		*** 16 obs < 0.01
+		*** 27 obs < 0.01
 		*** all values equal 0.0040469 or 0.0080937 
 		*** meaning pre-conversion values of 0.01, or 0.02
 		*** I will not drop any low end values at this time
@@ -209,12 +209,12 @@
 					format(%9.3g) 
 	rename		plotsize_gps_1_ plotsize
 	lab var		plotsize "Plot size (ha), imputed"
-	*** imputed 1554 values out of 1926 total obs
+	*** imputed 1188 values out of 3838 total obs
 	
 	sum				plotsize_self plotsize_gps	plotsize
-	*** self reported	:	mean 1.19 and s.d. 2.21
-	*** gps				:	mean 1.33 and s.d. 2.93
-	*** imputed			:	mean 1.35 and s.d. 2.84
+	*** self reported	:	mean 1.16 and s.d. 3.96
+	*** gps				:	mean 1.30 and s.d. 4.20
+	*** imputed			:	mean 1.31 and s.d. 3.82
 	
 	drop			if plotsize == . & plotsize_self ==.
 	*** no observations dropped
