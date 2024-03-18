@@ -751,13 +751,15 @@ preserve
 	
 	global			brange	=	$bmax - $bmin
 	global			from_y	=	$bmin - .5*$brange
-	global			gheight	=	36
+	global			gheight	=	44
 
 	twoway 			scatter k1 k2 k3 obs, xlab(0(4)72) xsize(10) ysize(6) msize(small small small)  ///
 						title("") ylab(0(1)$gheight ) xtitle("") ytitle("") ///
 						ylabel(1 "Quantity" ///
 						2 "Value" 3 "*{bf:Dependant Variable}*" ///
-						5 "Uganda" 36 " ", angle(0) ///
+						5 "Uganda" 6 "Tanzania" 7 "Nigeria" 8 "Niger" 9 "Malawi" 10 "Ethiopia" ///
+						11 "*{bf:Country}*" 13 "Rainfall 1" 14"Rainfall 2" 15 "Rainfall 3" ///
+						16 "Rainfall 4" 17 "Rainfall 5" 18 "Rainfall 6" 19"*{bf:Remote Sensing Product}*" 44 "", angle(0) ///
 						labsize(vsmall) tstyle(notick)) || ///
 						(scatter b_ns obs, yaxis(2) mcolor(black%75) ylab(, axis(2) ///
 						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
