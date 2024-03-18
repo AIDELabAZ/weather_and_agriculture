@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: reece
-* Edited on: Feb 26, 2024
+* Edited on: March 8, 2024
 * Edited by: reece
 * Stata v.18
 
@@ -65,6 +65,7 @@
 * record if field was cultivated during long rains
 	gen 			status = ag3a_03 == 1 if ag3a_03 != .
 	lab var			status "=1 if field cultivated during long rains"
+	tab 			status
 	*** 3,838 observations were cultivated (68.5%)
 
 * drop uncultivated plots
@@ -210,11 +211,11 @@
 
 * replace outliers with missing
 	replace			plant_w = . if plant_w > 90  // 0 changes
-	replace			plant_m = . if plant_m > 90 // 1 change
-	replace			other_w = . if other_w > 181 // 0 changes
-	replace			other_m = . if other_m > 181 // 0 changes
-	replace			hrvst_w = . if hrvst_w > 90 // 1 change
-	replace			hrvst_m = . if hrvst_m > 90 // 0 changes
+	replace			plant_m = . if plant_m > 90 // 3 changes
+	replace			other_w = . if other_w > 181 // 1 changes
+	replace			other_m = . if other_m > 181 // 3 changes
+	replace			hrvst_w = . if hrvst_w > 90 // 2 change
+	replace			hrvst_m = . if hrvst_m > 90 // 1 change
 
 * impute missing values (need to do it for men and women's planting and harvesting)
 	mi set 			wide 	// declare the data to be wide.
@@ -247,11 +248,12 @@
 	mi 				unset
 	
 * how did the imputation go?
-	replace			plant_w = plant_w_1_ // 0 changes
-	replace			hrvst_w = hrvst_w_2_ // 0 changes
-	drop			mi_miss1- hrvst_m_2_
-
-
+	replace			plant_w = plant_w_1_ // 1 change
+	replace			hrvst_w = hrvst_w_2_ // 3 changes
+	replace			plant_m = plant_m_3_ // 4 changes
+	replace			hrvst_m = hrvst_m_4_ // 2 changes
+	drop			mi_miss1- hrvst_m_4_
+	
 * generate total hired labor days
 	egen			hired_labor_days = rsum(plant_w plant_m other_w ///
 						other_m hrvst_w hrvst_m)

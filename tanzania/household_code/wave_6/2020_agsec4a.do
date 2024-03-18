@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: March 2024
 * Created by: reece
-* Edited on: March 12, 2024
+* Edited on: March 18, 2024
 * Edited by: reece
 * Stata v.18
 
@@ -118,7 +118,7 @@
 
 * summarize value of harvest
 	sum				hvst_value, detail
-	*** median 52.68, mean 169.01, max 35336.89
+	*** median 53.68, mean 169.01, max 35336.89
 
 * replace any +3 s.d. away from median as missing
 	replace			hvst_value = . if hvst_value > `r(p50)'+(3*`r(sd)')
@@ -211,7 +211,7 @@
 						
 * check for duplicates
 	duplicates		report y5_hhid plot_id crop_code
-	*** there is 0 duplicate
+	*** there is 1 duplicate
 	
 	collapse (sum)	hvst_value percent_field, by(y5_hhid ///
 						plot_id crop_code clusterid ///
