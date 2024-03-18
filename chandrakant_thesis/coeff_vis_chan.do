@@ -1,9 +1,9 @@
 * Project: WB Weather
 * Created on: September 2019
 * Created by: jdm
-* Edited by: jdm
-* Last edit: 30 August 2021
-* Stata v.17.0 
+* Edited by: cda
+* Last edit: 14 March 2023
+* Stata v.18.0 
 
 * does
 	* reads in results data set
@@ -644,9 +644,6 @@ restore
 **# 3 - generate serrbar graphs by metric
 ************************************************************************
 
-* keep HH Bilinear	
-	keep			if ext == 1
-	
 *generate different betas based on signficance
 	gen 			b_sig = beta
 	replace 		b_sig = . if pval > .05
@@ -719,6 +716,62 @@ preserve
 						legend(order(2 3) cols(2) size(small) rowgap(.5) pos(12)) ///
 						saving("$sfig/v01_eth", replace)
 restore
+
+
+/
+* mean daily 
+preserve
+	keep			if varname == 1
+	keep			if ext == 3
+	keep 			if regname == 3
+	sort 			beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	depvar
+	gen				k2      =   5 			if country == 7
+	replace			k2		=	7			if country == 5
+	replace			k2		=	8			if country == 4
+	replace			k2		=	9			if country == 2
+	replace			k2		=	10			if country == 1
+	gen 			k3		=	sat + 11
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Dependent Variable"
+	lab 			var k2 "Country"
+	lab 			var k3 "Remote Sensing Product"
+
+	sum			 	ci_up
+	global			bmax = r(max)
+	
+	sum			 	ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - .5*$brange
+	global			gheight	=	36
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(4)72) xsize(10) ysize(6) msize(small small small)  ///
+						title("") ylab(0(1)$gheight ) xtitle("") ytitle("") ///
+						ylabel(1 "Quantity" ///
+						2 "Value" 3 "*{bf:Dependant Variable}*" ///
+						5 "Uganda" 36 " ", angle(0) ///
+						labsize(vsmall) tstyle(notick)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs, yaxis(2) mcolor(edkblue%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != ., ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ), ///
+						legend(order(2 3) cols(2) size(small) rowgap(.5) pos(12)) ///
+						saving("$sfig/v01_all", replace)
+restore
+*/
 
 * malawi
 preserve
@@ -954,6 +1007,7 @@ restore
 						col(2) iscale(.5) pos(12) commonscheme
 						
 	graph export 	"$xfig\v01_cty.png", width(1400) replace
+
 
 	
 *** median daily rainfall ***

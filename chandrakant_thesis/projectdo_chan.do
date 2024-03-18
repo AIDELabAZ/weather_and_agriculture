@@ -1,7 +1,7 @@
 * Project: WB Weather
-* Created on: May 2020
-* Created by: jdm
-* Stata v.17.0
+* Created on: March 2023
+* Created by: cda
+* Stata v.18.0
 
 * does
 	* establishes an identical workspace between users
@@ -36,7 +36,13 @@
     if `"`c(username)'"' == "jdmichler" {
         global 		code  	"C:/Users/jdmichler/git/AIDELabAZ/weather_and_agriculture"
 		global 		data	"C:/Users/jdmichler/OneDrive - University of Arizona/weather_project"
-    }
+		
+	}	
+   
+   if `"`c(username)'"' == "Chandrakant Agme" {
+        global 		code  	"C:/Users/Chandrakant Agme/Documents/GitHub/weather_and_agriculture"
+		global 		data	"C:/Users/Chandrakant Agme/University of Arizona/Michler, Jeffrey David - (jdmichler) - weather_project"
+	}
 
 	
 * **********************************************************************
