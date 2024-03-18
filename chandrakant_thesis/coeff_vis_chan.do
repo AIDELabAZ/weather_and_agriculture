@@ -666,6 +666,784 @@ restore
 	lab	def			posneg 0 "Negative" 1 "Positive"
 	lab val			b_sign posneg
 	lab var			b_sign "Sign on weather variable"
+
+/*	
+************************************************************************
+**# 3a - generate serrbar graphs by rainfall variable and country
+************************************************************************
+	
+*** mean daily rainfall ***
+preserve
+	keep			if varname == 1
+	keep			if ext == 3
+	keep 			if regname == 3
+	sort 			beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	depvar
+	gen				k2      =   5 			if country == 7
+	replace			k2		=	7			if country == 5
+	replace			k2		=	8			if country == 4
+	replace			k2		=	9			if country == 2
+	replace			k2		=	10			if country == 1
+	gen 			k3		=	sat + 11
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Dependent Variable"
+	lab 			var k2 "Country"
+	lab 			var k3 "Remote Sensing Product"
+
+	sum			 	ci_up
+	global			bmax = r(max)
+	
+	sum			 	ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - .5*$brange
+	global			gheight	=	44
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(4)72) xsize(10) ysize(6) msize(small small small)  ///
+						title("Mean Daily Rainfall") ylab(0(1)$gheight ) xtitle("") ytitle("") ///
+						ylabel(1 "Quantity" ///
+						2 "Value" 3 "*{bf:Dependant Variable}*" ///
+						5 "Uganda" 6 "Tanzania" 7 "Nigeria" 8 "Niger" 9 "Malawi" 10 "Ethiopia" ///
+						11 "*{bf:Country}*" 13 "Rainfall 1" 14"Rainfall 2" 15 "Rainfall 3" ///
+						16 "Rainfall 4" 17 "Rainfall 5" 18 "Rainfall 6" 19"*{bf:Remote Sensing Product}*" 44 "", angle(0) ///
+						labsize(vsmall) tstyle(notick)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs, yaxis(2) mcolor(edkblue%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != ., ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ), ///
+						legend(order(2 3) cols(2) size(small) rowgap(.5) pos(12)) ///
+						saving("$sfig/v01_all", replace)
+restore
+
+*** median daily rainfall ***
+preserve
+	keep			if varname == 2
+	keep			if ext == 3
+	keep 			if regname == 3
+	sort 			beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	depvar
+	gen				k2      =   5 			if country == 7
+	replace			k2		=	7			if country == 5
+	replace			k2		=	8			if country == 4
+	replace			k2		=	9			if country == 2
+	replace			k2		=	10			if country == 1
+	gen 			k3		=	sat + 11
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Dependent Variable"
+	lab 			var k2 "Country"
+	lab 			var k3 "Remote Sensing Product"
+
+	sum			 	ci_up
+	global			bmax = r(max)
+	
+	sum			 	ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - .5*$brange
+	global			gheight	=	44
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(4)72) xsize(10) ysize(6) msize(small small small)  ///
+						title("Median Daily Rainfall") ylab(0(1)$gheight ) xtitle("") ytitle("") ///
+						ylabel(1 "Quantity" ///
+						2 "Value" 3 "*{bf:Dependant Variable}*" ///
+						5 "Uganda" 6 "Tanzania" 7 "Nigeria" 8 "Niger" 9 "Malawi" 10 "Ethiopia" ///
+						11 "*{bf:Country}*" 13 "Rainfall 1" 14"Rainfall 2" 15 "Rainfall 3" ///
+						16 "Rainfall 4" 17 "Rainfall 5" 18 "Rainfall 6" 19"*{bf:Remote Sensing Product}*" 44 "", angle(0) ///
+						labsize(vsmall) tstyle(notick)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs, yaxis(2) mcolor(edkblue%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != ., ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ), ///
+						legend(order(2 3) cols(2) size(small) rowgap(.5) pos(12)) ///
+						saving("$sfig/v02_all", replace)
+restore
+
+*** variance of daily rainfall ***
+preserve
+	keep			if varname == 3
+	keep			if ext == 3
+	keep 			if regname == 3
+	sort 			beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	depvar
+	gen				k2      =   5 			if country == 7
+	replace			k2		=	7			if country == 5
+	replace			k2		=	8			if country == 4
+	replace			k2		=	9			if country == 2
+	replace			k2		=	10			if country == 1
+	gen 			k3		=	sat + 11
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Dependent Variable"
+	lab 			var k2 "Country"
+	lab 			var k3 "Remote Sensing Product"
+
+	sum			 	ci_up
+	global			bmax = r(max)
+	
+	sum			 	ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - .5*$brange
+	global			gheight	=	44
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(4)72) xsize(10) ysize(6) msize(small small small)  ///
+						title("Variance of Daily Rainfall") ylab(0(1)$gheight ) xtitle("") ytitle("") ///
+						ylabel(1 "Quantity" ///
+						2 "Value" 3 "*{bf:Dependant Variable}*" ///
+						5 "Uganda" 6 "Tanzania" 7 "Nigeria" 8 "Niger" 9 "Malawi" 10 "Ethiopia" ///
+						11 "*{bf:Country}*" 13 "Rainfall 1" 14"Rainfall 2" 15 "Rainfall 3" ///
+						16 "Rainfall 4" 17 "Rainfall 5" 18 "Rainfall 6" 19"*{bf:Remote Sensing Product}*" 44 "", angle(0) ///
+						labsize(vsmall) tstyle(notick)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs, yaxis(2) mcolor(edkblue%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != ., ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ), ///
+						legend(order(2 3) cols(2) size(small) rowgap(.5) pos(12)) ///
+						saving("$sfig/v03_all", replace)
+restore
+
+*** skew of daily rainfall ***
+preserve
+	keep			if varname == 4
+	keep			if ext == 3
+	keep 			if regname == 3
+	sort 			beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	depvar
+	gen				k2      =   5 			if country == 7
+	replace			k2		=	7			if country == 5
+	replace			k2		=	8			if country == 4
+	replace			k2		=	9			if country == 2
+	replace			k2		=	10			if country == 1
+	gen 			k3		=	sat + 11
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Dependent Variable"
+	lab 			var k2 "Country"
+	lab 			var k3 "Remote Sensing Product"
+
+	sum			 	ci_up
+	global			bmax = r(max)
+	
+	sum			 	ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - .5*$brange
+	global			gheight	=	44
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(4)72) xsize(10) ysize(6) msize(small small small)  ///
+						title("Skew of Daily Rainfall") ylab(0(1)$gheight ) xtitle("") ytitle("") ///
+						ylabel(1 "Quantity" ///
+						2 "Value" 3 "*{bf:Dependant Variable}*" ///
+						5 "Uganda" 6 "Tanzania" 7 "Nigeria" 8 "Niger" 9 "Malawi" 10 "Ethiopia" ///
+						11 "*{bf:Country}*" 13 "Rainfall 1" 14"Rainfall 2" 15 "Rainfall 3" ///
+						16 "Rainfall 4" 17 "Rainfall 5" 18 "Rainfall 6" 19"*{bf:Remote Sensing Product}*" 44 "", angle(0) ///
+						labsize(vsmall) tstyle(notick)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs, yaxis(2) mcolor(edkblue%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != ., ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ), ///
+						legend(order(2 3) cols(2) size(small) rowgap(.5) pos(12)) ///
+						saving("$sfig/v04_all", replace)
+restore
+
+*** total rainfall ***
+preserve
+	keep			if varname == 5
+	keep			if ext == 3
+	keep 			if regname == 3
+	sort 			beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	depvar
+	gen				k2      =   5 			if country == 7
+	replace			k2		=	7			if country == 5
+	replace			k2		=	8			if country == 4
+	replace			k2		=	9			if country == 2
+	replace			k2		=	10			if country == 1
+	gen 			k3		=	sat + 11
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Dependent Variable"
+	lab 			var k2 "Country"
+	lab 			var k3 "Remote Sensing Product"
+
+	sum			 	ci_up
+	global			bmax = r(max)
+	
+	sum			 	ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - .5*$brange
+	global			gheight	=	44
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(4)72) xsize(10) ysize(6) msize(small small small)  ///
+						title("Total Rainfall") ylab(0(1)$gheight ) xtitle("") ytitle("") ///
+						ylabel(1 "Quantity" ///
+						2 "Value" 3 "*{bf:Dependant Variable}*" ///
+						5 "Uganda" 6 "Tanzania" 7 "Nigeria" 8 "Niger" 9 "Malawi" 10 "Ethiopia" ///
+						11 "*{bf:Country}*" 13 "Rainfall 1" 14"Rainfall 2" 15 "Rainfall 3" ///
+						16 "Rainfall 4" 17 "Rainfall 5" 18 "Rainfall 6" 19"*{bf:Remote Sensing Product}*" 44 "", angle(0) ///
+						labsize(vsmall) tstyle(notick)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs, yaxis(2) mcolor(edkblue%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != ., ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ), ///
+						legend(order(2 3) cols(2) size(small) rowgap(.5) pos(12)) ///
+						saving("$sfig/v05_all", replace)
+restore
+
+*** deviation in total rainfall ***
+preserve
+	keep			if varname == 6
+	keep			if ext == 3
+	keep 			if regname == 3
+	sort 			beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	depvar
+	gen				k2      =   5 			if country == 7
+	replace			k2		=	7			if country == 5
+	replace			k2		=	8			if country == 4
+	replace			k2		=	9			if country == 2
+	replace			k2		=	10			if country == 1
+	gen 			k3		=	sat + 11
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Dependent Variable"
+	lab 			var k2 "Country"
+	lab 			var k3 "Remote Sensing Product"
+
+	sum			 	ci_up
+	global			bmax = r(max)
+	
+	sum			 	ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - .5*$brange
+	global			gheight	=	44
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(4)72) xsize(10) ysize(6) msize(small small small)  ///
+						title("Deviation in Total Rainfall") ylab(0(1)$gheight ) xtitle("") ytitle("") ///
+						ylabel(1 "Quantity" ///
+						2 "Value" 3 "*{bf:Dependant Variable}*" ///
+						5 "Uganda" 6 "Tanzania" 7 "Nigeria" 8 "Niger" 9 "Malawi" 10 "Ethiopia" ///
+						11 "*{bf:Country}*" 13 "Rainfall 1" 14"Rainfall 2" 15 "Rainfall 3" ///
+						16 "Rainfall 4" 17 "Rainfall 5" 18 "Rainfall 6" 19"*{bf:Remote Sensing Product}*" 44 "", angle(0) ///
+						labsize(vsmall) tstyle(notick)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs, yaxis(2) mcolor(edkblue%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != ., ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ), ///
+						legend(order(2 3) cols(2) size(small) rowgap(.5) pos(12)) ///
+						saving("$sfig/v06_all", replace)
+restore
+
+*** z-score of total rainfall ***
+preserve
+	keep			if varname == 7
+	keep			if ext == 3
+	keep 			if regname == 3
+	sort 			beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	depvar
+	gen				k2      =   5 			if country == 7
+	replace			k2		=	7			if country == 5
+	replace			k2		=	8			if country == 4
+	replace			k2		=	9			if country == 2
+	replace			k2		=	10			if country == 1
+	gen 			k3		=	sat + 11
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Dependent Variable"
+	lab 			var k2 "Country"
+	lab 			var k3 "Remote Sensing Product"
+
+	sum			 	ci_up
+	global			bmax = r(max)
+	
+	sum			 	ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - .5*$brange
+	global			gheight	=	44
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(4)72) xsize(10) ysize(6) msize(small small small)  ///
+						title(" Z-Score of Total Rainfall") ylab(0(1)$gheight ) xtitle("") ytitle("") ///
+						ylabel(1 "Quantity" ///
+						2 "Value" 3 "*{bf:Dependant Variable}*" ///
+						5 "Uganda" 6 "Tanzania" 7 "Nigeria" 8 "Niger" 9 "Malawi" 10 "Ethiopia" ///
+						11 "*{bf:Country}*" 13 "Rainfall 1" 14"Rainfall 2" 15 "Rainfall 3" ///
+						16 "Rainfall 4" 17 "Rainfall 5" 18 "Rainfall 6" 19"*{bf:Remote Sensing Product}*" 44 "", angle(0) ///
+						labsize(vsmall) tstyle(notick)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs, yaxis(2) mcolor(edkblue%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != ., ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ), ///
+						legend(order(2 3) cols(2) size(small) rowgap(.5) pos(12)) ///
+						saving("$sfig/v07_all", replace)
+restore
+
+
+*** rainy days ***
+preserve
+	keep			if varname == 8
+	keep			if ext == 3
+	keep 			if regname == 3
+	sort 			beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	depvar
+	gen				k2      =   5 			if country == 7
+	replace			k2		=	7			if country == 5
+	replace			k2		=	8			if country == 4
+	replace			k2		=	9			if country == 2
+	replace			k2		=	10			if country == 1
+	gen 			k3		=	sat + 11
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Dependent Variable"
+	lab 			var k2 "Country"
+	lab 			var k3 "Remote Sensing Product"
+
+	sum			 	ci_up
+	global			bmax = r(max)
+	
+	sum			 	ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - .5*$brange
+	global			gheight	=	44
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(4)72) xsize(10) ysize(6) msize(small small small)  ///
+						title("Rainy Days") ylab(0(1)$gheight ) xtitle("") ytitle("") ///
+						ylabel(1 "Quantity" ///
+						2 "Value" 3 "*{bf:Dependant Variable}*" ///
+						5 "Uganda" 6 "Tanzania" 7 "Nigeria" 8 "Niger" 9 "Malawi" 10 "Ethiopia" ///
+						11 "*{bf:Country}*" 13 "Rainfall 1" 14"Rainfall 2" 15 "Rainfall 3" ///
+						16 "Rainfall 4" 17 "Rainfall 5" 18 "Rainfall 6" 19"*{bf:Remote Sensing Product}*" 44 "", angle(0) ///
+						labsize(vsmall) tstyle(notick)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs, yaxis(2) mcolor(edkblue%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != ., ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ), ///
+						legend(order(2 3) cols(2) size(small) rowgap(.5) pos(12)) ///
+						saving("$sfig/v08_all", replace)
+restore
+
+*** deviations in rainy days ***
+preserve
+	keep			if varname == 9
+	keep			if ext == 3
+	keep 			if regname == 3
+	sort 			beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	depvar
+	gen				k2      =   5 			if country == 7
+	replace			k2		=	7			if country == 5
+	replace			k2		=	8			if country == 4
+	replace			k2		=	9			if country == 2
+	replace			k2		=	10			if country == 1
+	gen 			k3		=	sat + 11
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Dependent Variable"
+	lab 			var k2 "Country"
+	lab 			var k3 "Remote Sensing Product"
+
+	sum			 	ci_up
+	global			bmax = r(max)
+	
+	sum			 	ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - .5*$brange
+	global			gheight	=	44
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(4)72) xsize(10) ysize(6) msize(small small small)  ///
+						title("Deviation in Rainy Days") ylab(0(1)$gheight ) xtitle("") ytitle("") ///
+						ylabel(1 "Quantity" ///
+						2 "Value" 3 "*{bf:Dependant Variable}*" ///
+						5 "Uganda" 6 "Tanzania" 7 "Nigeria" 8 "Niger" 9 "Malawi" 10 "Ethiopia" ///
+						11 "*{bf:Country}*" 13 "Rainfall 1" 14"Rainfall 2" 15 "Rainfall 3" ///
+						16 "Rainfall 4" 17 "Rainfall 5" 18 "Rainfall 6" 19"*{bf:Remote Sensing Product}*" 44 "", angle(0) ///
+						labsize(vsmall) tstyle(notick)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs, yaxis(2) mcolor(edkblue%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != ., ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ), ///
+						legend(order(2 3) cols(2) size(small) rowgap(.5) pos(12)) ///
+						saving("$sfig/v09_all", replace)
+restore
+
+*** no rain days ***
+preserve
+	keep			if varname == 10
+	keep			if ext == 3
+	keep 			if regname == 3
+	sort 			beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	depvar
+	gen				k2      =   5 			if country == 7
+	replace			k2		=	7			if country == 5
+	replace			k2		=	8			if country == 4
+	replace			k2		=	9			if country == 2
+	replace			k2		=	10			if country == 1
+	gen 			k3		=	sat + 11
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Dependent Variable"
+	lab 			var k2 "Country"
+	lab 			var k3 "Remote Sensing Product"
+
+	sum			 	ci_up
+	global			bmax = r(max)
+	
+	sum			 	ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - .5*$brange
+	global			gheight	=	44
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(4)72) xsize(10) ysize(6) msize(small small small)  ///
+						title("No Rain Days") ylab(0(1)$gheight ) xtitle("") ytitle("") ///
+						ylabel(1 "Quantity" ///
+						2 "Value" 3 "*{bf:Dependant Variable}*" ///
+						5 "Uganda" 6 "Tanzania" 7 "Nigeria" 8 "Niger" 9 "Malawi" 10 "Ethiopia" ///
+						11 "*{bf:Country}*" 13 "Rainfall 1" 14"Rainfall 2" 15 "Rainfall 3" ///
+						16 "Rainfall 4" 17 "Rainfall 5" 18 "Rainfall 6" 19"*{bf:Remote Sensing Product}*" 44 "", angle(0) ///
+						labsize(vsmall) tstyle(notick)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs, yaxis(2) mcolor(edkblue%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != ., ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ), ///
+						legend(order(2 3) cols(2) size(small) rowgap(.5) pos(12)) ///
+						saving("$sfig/v10_all", replace)
+restore
+
+*** deviation in no rain days ***
+preserve
+	keep			if varname == 11
+	keep			if ext == 3
+	keep 			if regname == 3
+	sort 			beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	depvar
+	gen				k2      =   5 			if country == 7
+	replace			k2		=	7			if country == 5
+	replace			k2		=	8			if country == 4
+	replace			k2		=	9			if country == 2
+	replace			k2		=	10			if country == 1
+	gen 			k3		=	sat + 11
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Dependent Variable"
+	lab 			var k2 "Country"
+	lab 			var k3 "Remote Sensing Product"
+
+	sum			 	ci_up
+	global			bmax = r(max)
+	
+	sum			 	ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - .5*$brange
+	global			gheight	=	44
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(4)72) xsize(10) ysize(6) msize(small small small)  ///
+						title("Deviation in No Rain Days") ylab(0(1)$gheight ) xtitle("") ytitle("") ///
+						ylabel(1 "Quantity" ///
+						2 "Value" 3 "*{bf:Dependant Variable}*" ///
+						5 "Uganda" 6 "Tanzania" 7 "Nigeria" 8 "Niger" 9 "Malawi" 10 "Ethiopia" ///
+						11 "*{bf:Country}*" 13 "Rainfall 1" 14"Rainfall 2" 15 "Rainfall 3" ///
+						16 "Rainfall 4" 17 "Rainfall 5" 18 "Rainfall 6" 19"*{bf:Remote Sensing Product}*" 44 "", angle(0) ///
+						labsize(vsmall) tstyle(notick)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs, yaxis(2) mcolor(edkblue%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != ., ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ), ///
+						legend(order(2 3) cols(2) size(small) rowgap(.5) pos(12)) ///
+						saving("$sfig/v11_all", replace)
+restore
+
+*** percent rainy days ***
+preserve
+	keep			if varname == 12
+	keep			if ext == 3
+	keep 			if regname == 3
+	sort 			beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	depvar
+	gen				k2      =   5 			if country == 7
+	replace			k2		=	7			if country == 5
+	replace			k2		=	8			if country == 4
+	replace			k2		=	9			if country == 2
+	replace			k2		=	10			if country == 1
+	gen 			k3		=	sat + 11
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Dependent Variable"
+	lab 			var k2 "Country"
+	lab 			var k3 "Remote Sensing Product"
+
+	sum			 	ci_up
+	global			bmax = r(max)
+	
+	sum			 	ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - .5*$brange
+	global			gheight	=	44
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(4)72) xsize(10) ysize(6) msize(small small small)  ///
+						title("Percent Rainy Days") ylab(0(1)$gheight ) xtitle("") ytitle("") ///
+						ylabel(1 "Quantity" ///
+						2 "Value" 3 "*{bf:Dependant Variable}*" ///
+						5 "Uganda" 6 "Tanzania" 7 "Nigeria" 8 "Niger" 9 "Malawi" 10 "Ethiopia" ///
+						11 "*{bf:Country}*" 13 "Rainfall 1" 14"Rainfall 2" 15 "Rainfall 3" ///
+						16 "Rainfall 4" 17 "Rainfall 5" 18 "Rainfall 6" 19"*{bf:Remote Sensing Product}*" 44 "", angle(0) ///
+						labsize(vsmall) tstyle(notick)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs, yaxis(2) mcolor(edkblue%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != ., ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ), ///
+						legend(order(2 3) cols(2) size(small) rowgap(.5) pos(12)) ///
+						saving("$sfig/v12_all", replace)
+restore
+
+*** deviations in percent rainy days ***
+preserve
+	keep			if varname == 13
+	keep			if ext == 3
+	keep 			if regname == 3
+	sort 			beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	depvar
+	gen				k2      =   5 			if country == 7
+	replace			k2		=	7			if country == 5
+	replace			k2		=	8			if country == 4
+	replace			k2		=	9			if country == 2
+	replace			k2		=	10			if country == 1
+	gen 			k3		=	sat + 11
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Dependent Variable"
+	lab 			var k2 "Country"
+	lab 			var k3 "Remote Sensing Product"
+
+	sum			 	ci_up
+	global			bmax = r(max)
+	
+	sum			 	ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - .5*$brange
+	global			gheight	=	44
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(4)72) xsize(10) ysize(6) msize(small small small)  ///
+						title("Deviation in Percent Rainy Days") ylab(0(1)$gheight ) xtitle("") ytitle("") ///
+						ylabel(1 "Quantity" ///
+						2 "Value" 3 "*{bf:Dependant Variable}*" ///
+						5 "Uganda" 6 "Tanzania" 7 "Nigeria" 8 "Niger" 9 "Malawi" 10 "Ethiopia" ///
+						11 "*{bf:Country}*" 13 "Rainfall 1" 14"Rainfall 2" 15 "Rainfall 3" ///
+						16 "Rainfall 4" 17 "Rainfall 5" 18 "Rainfall 6" 19"*{bf:Remote Sensing Product}*" 44 "", angle(0) ///
+						labsize(vsmall) tstyle(notick)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs, yaxis(2) mcolor(edkblue%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != ., ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ), ///
+						legend(order(2 3) cols(2) size(small) rowgap(.5) pos(12)) ///
+						saving("$sfig/v13_all", replace)
+restore
+
+*** longest dry spell ***
+preserve
+	keep			if varname == 14
+	keep			if ext == 3
+	keep 			if regname == 3
+	sort 			beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	depvar
+	gen				k2      =   5 			if country == 7
+	replace			k2		=	7			if country == 5
+	replace			k2		=	8			if country == 4
+	replace			k2		=	9			if country == 2
+	replace			k2		=	10			if country == 1
+	gen 			k3		=	sat + 11
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Dependent Variable"
+	lab 			var k2 "Country"
+	lab 			var k3 "Remote Sensing Product"
+
+	sum			 	ci_up
+	global			bmax = r(max)
+	
+	sum			 	ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - .5*$brange
+	global			gheight	=	44
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(4)72) xsize(10) ysize(6) msize(small small small)  ///
+						title("Longest Dry Spell ") ylab(0(1)$gheight ) xtitle("") ytitle("") ///
+						ylabel(1 "Quantity" ///
+						2 "Value" 3 "*{bf:Dependant Variable}*" ///
+						5 "Uganda" 6 "Tanzania" 7 "Nigeria" 8 "Niger" 9 "Malawi" 10 "Ethiopia" ///
+						11 "*{bf:Country}*" 13 "Rainfall 1" 14"Rainfall 2" 15 "Rainfall 3" ///
+						16 "Rainfall 4" 17 "Rainfall 5" 18 "Rainfall 6" 19"*{bf:Remote Sensing Product}*" 44 "", angle(0) ///
+						labsize(vsmall) tstyle(notick)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs, yaxis(2) mcolor(edkblue%75) ylab(, axis(2) ///
+						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != ., ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ), ///
+						legend(order(2 3) cols(2) size(small) rowgap(.5) pos(12)) ///
+						saving("$sfig/v14_all", replace)
+restore
+
+*/
 	
 ************************************************************************
 **# 3a - generate serrbar graphs by rainfall variable and country
@@ -718,62 +1496,7 @@ preserve
 restore
 
 
-/
-* mean daily 
-preserve
-	keep			if varname == 1
-	keep			if ext == 3
-	keep 			if regname == 3
-	sort 			beta
-	gen 			obs = _n
 
-* stack values of the specification indicators
-	gen 			k1 		= 	depvar
-	gen				k2      =   5 			if country == 7
-	replace			k2		=	7			if country == 5
-	replace			k2		=	8			if country == 4
-	replace			k2		=	9			if country == 2
-	replace			k2		=	10			if country == 1
-	gen 			k3		=	sat + 11
-	
-* label new variables	
-	lab				var obs "Specification # - sorted by effect size"
-
-	lab 			var k1 "Dependent Variable"
-	lab 			var k2 "Country"
-	lab 			var k3 "Remote Sensing Product"
-
-	sum			 	ci_up
-	global			bmax = r(max)
-	
-	sum			 	ci_lo
-	global			bmin = r(min)
-	
-	global			brange	=	$bmax - $bmin
-	global			from_y	=	$bmin - .5*$brange
-	global			gheight	=	44
-
-	twoway 			scatter k1 k2 k3 obs, xlab(0(4)72) xsize(10) ysize(6) msize(small small small)  ///
-						title("") ylab(0(1)$gheight ) xtitle("") ytitle("") ///
-						ylabel(1 "Quantity" ///
-						2 "Value" 3 "*{bf:Dependant Variable}*" ///
-						5 "Uganda" 6 "Tanzania" 7 "Nigeria" 8 "Niger" 9 "Malawi" 10 "Ethiopia" ///
-						11 "*{bf:Country}*" 13 "Rainfall 1" 14"Rainfall 2" 15 "Rainfall 3" ///
-						16 "Rainfall 4" 17 "Rainfall 5" 18 "Rainfall 6" 19"*{bf:Remote Sensing Product}*" 44 "", angle(0) ///
-						labsize(vsmall) tstyle(notick)) || ///
-						(scatter b_ns obs, yaxis(2) mcolor(black%75) ylab(, axis(2) ///
-						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
-						(scatter b_sig obs, yaxis(2) mcolor(edkblue%75) ylab(, axis(2) ///
-						labsize(vsmall) angle(0) ) yscale(range($from_y $bmax ) axis(2)) ) || ///
-						(rbar ci_lo ci_up obs if b_sig == ., ///
-						barwidth(.2) color(black%50) yaxis(2) ) || ///
-						(rbar ci_lo ci_up obs if b_sig != ., ///
-						barwidth(.2) color(edkblue%50) yaxis(2)  ///
-						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ), ///
-						legend(order(2 3) cols(2) size(small) rowgap(.5) pos(12)) ///
-						saving("$sfig/v01_all", replace)
-restore
-*/
 
 * malawi
 preserve
