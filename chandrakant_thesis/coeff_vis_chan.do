@@ -669,7 +669,7 @@ restore
 
 /*	
 ************************************************************************
-**# 3a - generate serrbar graphs by rainfall variable and country
+**# 3a - generate serrbar graphs by rainfall variable, country and satellite
 ************************************************************************
 	
 *** mean daily rainfall ***
