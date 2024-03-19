@@ -15,7 +15,6 @@
 	
 * TO DO:
 	* done 
-	* STOP AT 224
 
 * **********************************************************************
 * 0 - setup
@@ -221,30 +220,37 @@
 	*** 36 missing values 
 	label 			variable labordays_ha "days of labor per hectare (Days/ha)"
 	summarize 		labordays labordays_ha
-	
-	*** PAY ATTENTION HERE
+	*** labordays_ha seems high = neighbhorhood of 375 - but, probably higher with small plotsizes 
 
 * impute labor outliers, right side only 
 	summarize 		labordays_ha, detail
 	bysort 			region : egen stddev = sd(labordays_ha) if !inlist(labordays_ha,.,0)
+	*** 548 missing values
 	recode			stddev (.=0)
 	bysort 			region : egen median = median(labordays_ha) if !inlist(labordays_ha,.,0)
-	bysort 			region : egen replacement = median(labordays_ha) if 
+	*** 548 missing values
+	bysort 			region : egen replacement = median(labordays_ha) if /// 
 							(labordays_ha <= median + (3 * stddev)) /*& (labordays_ha >= median - (3 * stddev))*/ & !inlist(labordays_ha,.,0)
+	*** 693 missing values 
 	bysort 			region : egen maxrep = max(replacement)
 	bysort 			region : egen minrep = min(replacement)
 	assert 			minrep==maxrep
 	generate 		labordays_haimp = labordays_ha, after(labordays_ha)
-	replace 		labordays_haimp = maxrep if !((labordays_ha < median + (3 * stddev)) /*& (labordays_ha > median - (3 * stddev))*/) & !inlist(labordays_ha,.,0) & !mi(maxrep)
+	*** 36 missing values 
+	replace 		labordays_haimp = maxrep if !((labordays_ha < median + (3 * stddev)) /*& (labordays_ha > median - (3 * stddev))*/) ///
+							& !inlist(labordays_ha,.,0) & !mi(maxrep)
+	*** 145 changes made 
 	tabstat 		labordays_ha labordays_haimp, f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
+	*** 354 before, 300 imputed 
 	drop 			stddev median replacement maxrep minrep
 	label 			variable labordays_haimp "days of labor per hectare (Days/ha), imputed"
 	
 * make labor days based on imputed labor days per hectare
 	generate labordaysimp = labordays_haimp * plotsize, after(labordays)
+	*** 36 missing values 
 	label variable labordaysimp			"Days of labor on plot, imputed"
 	tabstat labordays labordaysimp, f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-
+	*** 280 labor days, 270 imputed 
 	
 * **********************************************************************
 * ? - end matter, clean up to save
