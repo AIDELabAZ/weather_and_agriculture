@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 14 March 24
+* Edited on: 19 March 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -100,8 +100,9 @@
 	
 	merge m:1 		cropid unit condition using ///
 						"$conv/ValidCropUnitConditionCombinations.dta" 
-	*** unmatched 413 from master 
-	*** used same conversion file
+	*** unmatched 705 from master 
+	*** unmatched 628 from using
+	
 	
 * drop from using
 	drop 			if _merge == 2
