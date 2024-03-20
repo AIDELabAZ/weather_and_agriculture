@@ -96,7 +96,6 @@
 	merge m:1 case_id using "`root'/hh_mod_a_filt.dta", keepusing(region) assert (2 3) keep (3) nogenerate	
 	
 * bring in conversion file 
-* THIS ISN'T RUNNING?? says it can't find, unclear
 	merge m:1 crop_code region unit condition using "`root'/ihs_seasonalcropconversion_factor_2020_up.dta", keep(1 3) generate(_conversion)
 	
 	tabulate 		crop_code unit if _conversion==1
