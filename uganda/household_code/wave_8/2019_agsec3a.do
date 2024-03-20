@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: ek
-* Edited on 15 Mar 24
+* Edited on 20 Mar 24
 * Edited by kd
 * Stata v.18, mac
 
@@ -41,11 +41,13 @@
 	
 * Change hhid to str as hhide, rename hhide to hhid for simplicity 
 	
-	encode 			hhid, gen(hhide)
-	rename 			hhid hhid_old
-	rename			hhide hhid
+	*encode 			hhid, gen(hhide)
+	*rename 			hhid hhid_old
+	*rename			hhide hhid
 	
-
+	gen				hhid_short = ustrtrim(hhid)
+	rename 			hhid hhidlongold
+	rename			hhid_short hhid
 	
 *	rename			parcelID prcid
 	rename			parcelID prcid
@@ -61,7 +63,7 @@
 * **********************************************************************	
 	
 * merge the location identification
-	merge m:1 		hhid using "$`export'/2019_gsec1"
+	merge m:1 		hhid using "export/2019_gsec1.dta"
 	*** 1054 unmatched from master
 	
 	drop if			_merge != 3
