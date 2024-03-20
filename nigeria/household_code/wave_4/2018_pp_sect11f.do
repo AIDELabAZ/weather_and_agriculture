@@ -1,40 +1,41 @@
 * Project: WB Weather
-* Created on: May 2020
-* Created by: alj
-* Edited by: ek
-* Stata v.16
+* Created on: Feb 2024
+* Created by: jet
+* Edited on: 19 Mar 2024
+* Edited by: jet
+* Stata v.18
 
 * does
-	* reads in Nigeria, WAVE 3 (2015-2016) POST PLANTING, NIGERIA AG SECT11F
+	* reads in Nigeria, WAVE 4 (2018-2019) POST PLANTING, NIGERIA AG SECT11F
 	* determines planting month and year
 
 * assumes
 	* customsave.ado
 	
 * TO DO:
-	* complete
+	* everything
 	
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
 * define paths	
-	loc root = "$data/household_data/nigeria/wave_3/raw"
-	loc export = "$data/household_data/nigeria/wave_3/refined"
-	loc logout = "$data/household_data/nigeria/logs"
+	global root		"$data/household_data/nigeria/wave_4/raw"
+	global export	"$data/household_data/nigeria/wave_4/refined"
+	global logout	"$data/household_data/nigeria/logs"
 
 * close log (in case still open)
 	*log close
 	
 * open log	
-	cap log close
-	log using "`logout'/pp_sect11f", append
+	*cap log close
+	*log using "`logout'/pp_sect11f", append
 
 * **********************************************************************
 * 1 - determine plot size
 * **********************************************************************
 		
 * import the first relevant data file
-		use "`root'/sect11f_plantingw3", clear 
+		use "$root/sect11f_plantingw4", clear 
 
 describe
 sort hhid plotid cropid
