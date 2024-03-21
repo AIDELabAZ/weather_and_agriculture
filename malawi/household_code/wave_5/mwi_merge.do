@@ -276,7 +276,7 @@
 					& !inlist(mz_yld,.,0) & !mi(maxrep)
 	tabstat 		mz_yld mz_yldimp, ///
 					f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 1,497 to 981
+	*** reduces mean from 11997 to 6274
 					
 	drop 			stddev median replacement maxrep minrep
 	lab var 		mz_yldimp "maize yield (kg/ha), imputed"
@@ -349,7 +349,7 @@
 						& !inlist(mz_frt_ha,.,0) & !mi(maxrep)
 	tabstat 		mz_frt_ha mz_frt_haimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 83 to 49
+	*** reduces mean from 6 to 4
 	
 	drop			stddev median replacement maxrep minrep
 	lab var			mz_frt_haimp	"fertilizer use (kg/ha), imputed"
@@ -368,12 +368,12 @@
 * **********************************************************************
 
 * generate plot area
-	bysort			y4_hhid (plot_id) :	egen tf_lnd = sum(plotsize)
+	bysort			case_id (plotid) :	egen tf_lnd = sum(plotsize)
 	assert			tf_lnd > 0 
 	sum				tf_lnd, detail
 
 * value of harvest
-	bysort			y4_hhid (plot_id) :	egen tf_hrv = sum(vl_hrvimp)
+	bysort			case_id (plotid) :	egen tf_hrv = sum(vl_hrvimp)
 	sum				tf_hrv, detail
 	
 * value of yield
@@ -381,12 +381,12 @@
 	sum				tf_yld, detail
 	
 * labor
-	bysort 			y4_hhid (plot_id) : egen lab_tot = sum(labordaysimp)
+	bysort 			case_id (plotid)  : egen lab_tot = sum(labordaysimp)
 	generate		tf_lab = lab_tot / tf_lnd
 	sum				tf_lab, detail
 
 * fertilizer
-	bysort 			y4_hhid (plot_id) : egen fert_tot = sum(fertimp)
+	bysort 			case_id (plotid)  : egen fert_tot = sum(fertimp)
 	generate		tf_frt = fert_tot / tf_lnd
 	sum				tf_frt, detail
 
@@ -395,7 +395,7 @@
 	tab				pest_any, missing
 	*** still missing that one obs
 	
-	bysort 			y4_hhid (plot_id) : egen tf_pst = max(pest_any)
+	bysort 			case_id (plotid)  : egen tf_pst = max(pest_any)
 	tab				tf_pst
 	*** it gets lost in the egen, one of the other plots must use pesticide
 	*** maybe not a problem then?
@@ -403,13 +403,13 @@
 * herbicide
 	replace			herb_any = 0 if herb_any == 2
 	tab				herb_any, missing
-	bysort 			y4_hhid (plot_id) : egen tf_hrb = max(herb_any)
+	bysort 			case_id (plotid)  : egen tf_hrb = max(herb_any)
 	tab				tf_hrb
 	
 * irrigation
 	replace			irr_any = 0 if irr_any == 2
 	tab				irr_any, missing
-	bysort 			y4_hhid (plot_id) : egen tf_irr = max(irr_any)
+	bysort 			case_id (plotid)  : egen tf_irr = max(irr_any)
 	tab				tf_irr
 	
 * **********************************************************************
@@ -417,13 +417,13 @@
 * **********************************************************************	
 	
 * generate plot area
-	bysort			y4_hhid (plot_id) :	egen cp_lnd = sum(mz_lnd) ///
+	bysort			case_id (plotid)  :	egen cp_lnd = sum(mz_lnd) ///
 						if mz_hrvimp != .
 	assert			cp_lnd > 0 
 	sum				cp_lnd, detail
 
 * value of harvest
-	bysort			y4_hhid (plot_id) :	egen cp_hrv = sum(mz_hrvimp) ///
+	bysort			case_id (plotid)  :	egen cp_hrv = sum(mz_hrvimp) ///
 						if mz_hrvimp != .
 	sum				cp_hrv, detail
 	
@@ -432,29 +432,29 @@
 	sum				cp_yld, detail
 	
 * labor
-	bysort 			y4_hhid (plot_id) : egen lab_mz = sum(mz_labimp) ///
+	bysort 			case_id (plotid)  : egen lab_mz = sum(mz_labimp) ///
 						if mz_hrvimp != .
 	generate		cp_lab = lab_mz / cp_lnd
 	sum				cp_lab, detail
 
 * fertilizer
-	bysort 			y4_hhid (plot_id) : egen fert_mz = sum(mz_frtimp) ///
+	bysort 			case_id (plotid)  : egen fert_mz = sum(mz_frtimp) ///
 						if mz_hrvimp != .
 	generate		cp_frt = fert_mz / cp_lnd
 	sum				cp_frt, detail
 
 * pesticide
-	bysort 			y4_hhid (plot_id) : egen cp_pst = max(mz_pst) /// 
+	bysort 			case_id (plotid)  : egen cp_pst = max(mz_pst) /// 
 						if mz_hrvimp != .
 	tab				cp_pst
 	
 * herbicide
-	bysort 			y4_hhid (plot_id) : egen cp_hrb = max(mz_hrb) ///
+	bysort 			case_id (plotid)  : egen cp_hrb = max(mz_hrb) ///
 						if mz_hrvimp != .
 	tab				cp_hrb
 	
 * irrigation
-	bysort 			y4_hhid (plot_id) : egen cp_irr = max(mz_irr) ///
+	bysort 			case_id (plotid)  : egen cp_irr = max(mz_irr) ///
 						if mz_hrvimp != .
 	tab				cp_irr
 
@@ -467,9 +467,9 @@
 	    replace		`v' = 0 if `v' == .
 	}		
 	
-	collapse (max)	tf_* cp_*, by(y4_hhid clusterid strataid ///
-						hhweight region district ward ea)
-	*** we went frm 3,107 to 1,788 observations 
+	collapse (max)	tf_* cp_*, by(case_id HHID ea_id ///
+						 region district reside)
+	*** we went frm 11414 to 8766 observations 
 	
 * return non-maize production to missing
 	replace			cp_yld = . if cp_yld == 0
@@ -498,7 +498,7 @@
 * **********************************************************************
 
 * verify unique household id
-	isid			y4_hhid
+	isid			case_id
 
 * label variables
 	lab var			tf_lnd	"Total farmed area (ha)"
@@ -522,8 +522,8 @@
 	gen				year = 2014
 	lab var			year "Year"
 	
-	order 			y4_hhid region district ward ea clusterid strataid ///
-						hhweight year tf_hrv tf_lnd tf_yld tf_lab tf_frt ///
+	order 			case_id HHID ea_id region district reside  ///
+						year tf_hrv tf_lnd tf_yld tf_lab tf_frt ///
 						tf_pst tf_hrb tf_irr cp_hrv cp_lnd cp_yld ///
 						cp_lab cp_frt cp_pst cp_hrb cp_irr
 	compress
@@ -531,8 +531,8 @@
 	summarize 
 	
 * saving production dataset
-	customsave , idvar(y4_hhid) filename(hhfinal_npsy4.dta) path("`export'") ///
-			dofile(NPSY4_merge) user($user) 
+	save 			"`export'/mwi_merge.dta", replace
+ 
 
 * close the log
 	log	close
