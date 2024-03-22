@@ -74,8 +74,8 @@
 * **********************************************************************
 
 * fertilizer use
-	rename 		a3aq13 fert_any
-	rename 		a3aq15 kilo_fert
+	rename 		s3aq13 fert_any
+	rename 		s3aq15 kilo_fert
 
 		
 * replace the missing fert_any with 0
@@ -83,10 +83,10 @@
 	*** no observations
 	
 	replace			fert_any = 2 if fert_any == . 
-	*** 5 changes
+	*** 80 real changes
 			
-	sum 			kilo_fert if fert_any == 1, detail
-	*** 34.41, min 0.25, max 800
+	summarize 			kilo_fert if fert_any == 1
+	*** mean 37.25, min 0, max 1100
 
 * replace zero to missing, missing to zero, and outliers to mizzing
 	replace			kilo_fert = . if kilo_fert > 264
@@ -108,8 +108,8 @@
 	mi 				unset		
 	
 * how did impute go?	
-	sum 		kilo_fert_1_ if fert_any == 1, detail
-	*** max 200, mean 23.83, min 0.25
+	sum 		kilo_fert_1_ if fert_any == 1
+	*** max 250, mean 26.43, min 0
 	
 	replace			kilo_fert = kilo_fert_1_ if fert_any == 1
 	*** 3 changed
@@ -118,40 +118,43 @@
 	
 * record fert_any
 	replace			fert_any = 0 if fert_any == 2
-
+	*** 5710 real changes made
 	
 * **********************************************************************
-* 4 - pesticide & herbicide
+**#4 - pesticide & herbicide
 * **********************************************************************
 
 * pesticide & herbicide
-	tab 		a3aq22
-	*** 5.08 percent of the sample used pesticide or herbicide
-	tab 		a3aq23
+	tab 		s3aq22
+	*** 7.62 percent of the sample used pesticide or herbicide
+	tab 		s3aq23
 	
-	gen 		pest_any = 1 if a3aq23 != . & a3aq23 != 4 & a3aq23 != 96
+	gen 		pest_any = 1 if s3aq23 != . & s3aq23 != 4 & s3aq23 != 96
 	replace		pest_any = 0 if pest_any == .
 	
-	gen 		herb_any = 1 if a3aq23 == 4 | a3aq23 == 96
+	gen 		herb_any = 1 if s3aq23 == 4 | s3aq23 == 96
 	replace		herb_any = 0 if herb_any == .
-
+	*** 5,720 real changes made
 	
 * **********************************************************************
-* 5 - labor 
+**#5 - labor 
 * **********************************************************************
 	* per Palacios-Lopez et al. (2017) in Food Policy, we cap labor per activity
 	* 7 days * 13 weeks = 91 days for land prep and planting
 	* 7 days * 26 weeks = 182 days for weeding and other non-harvest activities
 	* 7 days * 13 weeks = 91 days for harvesting
 	* we will also exclude child labor_days
-	* in this survey we can't tell gender or age of household members
-	* since we can't match household members we deal with each activity seperately
 	* includes all labor tasks performed on a plot during the first cropp season
 
 * family labor	
+* iThis wave asked about specific household members who worked on the plot rather than the total number of members 
+
+* create a new variable counting how many household members worked on the plot 
+**#	egen 			household_count = rownonmiss(s3aq35a s3aq35b)
+					
 * make a binary if they had family work
-	gen				fam = 1 if a3aq31 > 0
-	
+	gen				fam = 1 if household_count > 0	
+	*** 4334 missing values generated?? 
 * how many household members worked on this plot?
 	tab 			a3aq31
 	replace			a3aq31 = 12 if a3aq31 == 25000
