@@ -1,8 +1,8 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 19 March 24
-* Edited by: rg
+* Edited on: 22 March 24
+* Edited by: alj
 * Stata v.18, mac
 
 * does
@@ -88,32 +88,35 @@
 	drop			if pltid == .
 	duplicates 		drop
 	*** zero dropped, still not unique ID
+	
+* some issues with cropid and matching
+	replace		 	cropid = 810 if cropid == 811
+	replace			cropid = 810 if cropid == 812
 
 * unique identifier
 	isid 			hhid prcid pltid Production_ID cropid
-	sort 			hhid prcid pltid Production_ID cropid	
-	
+	sort 			hhid prcid pltid Production_ID cropid
 	
 ***********************************************************************
 **# 2 - merge kg conversion file and create harvested quantity
 ***********************************************************************
 	
-	merge m:1 		cropid unit condition using ///
+	merge m:1 	cropid unit condition using ///
 						"$conv/ValidCropUnitConditionCombinations.dta" 
-	*** unmatched 705 from master 
-	*** unmatched 628 from using
-	
+	*** unmatched 272 from master 
+	*** unmatched 613 from using
 	
 * drop from using
 	drop 			if _merge == 2
+	*** 613 dropped
 
 * how many unmatched had a harvest of 0
 	tab 			a5aq6a if _merge == 1
-	*** 97% have a harvest of 0
+	*** only 2% have a harvest of 0
 	
 * how many unmatched because they used "other" to categorize the state of harvest?
 	tab 			condition if _merge == 1
-	*** 92% say the condition was "other(99)"
+	*** this isn't it either 
 	
 	tab 			cropid condition if condition != 99 & _merge == 1 & condition !=.
 	
@@ -122,32 +125,105 @@
 
 * replace ucaconversion to 1 if the harvest is 0
 	replace 		ucaconversion = 1 if a5aq6a == 0 & _merge == 1
-	*** 404 changes
+	*** 5 changes
 
 * manually replace conversion for the kilograms and sacks 
 * if the condition is other condition and the observation is unmatched
 
 	*kgs
 		replace 		ucaconversion = 1 if unit == 1 & _merge == 1
+		*** 8 changes
 		
 	*sack 120 kgs
 		replace 		ucaconversion = 120 if unit == 9 & _merge == 1
+		*** 0 changes
 	
 	*sack 100 kgs
 		replace 		ucaconversion = 100 if unit == 10 & _merge == 1
+		*** 3 changes
 	
 	* sack 80 kgs
 		replace 		ucaconversion = 80 if unit == 11 & _merge == 1
+		*** 1 change
 	
 	* sack 50 kgs
 		replace 		ucaconversion = 50 if unit == 12 & _merge == 1
-	
+		*** 9 changes
+		
+	* jerrican 20 kgs
+		replace 		ucaconversion = 20 if unit == 14 & _merge == 1
+		*** 9 changes
+		
+	* jerrican 10 kgs
+		replace 		ucaconversion = 10 if unit == 15 & _merge == 1
+		*** 1 change
+		
+	* jerrican 5 kgs
+		replace 		ucaconversion = 20 if unit == 16 & _merge == 1
+		*** 0 changes
+		
+	* jerrican 3 kgs
+		replace 		ucaconversion = 10 if unit == 17 & _merge == 1
+		*** 1 change 
+		
+	* tin 20 kgs
+		replace 		ucaconversion = 20 if unit == 20 & _merge == 1
+		*** 4 changes
+		
+	* tin 5 kgs
+		replace 		ucaconversion = 5 if unit == 21 & _merge == 1
+		*** 4 chnages 
+
+	* 15 kg tub
+		replace 		ucaconversion = 15 if unit == 22 & _merge == 1	
+		*** 3 changes
+		
+	* kimbo 2 kg 
+		replace 		ucaconversion = 2 if unit == 29 & _merge == 1
+		*** 4 changes
+		
+	* kimbo 1 kg
+		replace 		ucaconversion = 1 if unit == 30 & _merge == 1
+		*** 0 changes
+
+	* kimbo 0.5 kg
+		replace 		ucaconversion = 0.5 if unit == 31 & _merge == 1	
+		*** 0 changes 
+
+	* cup 0.5 kg
+		replace 		ucaconversion = 0.5 if unit == 32 & _merge == 1		
+		*** 1 change
+		
+	* basket 20 kg 
+		replace 		ucaconversion = 20 if unit == 37 & _merge == 1
+		*** 5 changes
+		
+	* basket 10 kg 
+		replace 		ucaconversion = 10 if unit == 38 & _merge == 1
+		*** 2 changes 
+
+	* basket 5 kg 
+		replace 		ucaconversion = 5 if unit == 39 & _merge == 1	
+		*** 2 changes
+
+	* basket 2 kg
+		replace 		ucaconversion = 2 if unit == 40 & _merge == 1	
+		*** 3 changes
+		
+	* nomi 1 kg
+		replace 		ucaconversion = 1 if unit == 119 & _merge == 1	
+		*** 13 changes
+
+	* nomi 0.5 kg
+		replace 		ucaconversion = 0.5 if unit == 120 & _merge == 1
+		*** 1 change 
+		
 * drop the unmatched remaining observations
 	drop 			if _merge == 1 & ucaconversion == .
-	*** 3 observatinos deleted
+	*** 193 observatinos deleted
 
 	replace 			ucaconversion = medconversion if _merge == 3 & ucaconversion == .
-	*** 1300 changes made
+	*** 821 changes made
 	
 		mdesc 			ucaconversion
 		*** 0 missing
@@ -155,11 +231,11 @@
 	drop 			_merge
 	
 	tab				cropid
-	*** beans are the most numerous crop being 21.55% of crops planted
-	***	maize is the second highest being 19.22%
+	*** beans are the most numerous crop being 23.77% of crops planted
+	***	maize is the second highest being 20.26%
 	*** maize will be main crop following most other countries in the study
 	
-* Convert harv quantity to kg
+* convert harv quantity to kg
 	*** harvest quantity is in a variety of measurements
 	*** included in the file are the conversions from other measurements to kg
 	
@@ -182,7 +258,7 @@
 	
 * summarize maize quantity harvest
 	sum				harvqtykg if cropid == 130
-	*** 241 mean, 18000 max
+	*** 296 mean, 25000 max
 	
 	
 ***********************************************************************
