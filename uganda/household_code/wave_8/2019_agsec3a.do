@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: ek
-* Edited on 20 Mar 24
+* Edited on 22 Mar 24
 * Edited by kd
 * Stata v.18, mac
 
@@ -29,8 +29,8 @@
 	loc logout 		= "$data/household_data/uganda/logs"
 	
 * open log	
-*	cap log 		close
-*	log using 		"$logout/2019_agsec3a", append
+	cap log 		close
+	log using 		"$logout/2019_agsec3a", append
 	
 * **********************************************************************
 **#1 - import data and rename variables
@@ -38,16 +38,16 @@
 
 * import wave 8 season A
 	use 			"$root/agric/agsec3a.dta", clear
+	compress
+		
 	
-* Change hhid to str as hhide, rename hhide to hhid for simplicity 
+* Change hhid to str as hhidnew, rename hhid to hhidoldold, and hhidnew to hhid 
 	
-	*encode 			hhid, gen(hhide)
-	*rename 			hhid hhid_old
-	*rename			hhide hhid
+	gen hhidnew = ustrtrim(hhid)
+	recast str32 hhidnew
+	rename hhid hhidoldold
+	rename hhidnew hhid
 	
-	gen				hhid_short = ustrtrim(hhid)
-	rename 			hhid hhidlongold
-	rename			hhid_short hhid
 	
 *	rename			parcelID prcid
 	rename			parcelID prcid
@@ -63,14 +63,14 @@
 * **********************************************************************	
 	
 * merge the location identification
-	merge m:1 		hhid using "export/2019_gsec1.dta"
-	*** 1054 unmatched from master
+	merge m:1 		hhid using "$export/2019_gsec1"
+	*** 846 unmatched (3 from master)
 	
 	drop if			_merge != 3
-	
+	*** 846 observations deleted
 
 * **********************************************************************
-* 3 - fertilizer, pesticide and herbicide
+**#3 - fertilizer, pesticide and herbicide
 * **********************************************************************
 
 * fertilizer use
