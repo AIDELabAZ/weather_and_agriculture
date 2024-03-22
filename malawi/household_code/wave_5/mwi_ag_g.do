@@ -91,7 +91,7 @@
 	recode 			condition (1 2 = 3) if inlist(crop_code,5,28,31,32,33,37,42)
 	*** 2231 changes made 
 	
-* prepare for converstion 
+* prepare for conversion 
 * need district variables 
 	merge m:1 case_id using "`root'/hh_mod_a_filt.dta", keepusing(region) assert (2 3) keep (3) nogenerate	
 	
@@ -157,6 +157,8 @@ label define cropid
 * make harvest quantity
 	generate 		harv = ag_g13a * conversion
 	*** 24274 observations (and another 8403 to missing)
+	
+	*** WHY UNIT == 13? 
 	replace			harv = ag_g13a * conversion_other if unit == 13 & harv == . 
 	*** 24 changes made
 	bysort 			case_id HHID gardenid plotid unit cropid : egen harvest = sum(harv)

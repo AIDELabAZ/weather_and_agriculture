@@ -42,7 +42,7 @@
 
 * merge in plot size data
 	merge 			m:1 case_id HHID plotid gardenid using "`root'/ag_mod_c", generate(_gc)
-	*** 51 not matched from using
+	*** 51 not matched from master
 	*** 513 not matched from using 
 	*** drop all unmerged observations
 	
