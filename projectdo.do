@@ -47,6 +47,7 @@
 	 if `"`c(username)'"' == "fvkrysbackpackpc" {
         global 		code  	"/Users/fvkrysbackpackpc/Documents/GitHub/weather_and_agriculture"
 		global 		data	"/Users/fvkrysbackpackpc/Library/CloudStorage/OneDrive-UniversityofArizona/weather_project"
+		
     }
 	    if `"`c(username)'"' == "annal" {
         global 		code  	"C:/Users/aljosephson/git/weather_and_agriculture"

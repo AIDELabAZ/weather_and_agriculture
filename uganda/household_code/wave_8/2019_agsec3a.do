@@ -29,8 +29,8 @@
 	loc logout 		= "$data/household_data/uganda/logs"
 	
 * open log	
-	cap log 		close
-	log using 		"$logout/2019_agsec3a", append
+*	cap log 		close
+*	log using 		"$logout/2019_agsec3a", append
 	
 * **********************************************************************
 **#1 - import data and rename variables
