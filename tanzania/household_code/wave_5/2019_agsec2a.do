@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: March 13, 2024
 * Created by: reece
-* Edited on: March 13, 2024
+* Edited on: March 24, 2024
 * Edited by: reece
 * Stata v.18
 
@@ -16,7 +16,7 @@
 	* cleaned HH_SECA data
 
 * TO DO:
-	*impute missing values
+	
 
 	
 ************************************************************************
@@ -69,7 +69,7 @@
 
 	
 * ***********************************************************************
-* 2 - merge in regional ID and cultivation status
+**#2 - merge in regional ID and cultivation status
 * ***********************************************************************
 	
 * must merge in regional identifiers from 2008_HHSECA to impute
@@ -107,7 +107,7 @@
 	
 
 * ***********************************************************************
-* 3 - clean and impute plot size
+**#3 - clean and impute plot size
 * ***********************************************************************
 	
 * interrogating plotsize variables
@@ -199,7 +199,7 @@
 	mi set 		wide 	// declare the data to be wide.
 	mi xtset	, clear 	// clear any xtset in place previously
 	mi register	imputed plotsize_gps // identify plotsize_GPS as the variable being imputed
-	sort		y4_hhid plotnum, stable // sort to ensure reproducability of results
+	sort		sdd_hhid plotnum, stable // sort to ensure reproducability of results
 	mi impute 	pmm plotsize_gps plotsize_self i.uq_dist, add(1) rseed(245780) ///
 					noisily dots force knn(5) bootstrap
 	mi 			unset
@@ -212,15 +212,15 @@
 					format(%9.3g) 
 	rename		plotsize_gps_1_ plotsize
 	lab var		plotsize "Plot size (ha), imputed"
-	*** imputed 1,220 values out of 3,930 total obs
+	*** imputed 573 values out of 1306 total obs
 	
 	sum				plotsize_self plotsize_gps	plotsize
-	*** self reported	:	mean 1.06 and s.d. 3.01
-	*** gps				:	mean 1.32 and s.d. 3.52
-	*** imputed			:	mean 1.27 and s.d. 3.25
+	*** self reported	:	mean 1.14 and s.d. 2.55
+	*** gps				:	mean 1.20 and s.d. 2.89
+	*** imputed			:	mean 1.21 and s.d. 2.69
 	
 	drop			if plotsize == . & plotsize_self ==.
-	*** no observations dropped
+	*** 274 observations dropped
 
 
 * **********************************************************************
@@ -228,14 +228,14 @@
 * **********************************************************************
 	
 * keep what we want, get rid of the rest
-	keep		y4_hhid plotnum plot_id plotsize clusterid strataid ///
-					hhweight region district ward ea y4_rural
-	order		y4_hhid plotnum plot_id clusterid strataid hhweight ///
+	keep		sdd_hhid plotnum plot_id plotsize clusterid strataid ///
+					hhweight region district ward ea sdd_rural
+	order		sdd_hhid plotnum plot_id clusterid strataid hhweight ///
 					region district ward ea plotsize
 					
 * renaming and relabelling variables
-	lab var		y4_hhid "Unique Household Identification NPS Y4"
-	lab var		y4_rural "Cluster Type"
+	lab var		sdd_hhid "Unique Household Identification NPS-SDD"
+	lab var		sdd_rural "Cluster Type"
 	lab var		hhweight "Household Weights (Trimmed & Post-Stratified)"
 	lab var		plotnum "Plot ID Within household"
 	lab var		plot_id "Unquie Plot Identifier"
@@ -248,13 +248,12 @@
 	lab var		ea "Village / Enumeration Area Code"
 
 * prepare for export
-	isid			y4_hhid plotnum
+	isid			sdd_hhid plot_id
 	compress
 	describe
 	summarize 
-	sort plot_id
-	customsave , idvar(plot_id) filename(AG_SEC2A.dta) path("`export'") ///
-		dofile(2014_AGSEC2A) user($user)
+	sort 			plot_id
+	save 			"$export/2019_AGSEC2A.dta", replace
 
 * close the log
 	log	close

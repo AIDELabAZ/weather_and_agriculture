@@ -1,7 +1,9 @@
 * Project: WB Weather
-* Created on: May 2020
-* Created by: McG
-* Stata v.16
+* Created on: March 2024
+* Created by: reece
+* Edited on: March 24 
+* Edited by: reece
+* Stata v.18
 
 * does
 	* cleans Tanzania household variables, wave 4 Ag sec3a
@@ -13,47 +15,48 @@
 	* distinct.ado
 
 * TO DO:
-	* completed
+	* 
 
 	
 * **********************************************************************
-* 0 - setup
+**#0 - setup
 * **********************************************************************
 
 * define paths
-	loc root = "$data/household_data/tanzania/wave_4/raw"
-	loc export = "$data/household_data/tanzania/wave_4/refined"
-	loc logout = "$data/household_data/tanzania/logs"
+	global root 	"$data/household_data/tanzania/wave_5/raw"
+	global export 	"$data/household_data/tanzania/wave_5/refined"
+	global logout 	"$data/household_data/tanzania/logs"
 
-* open log
-	cap log close
-	log using "`logout'/wv4_AGSEC3A", append
-
-	
+* open log 
+	cap log close 
+	log using "$logout/wv5_AGSEC3A", append
 * ***********************************************************************
-* 1 - prepare TZA 2014 (Wave 4) - Agriculture Section 3A 
+**#1 - prepare TZA 2019 (Wave 5) - Agriculture Section 3A 
 * ***********************************************************************
 
 * load data
-	use 		"`root'/ag_sec_3a", clear
+	use 		"$root/ag_sec_3a", clear
 
 * dropping duplicates
 	duplicates 		drop
 	*** 0 obs dropped
 
-* check for uniquie identifiers
-	drop			if plotnum == ""
-	isid			y4_hhid plotnum
-	*** 1,262 obs dropped
-
-* generate unique observation id
-	gen				plot_id = y4_hhid + " " + plotnum
-	isid			plot_id
+* check for unique identifiers
+	drop		if missing(plotnum)
+	isid		sdd_hhid plotnum
+	*** 0 obs dropped
+	
+* generating unique observation id for each ob
+	tostring	plotnum, gen(plotnum_str)
+	generate 	plot_id = sdd_hhid + " " + plotnum_str
+	lab var		plot_id "Unique plot identifier"
+	isid 		plot_id
+	*** type mismatch- need to convert plotnum to string variable
 	
 * must merge in regional identifiers from 2008_HHSECA to impute
-	merge			m:1 y4_hhid using "`export'/HH_SECA"
+	merge			m:1 sdd_hhid using "$export/HH_SECA"
 	tab				_merge
-	*** 1,262 not matched, from using
+	*** 97 not matched, from using
 
 	drop if			_merge == 2
 	drop			_merge
@@ -62,20 +65,21 @@
 	sort			region district
 	egen			uq_dist = group(region district)
 	distinct		uq_dist
-	*** 159 distinct districts
+	*** 92 distinct districts
 
 * record if field was cultivated during long rains
 	gen 			status = ag3a_03==1 if ag3a_03!=.
 	lab var			status "=1 if field cultivated during long rains"
-	*** 3,930 observations were cultivated (92%)
+	tab 			status
+	*** 1031 observations were cultivated (51%)
 
 * drop uncultivated plots
 	drop			if status == 0	
-	*** 345 obs deleted
+	*** 999 obs deleted
 	
 	
 * ***********************************************************************
-* 2 - generate fertilizer variables
+**#2 - generate fertilizer variables
 * ***********************************************************************
 
 * constructing fertilizer variables
@@ -122,7 +126,7 @@
 
 	
 * ***********************************************************************
-* 3 - generate irrigation, pesticide, and herbicide dummies
+**#3 - generate irrigation, pesticide, and herbicide dummies
 * ***********************************************************************
 	
 * renaming irrigation
@@ -140,7 +144,7 @@
 
 
 * ***********************************************************************
-* 4 - generate labor variables
+**#4 - generate labor variables
 * ***********************************************************************
 
 * per Palacios-Lopez et al. (2017) in Food Policy, we cap labor per activity
@@ -254,7 +258,7 @@
 	
 
 * **********************************************************************
-* 5 - end matter, clean up to save
+**#5 - end matter, clean up to save
 * **********************************************************************
 
 * keep what we want, get rid of the rest
