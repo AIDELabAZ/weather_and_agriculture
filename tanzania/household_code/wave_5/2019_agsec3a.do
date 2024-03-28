@@ -1,13 +1,13 @@
 * Project: WB Weather
 * Created on: March 2024
 * Created by: reece
-* Edited on: March 24 
+* Edited on: March 27 
 * Edited by: reece
 * Stata v.18
 
 * does
 	* cleans Tanzania household variables, wave 4 Ag sec3a
-	* plot details, inputs, 2014 long rainy season
+	* plot details, inputs, 2018 long rainy season
 	* generates irrigation and pesticide dummies, fertilizer variables, and labor variables 
 	
 * assumes
@@ -15,8 +15,7 @@
 	* distinct.ado
 
 * TO DO:
-	* 
-
+	* generate labor variables
 	
 * **********************************************************************
 **#0 - setup
@@ -86,7 +85,7 @@
 	rename			ag3a_47 fert_any
 	replace			fert_any = 2 if fert_any == .
 	*** assuming missing values mean no fertilizer was used
-	*** 21 changes made
+	*** 275 changes made
 	
 	replace			ag3a_49 = 0 if ag3a_49 == .
 	replace			ag3a_56 = 0 if ag3a_56 == .
@@ -94,23 +93,22 @@
 
 * summarize fertilizer
 	sum				kilo_fert, detail
-	*** median 0, mean 38.45, max 50,050, s.d. 1131
-	*** the top two obs are 50,050 kg and 50,000 kg
-	*** the next highest ob is 2,500 - the high values seem unlikely
+	*** median 0, mean 8.06, max 1000, s.d. 46.07
+	*** the top two obs are 600 kg and 500 kg
+	*** the next highest ob is 400
 
 * replace any +3 s.d. away from median as missing
 	replace			kilo_fert = . if kilo_fert > 5000
 	sum				kilo_fert, detail
 	replace			kilo_fert = . if kilo_fert > `r(p50)'+(3*`r(sd)')
 	sum				kilo_fert, detail
-	*** replaced 40 values, max is now 250
-	*** this seems more like it to me
-	
+	*** replaced 22 values, max is now 125
+
 * impute missing values
 	mi set 			wide 	// declare the data to be wide.
 	mi xtset		, clear 	// clear any xtset that may have had in place previously
 	mi register		imputed kilo_fert // identify kilo_fert as the variable being imputed
-	sort			y4_hhid plotnum, stable // sort to ensure reproducability of results
+	sort			sdd_hhid plotnum, stable // sort to ensure reproducability of results
 	mi impute 		pmm kilo_fert i.uq_dist, add(1) rseed(245780) ///
 						noisily dots force knn(5) bootstrap
 	mi 				unset
@@ -122,7 +120,7 @@
 						longstub format(%9.3g) 
 	replace			kilo_fert = kilo_fert_1_
 	drop			kilo_fert_1_
-	*** imputed 40 values out of 3,930 total observations	
+	*** imputed 22 values out of 1306 total observations	
 
 	
 * ***********************************************************************
@@ -132,6 +130,7 @@
 * renaming irrigation
 	rename			ag3a_18 irrigated 
 	replace			irrigated = 2 if irrigated == .
+	*** 275 changes made
 	
 * constructing pesticide/herbicide variables
 	gen				pesticide_any = 2
@@ -140,9 +139,8 @@
 	replace			herbicide_any = 1 if ag3a_60 == 1
 	lab define		pesticide_any 1 "Yes" 2 "No"
 	lab values		pesticide_any pesticide_any
-	lab values		herbicide_any pesticide_any	
-
-
+	lab values		herbicide_any pesticide_any
+	
 * ***********************************************************************
 **#4 - generate labor variables
 * ***********************************************************************
@@ -156,10 +154,7 @@
 * since we can't match household members we deal with each activity seperately
 
 *change missing to zero and then back again
-	mvdecode		ag3a_72_1 ag3a_72_2 ag3a_72_3 ag3a_72_4 ///
-						ag3a_72_5 ag3a_72_6 ag3a_72_7 ag3a_72_8 ag3a_72_9 ///
-						ag3a_72_10 ag3a_72_11 ag3a_72_12 ag3a_72_13 ag3a_72_14 ///
-						ag3a_72_15 ag3a_72_16 ag3a_72_17 ag3a_72_18, mv(0)
+	mvdecode		mv(0)
 
 	mvencode		ag3a_72_1 ag3a_72_2 ag3a_72_3 ag3a_72_4 ///
 						ag3a_72_5 ag3a_72_6 ag3a_72_7 ag3a_72_8 ag3a_72_9 ///

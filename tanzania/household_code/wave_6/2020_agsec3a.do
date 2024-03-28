@@ -95,11 +95,11 @@
 	*** the next highest ob is 900
 
 * replace any +3 s.d. away from median as missing
-	replace			kilo_fert = . if kilo_fert > 1000
+	replace			kilo_fert = . if kilo_fert > 5000
 	sum				kilo_fert, detail
 	replace			kilo_fert = . if kilo_fert > `r(p50)'+(3*`r(sd)')
 	sum				kilo_fert, detail
-	*** replaced 89 values, max is now 130
+	*** replaced 60 values, max is now 150
 	
 * impute missing values
 	mi set 			wide 	// declare the data to be wide.
@@ -117,7 +117,7 @@
 						longstub format(%9.3g) 
 	replace			kilo_fert = kilo_fert_1_
 	drop			kilo_fert_1_
-	*** imputed 91 values out of 4,795 total observations	
+	*** imputed 60 values out of 4,795 total observations	
 
 	
 * ***********************************************************************
