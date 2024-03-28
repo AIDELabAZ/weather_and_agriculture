@@ -1,10 +1,12 @@
 * Project: WB Weather
-* Created on: May 2020
-* Created by: McG
-* Stata v.16
+* Created on: March 2024
+* Created by: reece
+* Edited on: March 28, 2024
+* Edited by: reece
+* Stata v.18
 
 * does
-	* cleans Tanzania household variables, wave 4 Ag sec4a
+	* cleans Tanzania household variables, wave 5 Ag sec4a
 	* kind of a crop roster, with harvest weights, long rainy season
 	* generates weight harvested, harvest month, percentage of plot planted with given crop, value of seed purchases
 	
@@ -13,7 +15,7 @@
 	* mdesc.ado
 
 * TO DO:
-	* completed
+	* everything
 
 	
 * **********************************************************************
@@ -21,21 +23,19 @@
 * **********************************************************************
 
 * define paths
-	loc root = "$data/household_data/tanzania/wave_4/raw"
-	loc export = "$data/household_data/tanzania/wave_4/refined"
-	loc logout = "$data/household_data/tanzania/logs"
+	global root 	"$data/household_data/tanzania/wave_5/raw"
+	global export 	"$data/household_data/tanzania/wave_5/refined"
+	global logout 	"$data/household_data/tanzania/logs"
 
-* open log
-	cap log close
-	log using "`logout'/wv4_AGSEC4A", append
-
-
+* open log 
+	cap log close 
+	log using "$logout/wv5_AGSEC4A", append
 * ***********************************************************************
-* 1 - TZA 2014 (Wave 4) - Agriculture Section 4A 
-* *********************1*************************************************
+**#1 - prepare TZA 2019 (Wave 5) - Agriculture Section 3A 
+* ***********************************************************************
 
 * load data
-	use 			"`root'/ag_sec_4a", clear
+	use 		"$root/ag_sec_4a", clear
 
 * dropping duplicates
 	duplicates 		drop
@@ -195,17 +195,17 @@
 * **********************************************************************
 	
 * keep what we want, get rid of what we don't
-	keep 				y4_hhid plotnum plot_id crop_code crop_id clusterid ///
+	keep 				sdd_hhid plotnum plot_id crop_code crop_id clusterid ///
 							strataid hhweight region district ward ea ///
 							any_* pure_stand percent_field mz_hrv hvst_value ///
-							mz_damaged y4_rural
+							mz_damaged sdd_rural
 
-	order				y4_hhid plotnum plot_id crop_code crop_id clusterid ///
+	order				sdd_hhid plotnum plot_id crop_code crop_id clusterid ///
 							strataid hhweight region district ward ea
 	
 * renaming and relabelling variables
-	lab var			y4_hhid "Unique Household Identification NPS Y4"
-	lab var			y4_rural "Cluster Type"
+	lab var			sdd_hhid "Unique Household Identification NPS SDD"
+	lab var			sdd_rural "Cluster Type"
 	lab var			hhweight "Household Weights (Trimmed & Post-Stratified)"
 	lab var			plotnum "Plot ID Within household"
 	lab var			plot_id "Plot Identifier"
@@ -226,7 +226,7 @@
 	lab var			percent_field "Percent of Field Crop Was Planted On"
 						
 * check for duplicates
-	duplicates		report y4_hhid plotnum crop_code
+	duplicates		report sdd_hhid plotnum crop_code
 	*** there are 2 duplicates
 	
 	collapse (sum)	hvst_value percent_field , by(y4_hhid ///
@@ -236,13 +236,12 @@
 	** two fewer obs, should be the dupes from line 63
 
 * prepare for export
-	isid			y4_hhid plotnum crop_code
+	isid			sdd_hhid plot_id
 	compress
 	describe
 	summarize 
-	sort plot_id
-	customsave , idvar(crop_id) filename(AG_SEC4A.dta) path("`export'") ///
-		dofile(2014_AGSEC4A) user($user)
+	sort 			plot_id
+	save 			"$export/2019_AGSEC4A.dta", replace
 
 * close the log
 	log	close
