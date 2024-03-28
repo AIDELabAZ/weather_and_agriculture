@@ -22,7 +22,7 @@
 * **********************************************************************
 
 * set $pack to 0 to skip package installation
-	global 			pack 	1
+	global 			pack 	0
 		
 * Specify Stata version in use
     global stataVersion 18.0    // set Stata version
@@ -40,7 +40,7 @@
 
 	 if `"`c(username)'"' == "Chandrakant Agme" {
         global 		code  	"C:/Users/Chandrakant Agme/Documents/GitHub/weather_metrics"
-		global 		data	"C:/Users/Chandrakant Agme/University of Arizona/Michler, Jeffrey David - (jdmichler) - weather_metrics"
+		global 		data	"C:/Users/Chandrakant Agme/University of Arizona/Michler, Jeffrey David - (jdmichler) - weather_project"
 	 }	
 		
 * **********************************************************************
