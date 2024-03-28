@@ -34,8 +34,8 @@
 
 * Define root folder globals
     if `"`c(username)'"' == "jdmichler" {
-        global 		code  	"C:/Users/jdmichler/git/AIDELabAZ/weather_and_agriculture"
-		global 		data	"G:/My Drive/weather_project"
+        global 		code  	"C:/Users/jdmichler/git/AIDELabAZ/weather_metrics"
+		global 		data	"C:/Users/jdmichler/OneDrive - University of Arizona/weather_project"
 	}
 
 	 if `"`c(username)'"' == "Chandrakant Agme" {
@@ -75,8 +75,9 @@ if $pack == 1 {
 			}
 		}
 
-	* install -xfill and dm89_1 - packages
+	* install -xfill and nwcommands packages
 		net install xfill, 	replace from(https://www.sealedenvelope.com/)
+		net from "https://raw.githubusercontent.com/ThomasGrund/nwcommands/master"
 		
 	* update all ado files
 		ado update, update
