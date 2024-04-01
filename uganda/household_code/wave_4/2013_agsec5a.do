@@ -1,8 +1,8 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 22 March 24
-* Edited by: alj
+* Edited on: 1 April 24
+* Edited by: rg
 * Stata v.18, mac
 
 * does
@@ -15,7 +15,7 @@
 	* mdesc.ado
 
 * TO DO:
-	* section 2 and beyond
+	* line 311 and beyond
 
 	
 ***********************************************************************
@@ -121,6 +121,7 @@
 	tab 			cropid condition if condition != 99 & _merge == 1 & condition !=.
 	
 	tab 			unit if _merge == 1
+	tab 			unit if _merge == 1, nolabel
 	
 
 * replace ucaconversion to 1 if the harvest is 0
@@ -159,11 +160,11 @@
 		*** 1 change
 		
 	* jerrican 5 kgs
-		replace 		ucaconversion = 20 if unit == 16 & _merge == 1
+		replace 		ucaconversion = 5 if unit == 16 & _merge == 1
 		*** 0 changes
 		
 	* jerrican 3 kgs
-		replace 		ucaconversion = 10 if unit == 17 & _merge == 1
+		replace 		ucaconversion = 3 if unit == 17 & _merge == 1
 		*** 1 change 
 		
 	* tin 20 kgs
@@ -251,10 +252,10 @@
 	
 * summarize harvest quantity
 	sum				harvqtykg
-	*** three crazy values, replace with missing
+	*** 1 crazy value, replace with missing
 	
 	replace			harvqtykg = . if harvqtykg > 100000
-	*** replaced 3 observations
+	*** replaced 1 observation
 	
 * summarize maize quantity harvest
 	sum				harvqtykg if cropid == 130
@@ -271,18 +272,19 @@
 	
 * summarize the value of sales in shillings
 	sum 			harvvlush, detail
-	*** mean 238674 min 10, max 4.56e+07
+	*** mean 201,443.1 , min 6, max 1.03e+07
 
+* NOTE: Anna will check the conversions 	
 * generate crop is USD
-	gen 			cropvl = harvvlush / 2122.854348
+	gen 			cropvl_USD2013 = harvvlush / 2586.89
+	lab var 		cropvl_USD2013 "total value of harvest in 2013 USD"
+	*** value comes from World Bank.
+	
+	gen				cropvl = cropvl_USD2013 * 0.94
 	lab var 		cropvl "total value of harvest in 2010 USD"
-	*** value comes from World Bank: world_bank_exchange_rates.xlxs
-	
-* there are three large outliers in data, replace for imputation later
-	replace			cropvl = . if cropvl > 10000
-	
+		
 	sum 			cropvl, detail
-	*** mean 100.5, min 0, max 8304
+	*** mean 73.2, min 0.002, max 3,734.4
 	
 	
 ***********************************************************************
@@ -301,8 +303,8 @@
 	
 * merge conversion file in for sold
 	merge m:1 		cropid unit condition using ///
-						"`conv'/ValidCropUnitConditionCombinations.dta" 
-	*** unmatched 429 from master
+						"$conv/ValidCropUnitConditionCombinations.dta" 
+	*** unmatched 161 from master
 	
 	drop			if _merge == 2
 	

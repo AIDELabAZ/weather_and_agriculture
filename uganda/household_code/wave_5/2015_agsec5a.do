@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 14 March 24
+* Edited on: 1 April 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -15,7 +15,8 @@
 	* mdesc.ado
 
 * TO DO:
-	* section 2 and beyond
+	* check section 3
+	* section 4 and beyond
 
 	
 ***********************************************************************
@@ -102,11 +103,12 @@
 	
 * how many unmatched because they used "other" to categorize the state of harvest?
 	tab 			condition if _merge == 1
-	*** 0% say the condition was "other(99)"
+	*** this isn't it either
 	
 	tab 			cropid condition if condition != 99 & _merge == 1 & condition !=.
 	
 	tab 			unit if _merge == 1
+	tab				unit if _merge == 1, nolabel
 	
 
 * replace ucaconversion to 1 if the harvest is 0
@@ -118,25 +120,98 @@
 
 	*kgs
 		replace 		ucaconversion = 1 if unit == 1 & _merge == 1
+		*** 4 changes
 		
 	*sack 120 kgs
 		replace 		ucaconversion = 120 if unit == 9 & _merge == 1
+		*** 1 change
 	
 	*sack 100 kgs
 		replace 		ucaconversion = 100 if unit == 10 & _merge == 1
+		*** 1 change
 	
 	* sack 80 kgs
 		replace 		ucaconversion = 80 if unit == 11 & _merge == 1
+		*** 0 changes
 	
 	* sack 50 kgs
 		replace 		ucaconversion = 50 if unit == 12 & _merge == 1
+		*** 2 changes
+		
+	* jerrican 20 kgs
+		replace 		ucaconversion = 20 if unit == 14 & _merge == 1
+		*** 8 changes
+		
+	* jerrican 10 kgs
+		replace 		ucaconversion = 10 if unit == 15 & _merge == 1
+		*** 1 change
+		
+	* jerrican 5 kgs
+		replace 		ucaconversion = 5 if unit == 16 & _merge == 1
+		*** 1 change
+		
+	* jerrican 2 kgs
+		replace 		ucaconversion = 2 if unit == 18 & _merge == 1
+		*** 1 change 
+		
+	* tin 20 kgs
+		replace 		ucaconversion = 20 if unit == 20 & _merge == 1
+		*** 0 changes
+		
+	* tin 5 kgs
+		replace 		ucaconversion = 5 if unit == 21 & _merge == 1
+		*** 1 change 
+
+	* 15 kg plastic Basin
+		replace 		ucaconversion = 15 if unit == 22 & _merge == 1	
+		*** 1 change
+		
+	* kimbo 2 kg 
+		replace 		ucaconversion = 2 if unit == 29 & _merge == 1
+		*** 3 changes
+		
+	* kimbo 1 kg
+		replace 		ucaconversion = 1 if unit == 30 & _merge == 1
+		*** 1 change
+
+	* kimbo 0.5 kg
+		replace 		ucaconversion = 0.5 if unit == 31 & _merge == 1	
+		*** 2 changes 
+
+	* cup 0.5 kg
+		replace 		ucaconversion = 0.5 if unit == 32 & _merge == 1		
+		*** 0 changes
+		
+	* basket 20 kg 
+		replace 		ucaconversion = 20 if unit == 37 & _merge == 1
+		*** 3 changes
+		
+	* basket 10 kg 
+		replace 		ucaconversion = 10 if unit == 38 & _merge == 1
+		*** 0 changes 
+
+	* basket 5 kg 
+		replace 		ucaconversion = 5 if unit == 39 & _merge == 1	
+		*** 1 change
+
+	* basket 2 kg
+		replace 		ucaconversion = 2 if unit == 40 & _merge == 1	
+		*** 0 changes
+		
+	* nomi 1 kg
+		replace 		ucaconversion = 1 if unit == 119 & _merge == 1	
+		*** 0 changes
+
+	* nomi 0.5 kg
+		replace 		ucaconversion = 0.5 if unit == 120 & _merge == 1
+		*** 0 change 
 	
 * drop the unmatched remaining observations
 	drop 			if _merge == 1 & ucaconversion == .
-	*** 3 observatinos deleted
+	*** 198 observatinos deleted
 
 	replace 			ucaconversion = medconversion if _merge == 3 & ucaconversion == .
-	*** 1300 changes made
+	*** 579 changes made
 	
 		mdesc 			ucaconversion
 		*** 0 missing
@@ -144,8 +219,8 @@
 	drop 			_merge
 	
 	tab				cropid
-	*** beans are the most numerous crop being 21.55% of crops planted
-	***	maize is the second highest being 19.22%
+	*** beans are the most numerous crop being 23.29% of crops planted
+	***	maize is the second highest being 22.93%
 	*** maize will be main crop following most other countries in the study
 	
 * Convert harv quantity to kg
@@ -153,25 +228,22 @@
 	*** included in the file are the conversions from other measurements to kg
 	
 * replace missing harvest quantity to 0
-	replace 		a5aq6a = 0 if a5aq6a == .
+	replace 		a5bq6a = 0 if a5bq6a == .
 	*** no changes
 	
 * Convert harv quantity to kg
-	gen 			harvqtykg = a5aq6a*ucaconversion
+	gen 			harvqtykg = a5bq6a*ucaconversion
 	label var		harvqtykg "quantity of crop harvested (kg)"
 	mdesc 			harvqtykg
 	*** all converted
 	
 * summarize harvest quantity
 	sum				harvqtykg
-	*** three crazy values, replace with missing
-	
-	replace			harvqtykg = . if harvqtykg > 100000
-	*** replaced 3 observations
+	*** no values > 100,000
 	
 * summarize maize quantity harvest
 	sum				harvqtykg if cropid == 130
-	*** 241 mean, 18000 max
+	*** 272 mean, 13,800 max
 	
 	
 ***********************************************************************
@@ -179,23 +251,24 @@
 ***********************************************************************
 
 * value of crop sold in shillings
-	rename			a5aq8 harvvlush
+	rename			a5bq8 harvvlush
 	label var 		harvvlush "Value of crop sold in ugandan shilling"
 	
 * summarize the value of sales in shillings
 	sum 			harvvlush, detail
-	*** mean 238674 min 10, max 4.56e+07
+	*** mean 2,697.5,  min 0, max 520,000
 
 * generate crop is USD
-	gen 			cropvl = harvvlush / 2122.854348
-	lab var 		cropvl "total value of harvest in 2010 USD"
-	*** value comes from World Bank: world_bank_exchange_rates.xlxs
+	gen 			cropvl_USD2015 = harvvlush / 3240.65
+	lab var 		cropvl_USD2015 "total value of harvest in 2015 USD"
+	*** value comes from World Bank.
 	
-* there are three large outliers in data, replace for imputation later
-	replace			cropvl = . if cropvl > 10000
+	gen 			cropvl = cropvl_USD2015 * 0.92
+	lab var			cropvl "total value of harvest in 2010 USD"
+	
 	
 	sum 			cropvl, detail
-	*** mean 100.5, min 0, max 8304
+	*** mean 0.76, min 0, max 147.6
 	
 	
 ***********************************************************************
