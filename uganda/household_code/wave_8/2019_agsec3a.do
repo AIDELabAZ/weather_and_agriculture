@@ -150,13 +150,14 @@
 * iThis wave asked about specific household members who worked on the plot rather than the total number of members 
 
 * create a new variable counting how many household members worked on the plot 
-**#	egen 			household_count = rownonmiss(s3aq35a s3aq35b)
+	egen 			household_count = rownonmiss(s3aq35a s3aq35b)
 					
 * make a binary if they had family work
 	gen				fam = 1 if household_count > 0	
 	*** 4334 missing values generated?? 
+**# Bookmark #2
 * how many household members worked on this plot?
-	tab 			a3aq31
+	tab 			household_count
 	replace			a3aq31 = 12 if a3aq31 == 25000
 	*** family labor is from 0 - 12 people
 	
