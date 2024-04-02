@@ -1,33 +1,33 @@
 * Project: WB Weather
-* Created on: May 2020
-* Created by: McG
-* Stata v.16
+* Created on: April 2024
+* Created by: reece
+* Edited on: April 2, 2024
+* Edited by: reece
+* Stata v.18
 
 * does
 	* merges individual cleaned plot datasets together
 	* imputes values for continuous variables
-	* collapses wave 4 plot level data to household level for combination with other waves
+	* collapses wave 5 plot level data to household level for combination with other waves
 
 * assumes
 	* previously cleaned household datasets
 	* customsave.ado
 
 * TO DO:
-	* complete
-
-
+	* everything
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
 
 * define paths
-	loc		root	=	"$data/household_data/tanzania/wave_4/refined"
-	loc		export	=	"$data/household_data/tanzania/wave_4/refined"
-	loc		logout	=	"$data/merged_data/tanzania/logs"
+	global root 	"$data/household_data/tanzania/wave_5/refined"
+	global export 	"$data/household_data/tanzania/wave_5/refined"
+	global logout 	"$data/household_data/tanzania/logs"
 
-* open log
-	cap log close
-	log		using	"`logout'/npsy4_merge", append
+* open log 
+	cap log 		close 
+	log 			using "$logout/npsy5_merge", append
 
 
 * **********************************************************************
@@ -35,7 +35,7 @@
 * **********************************************************************
 
 * start by loading harvest quantity and value, since this is our limiting factor
-	use 			"`root'/AG_SEC4A", clear
+	use 			"$root/AG_SEC4A", clear
 
 	isid			crop_id
 

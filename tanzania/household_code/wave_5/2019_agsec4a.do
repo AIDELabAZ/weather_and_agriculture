@@ -15,7 +15,7 @@
 	* mdesc.ado
 
 * TO DO:
-	* everything
+	* need crop names
 
 	
 * **********************************************************************
@@ -57,23 +57,23 @@
 	replace			percent_field = 0.50 if ag4a_02==2
 	replace			percent_field = 0.75 if ag4a_02==3
 	replace			percent_field = 1 if pure_stand==1
-	duplicates		list y4_hhid plotnum crop_code
+	duplicates		list sdd_hhid plotnum crop_code
 	*** there are 6 duplicates
 	
 * drop the duplicates
-	duplicates		drop y4_hhid plotnum zaoname, force
+	duplicates		drop sdd_hhid plotnum zaoname, force
 	*** percent_field and pure_stand variables are the same, so dropping duplicates
 	*** drops 4 duplicate obs, the 2 remaining are 'chilies' and 'OTHER'
 	*** since they're not maize, I will collapse at the end of the do-file
 
 * create total area on field (total on plot across ALL crops)
-	bys 			y4_hhid plotnum: egen total_percent_field = total(percent_field)
+	bys 			sdd_hhid plotnum: egen total_percent_field = total(percent_field)
 	replace			percent_field = percent_field / total_percent_field ///
 						if total_percent_field > 1	
 	*** 3,039 changes made
 
 * check for missing values
-	mdesc 				crop_code ag4a_28
+	mdesc 				crop_code ag4a_27
 	*** 1,541 obs missing crop code
 	*** 1,721 obs missing harvest weight
 	
@@ -86,21 +86,21 @@
 	*** 181 obs dropped
 
 * replace missing weight 
-	replace 			ag4a_28 = 0 if ag4a_28 == .
+	replace 			ag4a_27 = 0 if ag4a_27 == .
 	*** no changes made	
 
 * generate hh x plot x crop identifier
 *	isid				y4_hhid plotnum crop_code // no unique id, mentioned above
-	gen		 			plot_id = y4_hhid + " " + plotnum
+	gen		 			plot_id = sdd_hhid + " " + plotnum
 	lab var				plot_id "plot id"
 	tostring 			crop_code, generate(crop_num)
-	gen str23 			crop_id = y4_hhid + " " + plotnum + " " + crop_num
+	gen str23 			crop_id = sdd_hhid + " " + plotnum + " " + crop_num
 	duplicates report 	crop_id
 	lab var				crop_id "unique crop id"
 	*** 2 duplicate crop_ids	
 	
 * must merge in regional identifiers from 2008_HHSECA to impute
-	merge			m:1 y4_hhid using "`export'/HH_SECA"
+	merge			m:1 sdd_hhid using "`export'/HH_SECA"
 	tab				_merge
 	*** 1,564 not matched, from using
 	
@@ -119,13 +119,16 @@
 * ***********************************************************************	
 
 * other variables of interest
-	rename 				ag4a_28 wgt_hvsted
-	rename				ag4a_29 hvst_value
+	rename 				ag4a_27 wgt_hvsted
+	rename				ag4a_28 hvst_value
 	tab					hvst_value, missing
 	*** hvst_value missing no observations
 
 *currency conversion
-	replace				hvst_value = hvst_value/2012.06173
+	replace				hvst_value = hvst_value/2288.21
+	*** tza to usd 2019
+	replace 			hvst_value = hvst_value*0.8529
+	*** usd 2019 to usd 2010
 	*** Value comes from World Bank: world_bank_exchange_rates.xlxs
 
 * summarize value of harvest
@@ -140,7 +143,7 @@
 	mi set 			wide 	// declare the data to be wide.
 	mi xtset		, clear 	// clear any xtset that may have had in place previously
 	mi register		imputed hvst_value // identify kilo_fert as the variable being imputed
-	sort			y4_hhid plotnum crop_num, stable // sort to ensure reproducability of results
+	sort			sdd_hhid plotnum crop_num, stable // sort to ensure reproducability of results
 	mi impute 		pmm hvst_value i.uq_dist i.crop_code, add(1) rseed(245780) ///
 						noisily dots force knn(5) bootstrap
 	mi 				unset	
@@ -174,7 +177,7 @@
 	mi set 			wide 	// declare the data to be wide.
 	mi xtset		, clear 	// clear any xtset that may have had in place previously
 	mi register		imputed mz_hrv // identify kilo_fert as the variable being imputed
-	sort			y4_hhid plotnum crop_num, stable // sort to ensure reproducability of results
+	sort			sdd_hhid plotnum crop_num, stable // sort to ensure reproducability of results
 	mi impute 		pmm mz_hrv i.uq_dist if crop_code == 11, add(1) rseed(245780) ///
 						noisily dots force knn(5) bootstrap
 	mi 				unset	

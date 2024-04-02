@@ -117,6 +117,7 @@
 	*** tza to usd 2020
 	replace 			hvst_value = hvst_value/0.70423
 	*** usd 2020 to usd 2010
+	*** maybe *.8425?
 	*** Value comes from World Bank: world_bank_exchange_rates.xlxs
 
 * summarize value of harvest

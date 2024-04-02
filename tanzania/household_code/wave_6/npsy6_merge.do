@@ -8,7 +8,7 @@
 * does
 	* merges individual cleaned plot datasets together
 	* imputes values for continuous variables
-	* collapses wave 4 plot level data to household level for combination with other waves
+	* collapses wave 6 plot level data to household level for combination with other waves
 
 * assumes
 	* previously cleaned household datasets
