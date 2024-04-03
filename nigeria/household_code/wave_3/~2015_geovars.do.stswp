@@ -1,8 +1,8 @@
 * Project: WB Weather
-* Created on: Feb 24
-* Created by: jet
-* Edited by: jet
-* Stata v.18
+* Created on: Oct 2020
+* Created by: jdm
+* Edited by: jdm
+* Stata v.16
 
 * does
 	* cleans geovars
@@ -11,7 +11,7 @@
 	* customsave.ado
 
 * TO DO:
-	* customsave, log
+	* done
 
 	
 * **********************************************************************
@@ -19,21 +19,21 @@
 * **********************************************************************
 
 * define paths	
-	global root 		= "$data/household_data/nigeria/wave_4/raw"  
-	global export 		= "$data/household_data/nigeria/wave_4/refined"
-	global logout 		= "$data/household_data/nigeria/logs"
+	loc root 		= "$data/household_data/nigeria/wave_3/raw"  
+	loc export 		= "$data/household_data/nigeria/wave_3/refined"
+	loc logout 		= "$data/household_data/nigeria/logs"
 	
 * open log	
 	*cap log 		close
-	*log using 		"$logout/wave_4_geovars", append
+	*log using 		"`logout'/wave_3_geovars", append
 
 	
 * **********************************************************************
-* 1 - GHSY3 (Wave 4) - geovars
+* 1 - GHSY3 (Wave 3) - geovars
 * **********************************************************************
 
-* import wave 4 geovars
-	use 			"$root/NGA_HouseholdGeovars_Y4.dta", clear
+* import wave 3 geovars
+	use 			"`root'/NGA_HouseholdGeovars_Y3.dta", clear
 
 * rename variables
 	isid 			hhid
