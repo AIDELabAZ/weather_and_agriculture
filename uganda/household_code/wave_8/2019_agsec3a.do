@@ -2,7 +2,7 @@
 * Created on: Aug 2020
 * Created by: ek
 * Edited on 05 Apr 24
-* Edited by kd
+* Edited by KCD
 * Stata v.18, mac
 
 * does
@@ -16,7 +16,7 @@
 	* mdesc.ado
 
 * TO DO:
-	* everything
+	* done
 	
 
 * **********************************************************************
