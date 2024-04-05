@@ -354,7 +354,7 @@
 *********************************************************************	
 	
 * merge the location identification
-	merge m:1 		hhid using "`export'/2011_GSEC1"
+	merge m:1 		hhid using "$export/2013_gsec1"
 	*** 533 unmatched from master
 	
 	drop 			if _merge == 2
