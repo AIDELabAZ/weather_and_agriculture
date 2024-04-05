@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: ek
-* Edited on 02 Apr 24
+* Edited on 05 Apr 24
 * Edited by kd
 * Stata v.18, mac
 
@@ -147,64 +147,53 @@
 	* includes all labor tasks performed on a plot during the first cropp season
 
 * family labor	
-* iThis wave asked about specific household members who worked on the plot rather than the total number of members 
+* This wave asked about specific household members who worked on the plot rather than the total number of members 
 
 * create a new variable counting how many household members worked on the plot 
-	egen 			household_count = rownonmiss(s3aq35a s3aq35b)
+	egen 			household_count = rowtotal(s3aq35a s3aq35b)
 					
 * make a binary if they had family work
 	gen				fam = 1 if household_count > 0	
-	*** 4334 missing values generated?? 
-**# Bookmark #2
-* how many household members worked on this plot?
-	tab 			household_count
-	replace			a3aq31 = 12 if a3aq31 == 25000
-	*** family labor is from 0 - 12 people
 	
-	sum 			a3aq32, detail
-	*** mean 32.8, min 1, max 300
+* how many household members worked on this plot?
+	tab			household_count
+	*** family labor is from 0 - 5 people
+	
+	sum 			household_count, detail
+	*** mean  2.98, min 1, max 240
 	*** don't need to impute any values
 	
 * fam lab = number of family members who worked on the farm*days they worked	
-	gen 			fam_lab = a3aq31*a3aq32
+	gen 			fam_lab = s3aq35a*s3aq35b
 	replace			fam_lab = 0 if fam_lab == .
 	sum				fam_lab
-	*** max 3000, mean 9780, min 0
+*	*** max 14400, mean 14.91, min 0
 	
 * hired labor 
-* hired men days
-	rename	 		a3aq35a hired_men
+* hired labor days
+	rename	 		s3aq34 hired_labor
 		
 * make a binary if they had hired_men
-	gen 			men = 1 if hired_men != . & hired_men != 0
-	
-* hired women days
-	rename			a3aq35b hired_women 
-		
-* make a binary if they had hired_men
-	gen 			women = 1 if hired_women != . & hired_women != 0
+	gen 			yes = 1 if hired_labor != . & hired_labor != 0
 	
 * impute hired labor all at once
-	sum				hired_men, detail
-	sum 			hired_women, detail
+	sum				hired_labor, detail
 	
 * replace values greater than 365 and turn missing to zeros
-	replace			hired_men = 0 if hired_men == .
-	replace			hired_women = 0 if hired_women == .
-	
-	replace			hired_men = 365 if hired_men > 365
-	replace			hired_women = 365 if hired_women > 365
+	replace			hired_labor = 0 if hired_labor == .
+	*** 81 changes made
+	replace			hired_labor = 365 if hired_labor > 365
 	*** no changes made
 	
 * generate labor days as the total amount of labor used on plot in person days
-	gen				labor_days = fam_lab + hired_men + hired_women
+	gen				labor_days = fam_lab + hired_labor
 	
 	sum 			labor_days
-	*** mean 101.45, max 3080, min 0	
+	*** mean 16.62, max 14401, min 0	
 
 	
 * **********************************************************************
-* 6 - end matter, clean up to save
+**#6 - end matter, clean up to save
 * **********************************************************************
 
 	keep hhid prcid pltid fert_any kilo_fert labor_days region ///
@@ -214,9 +203,8 @@
 	describe
 	summarize
 
-* save file
-		customsave , idvar(hhid) filename("2011_AGSEC3A.dta") ///
-			path("`export'") dofile(2011_AGSEC3A) user($user)
+**# save file
+	save 			"$export/2019_agsec3a.dta", replace
 
 * close the log
 	log	close
