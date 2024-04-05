@@ -195,9 +195,10 @@
 * **********************************************************************
 **#6 - end matter, clean up to save
 * **********************************************************************
-
-	keep hhid prcid pltid fert_any kilo_fert labor_days region ///
-		district county subcounty parish pest_any herb_any
+	
+	keep 			hhid prcid region district subcounty ///
+					parish  ///
+					fert_any kilo_fert labor_days pest_any herb_any
 
 	compress
 	describe
