@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 1 April 24
+* Edited on: 5 April 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -15,7 +15,7 @@
 	* mdesc.ado
 
 * TO DO:
-	* line 311 and beyond
+	* section 5 and beyond
 
 	
 ***********************************************************************
@@ -305,36 +305,34 @@
 	merge m:1 		cropid unit condition using ///
 						"$conv/ValidCropUnitConditionCombinations.dta" 
 	*** unmatched 161 from master
+	*** dropping unmatched obs 
 	
-	drop			if _merge == 2
+	drop			if _merge !=3
+	*** 932 observations deleted, 771 are from using file
 	
-* most unmatched seem to be 0 production and unit = kg
-	replace			ucaconversion = 1 if ucaconversion == . & ///
-						harvqtykg == 0
-	*** replaces 404 of the 429 unmatched obs
 	
 * replace missing ucaconversion with kg if unit = kg
 	replace			ucaconversion = 1 if ucaconversion == . & ///
 						unit == 1
-	*** replaces 686
+	*** replaces 481
 	
 * replace missing ucaconversion with median
 	replace			ucaconversion = medconversion if ucaconversion == .
-	*** 476 changes made, only 5 missing left
-	
-* set remaining missing equal to conversion factor in data
-	replace			ucaconversion = A5AQ7D if ucaconversion == .
-	*** 5 changes made, now have conversion factor for all
-	
+	*** 326 changes made
+		
 * replace zeros in sold data as missing
 	replace			a5aq7a = . if a5aq7a == 0
+	*** 5,316 changes made
 	
 * convert quantity sold into kg
 	gen 			harvkgsold = a5aq7a*ucaconversion
 	lab	var			harvkgsold "quantity sold, in kilograms"
 
 	sum				harvkgsold, detail
-	*** 0.04 min, mean 550, max 80000
+	*** 0.25 min, mean 606.61, max 425,000
+	*** only 1 observation =425000
+	
+	drop 			if harvkgsold == 425000
 
 * replace missing values to 0
 	replace 		cropvl = 0 if cropvl == .
