@@ -1,16 +1,18 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: ek
-* Stata v.16
+* Edited on: 05 Apr 24
+* Edited by: KCD
+* Stata v.18, Mac
 
 * does
 	* Crop output
-	* reads Uganda wave 3 crop output (2011_AGSEC5A) for the 1st season
+	* reads Uganda wave 3 crop output (2019_agsec5a) for the 1st season
 	* 3A - 5A are questionaires for the first planting season
 	* 3B - 5B are questionaires for the second planting season
 
 * assumes
-	* customsave.ado
+	* access to raw data 
 	* mdesc.ado
 
 * TO DO:
@@ -18,48 +20,47 @@
 
 	
 * **********************************************************************
-* 0 - setup
+**#0 - setup
 * **********************************************************************
 
 * define paths	
-	loc root 		= "$data/household_data/uganda/wave_3/raw"  
-	loc export 		= "$data/household_data/uganda/wave_3/refined"
+	loc root 		= "$data/household_data/uganda/wave_8/raw/raw"  
+	loc export 		= "$data/household_data/uganda/wave_8/refined"
 	loc logout 		= "$data/household_data/uganda/logs"
 	loc conv 		= "$data/household_data/uganda/conversion_files"  
-
+	
 * open log	
 	cap log 		close
-	log using 		"`logout'/2011_AGSEC5A", append
+	log using 		"$logout/2019_agsec5a", append
 
 	
 * **********************************************************************
-* 1 - import data and rename variables
+**#1 - import data and rename variables
 * **********************************************************************
 
 * import wave 2 season 1
-	use 			"`root'/2011_AGSEC5A.dta", clear
+	use 			"$root/agric/agsec5a.dta", clear
+	compress
+		
 		
 	rename 			cropID cropid
-	rename			plotID pltid
 	rename			parcelID prcid
-	rename 			a5aq6c unit
-	rename			a5aq6b condition
-	rename 			a5aq6e harvmonth
+	rename 			s5aq06b_1 unit
+	rename			s5aq06c_1 condition
+	rename 			s5aq06e_1 harvmonth
 		
-* one observation is missing pltid
-	*** the hhid is 4183002308
-	replace		pltid = 5 if HHID == 4183002308 & pltid == .
-	*** one change made
 
-* unlike other waves, HHID is a numeric here
-	format 			%18.0g HHID
-	tostring		HHID, gen(hhid) format(%18.0g)
+* Change hhid to str as hhidnew, rename hhid to hhidoldold, and hhidnew to hhid gen hhidnew = ustrtrim(hhid) 
+	recast str32 hhidnew
+	rename hhid hhidoldold
+	rename hhidnew hhid
 	
+* sort for ease of access
 	sort 			hhid prcid pltid cropid
 	
 * drop observations from plots that did not harvest because crop was immature
-	drop if a5aq5_2 == 1
-	*** 1484 observations deleted
+	drop if s5aq05_2 == 1
+	*** 1034 observations deleted
 
 * missing cropid's also lack crop names, drop those observations
 	mdesc 			cropid
@@ -67,25 +68,25 @@
 	
 * drop cropid is other, fallow, pasture, and trees
 	drop 			if cropid > 880
-	*** 93 observations dropped
+	*** 24 observations dropped
 	
 * replace harvests with 99999 with a 0, 99999 is code for missing
-	replace 		a5aq6a = 0 if a5aq6a == 99999
+	replace 		s5aq06a_1 = 0 if s5aq06a_1 == 99999
 	*** 0 changed to zero
 	
 * replace missing cropharvests with 0
-	replace 		a5aq6a = 0 if a5aq6a == .
-	*** 19 changed to zero
+	replace 		s5aq06a_1 = 0 if s5aq06a_1 == .
+	*** 408 changed to zero
 
 * missing prcid and pltid don't allow for unique id, drop missing
 	drop			if prcid == .
 	drop			if pltid == .
 	duplicates 		drop
-	*** zero dropped, still not unique ID
+	*** 0 dropped, still not unique ID
 	
 	
 * **********************************************************************
-* 2 - merge kg conversion file and create harvested quantity
+**#2 - merge kg conversion file and create harvested quantity
 * **********************************************************************
 	
 	merge m:1 		cropid unit condition using ///
