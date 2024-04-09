@@ -42,7 +42,7 @@
 	*** 0 obs dropped
 
 * rename variables of interest
-	rename 			zaocode crop_code
+	rename 			cropid crop_code
 	
 * create percent of area to crops
 	gen				pure_stand = ag4a_01 == 1
