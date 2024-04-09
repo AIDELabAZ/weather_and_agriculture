@@ -521,7 +521,7 @@
 	summarize 
 	
 * saving production dataset
-	save 			"$export/hhfinal_npsy5.dta", replace
+	save 			"$export/hhfinal_npsy6.dta", replace
 
 * close the log
 	log	close

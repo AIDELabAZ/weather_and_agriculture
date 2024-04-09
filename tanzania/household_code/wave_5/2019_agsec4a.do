@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: March 2024
 * Created by: reece
-* Edited on: March 28, 2024
+* Edited on: April 9, 2024
 * Edited by: reece
 * Stata v.18
 
@@ -15,7 +15,7 @@
 	* mdesc.ado
 
 * TO DO:
-	* need crop names
+	
 
 	
 * **********************************************************************
@@ -58,51 +58,50 @@
 	replace			percent_field = 0.75 if ag4a_02==3
 	replace			percent_field = 1 if pure_stand==1
 	duplicates		list sdd_hhid plotnum crop_code
-	*** there are 6 duplicates
-	
-* drop the duplicates
-	duplicates		drop sdd_hhid plotnum zaoname, force
-	*** percent_field and pure_stand variables are the same, so dropping duplicates
-	*** drops 4 duplicate obs, the 2 remaining are 'chilies' and 'OTHER'
-	*** since they're not maize, I will collapse at the end of the do-file
+	*** there are 0 duplicates
 
 * create total area on field (total on plot across ALL crops)
 	bys 			sdd_hhid plotnum: egen total_percent_field = total(percent_field)
 	replace			percent_field = percent_field / total_percent_field ///
 						if total_percent_field > 1	
-	*** 3,039 changes made
+	*** 444 changes made
+	*** seems small?
 
 * check for missing values
 	mdesc 				crop_code ag4a_27
-	*** 1,541 obs missing crop code
-	*** 1,721 obs missing harvest weight
+	*** 0 obs missing crop code
+	*** 81 obs missing harvest weight
 	
 * drop if crop code is missing
 	drop				if crop_code == .
-	*** 1,541 observations dropped
+	*** 0 observations dropped
 
 * drop if no harvest occured during long rainy season
 	drop				if ag4a_19 != 1
-	*** 181 obs dropped
+	*** 81 obs dropped
 
 * replace missing weight 
 	replace 			ag4a_27 = 0 if ag4a_27 == .
 	*** no changes made	
 
 * generate hh x plot x crop identifier
-*	isid				y4_hhid plotnum crop_code // no unique id, mentioned above
-	gen		 			plot_id = sdd_hhid + " " + plotnum
-	lab var				plot_id "plot id"
+	isid				sdd_hhid plotnum crop_code
+	
+	tostring	plotnum, gen(plotnum_str)
+	generate 	plot_id = sdd_hhid + " " + plotnum_str
+	lab var		plot_id "Unique plot identifier"
+	*** type mismatch- need to convert plotnum to string variable
+	
 	tostring 			crop_code, generate(crop_num)
-	gen str23 			crop_id = sdd_hhid + " " + plotnum + " " + crop_num
+	gen str23 			crop_id = sdd_hhid + " " + plotnum_str + " " + crop_num
 	duplicates report 	crop_id
 	lab var				crop_id "unique crop id"
-	*** 2 duplicate crop_ids	
+	*** 0 duplicates	
 	
 * must merge in regional identifiers from 2008_HHSECA to impute
-	merge			m:1 sdd_hhid using "`export'/HH_SECA"
+	merge			m:1 sdd_hhid using "$export/HH_SECA"
 	tab				_merge
-	*** 1,564 not matched, from using
+	*** 623 not matched, from using
 	
 	drop if			_merge == 2
 	drop			_merge
@@ -111,7 +110,7 @@
 	sort			region district
 	egen			uq_dist = group(region district)
 	distinct		uq_dist
-	*** 157 distinct districts
+	*** 78 distinct districts
 
 	
 * ***********************************************************************
@@ -133,11 +132,11 @@
 
 * summarize value of harvest
 	sum				hvst_value, detail
-	*** median 41.75, mean 114.91, max 12,176.56
+	*** median 29.82, mean 96.60, max 6396.16
 
 * replace any +3 s.d. away from median as missing
 	replace			hvst_value = . if hvst_value > `r(p50)'+(3*`r(sd)')
-	*** replaced 61 values, max is now 1,118.26
+	*** replaced 15 values, max is now 805.11
 	
 * impute missing values
 	mi set 			wide 	// declare the data to be wide.
@@ -156,9 +155,10 @@
 	replace			hvst_value = hvst_value_1_
 	lab var				hvst_value "Value of harvest (2010 USD)"
 	drop			hvst_value_1_
-	*** imputed 61 values out of 5,400 total observations	
+	*** imputed 11 values out of 1298 total observations	
+	*** did not impute all missing values, is this okay?
 	
-* generate new varaible for measuring mize harvest
+* generate new varaible for measuring maize harvest
 	gen					mz_hrv = wgt_hvsted if crop_code == 11
 	gen					mz_damaged = 1 if crop_code == 11 & mz_hrv == 0
 	tab					mz_damaged, missing
@@ -167,11 +167,11 @@
 * summarize value of harvest
 	replace			mz_hrv = . if mz_hrv > 20000
 	sum				mz_hrv, detail
-	*** median 300, mean 641, max 11,200
+	*** median 240, mean 590.68, max 19680
 	
 * replace any +3 s.d. away from median as missing
 	replace			mz_hrv = . if mz_hrv > `r(p50)' + (3*`r(sd)')
-	*** replaced 46 values, max is now 3,600
+	*** replaced 9 values, max is now 4480
 
 * impute missing values
 	mi set 			wide 	// declare the data to be wide.
@@ -190,7 +190,8 @@
 	replace			mz_hrv = mz_hrv_1_  if crop_code == 11
 	lab var			mz_hrv "Quantity of maize harvested (kg)"
 	drop			mz_hrv_1_
-	*** imputed 46 values out of 2,024 total observations	
+	*** imputed 7 values out of 1298 total observations
+	*** not all missing values imputed again, is this ok?
 	
 	
 * **********************************************************************
@@ -230,16 +231,16 @@
 						
 * check for duplicates
 	duplicates		report sdd_hhid plotnum crop_code
-	*** there are 2 duplicates
+	*** there are 0 duplicates
 	
-	collapse (sum)	hvst_value percent_field , by(y4_hhid ///
+	collapse (sum)	hvst_value percent_field , by(sdd_hhid ///
 						plotnum plot_id crop_code crop_id clusterid ///
 						strataid hhweight region district ward ea ///
 						any_* pure_stand mz_hrv mz_damaged)
-	** two fewer obs, should be the dupes from line 63
+	
 
 * prepare for export
-	isid			sdd_hhid plot_id
+	isid			sdd_hhid plot_id crop_code
 	compress
 	describe
 	summarize 

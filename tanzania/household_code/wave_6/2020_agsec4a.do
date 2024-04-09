@@ -115,18 +115,18 @@
 *currency conversion
 	replace				hvst_value = hvst_value/2294.15
 	*** tza to usd 2020
-	replace 			hvst_value = hvst_value/0.70423
+	replace 			hvst_value = hvst_value*.8425
 	*** usd 2020 to usd 2010
 	*** maybe *.8425?
 	*** Value comes from World Bank: world_bank_exchange_rates.xlxs
 
 * summarize value of harvest
 	sum				hvst_value, detail
-	*** median 53.68, mean 169.01, max 35336.89
+	*** median 39.66, mean 124.88, max 26110.65
 
 * replace any +3 s.d. away from median as missing
 	replace			hvst_value = . if hvst_value > `r(p50)'+(3*`r(sd)')
-	*** replaced 28 values, max is now 2385.61
+	*** replaced 28 values, max is now 1762.74
 	
 * impute missing values
 	mi set 			wide 	// declare the data to be wide.
