@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 5 April 24
+* Edited on: 8 April 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -352,10 +352,14 @@
 *********************************************************************
 **# 5 - generate price data
 *********************************************************************	
+
+* hhid is a long variable in the using file 
+	destring		hhid, replace
+	format 			hhid %16.0g
 	
 * merge the location identification
-	merge m:1 		hhid using "$export/2013_gsec1"
-	*** 533 unmatched from master
+	merge m:1 		hhid using "$export/2013_agsec1"
+	*** 0 unmatched from master
 	
 	drop 			if _merge == 2
 	drop			_merge
