@@ -332,15 +332,14 @@
 *********************************************************************	
 	
 * merge the location identification
-	merge m:1 		hhid using "`export'/2011_GSEC1"
-	*** 533 unmatched from master
+	merge m:1 		hhid using "$export/2015_gsec1"
+	*** 45 unmatched from master
 	
 	drop 			if _merge == 2
 	drop			_merge
 	
 * encode district for the imputation
 	encode 			district, gen (districtdstrng)
-	encode			county, gen (countydstrng)
 	encode			subcounty, gen (subcountydstrng)
 	encode			parish, gen (parishdstrng)
 
