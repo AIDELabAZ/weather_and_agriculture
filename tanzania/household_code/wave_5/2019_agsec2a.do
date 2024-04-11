@@ -84,7 +84,7 @@
 	sort		region district
 	egen		uq_dist = group(region district)
 	distinct 	uq_dist
-	*** 92 distinct districts
+	*** 127 distinct districts
 	
 * must merge in regional identifiers from 2012_AG_SEC_3A to impute
 	merge			1:1 sdd_hhid plotnum using "$root/AG_SEC_3A"
@@ -212,12 +212,12 @@
 					format(%9.3g) 
 	rename		plotsize_gps_1_ plotsize
 	lab var		plotsize "Plot size (ha), imputed"
-	*** imputed 573 values out of 1306 total obs
+	*** imputed 299 values out of 1306 total obs
 	
 	sum				plotsize_self plotsize_gps	plotsize
-	*** self reported	:	mean 1.14 and s.d. 2.55
+	*** self reported	:	mean 1.15 and s.d. 2.55
 	*** gps				:	mean 1.20 and s.d. 2.89
-	*** imputed			:	mean 1.21 and s.d. 2.69
+	*** imputed			:	mean 1.23 and s.d. 2.69
 	
 	drop			if plotsize == . & plotsize_self ==.
 	*** 274 observations dropped

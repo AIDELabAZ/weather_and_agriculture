@@ -45,7 +45,13 @@
 	rename		t0_ward_code ward
 	rename		t0_ea_codee ea
 	rename		sdd_weights sdd_weight
-
+	
+* fill in region, district, ward, ea for split households
+	replace		region = hh_a01_1 if hh_a10 == 2
+	replace		district = hh_a02_1 if hh_a10 == 2
+	replace		ward = hh_a03_1 if hh_a10 == 2
+	replace		ea = hh_a04_1 if hh_a10 == 2
+	
 * keep variables of interest
 	keep 		sdd_hhid region district ward ea sdd_rural ///
 					clusterid strataid sdd_weight 

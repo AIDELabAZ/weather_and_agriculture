@@ -110,7 +110,7 @@
 	sort			region district
 	egen			uq_dist = group(region district)
 	distinct		uq_dist
-	*** 78 distinct districts
+	*** 101 distinct districts
 
 	
 * ***********************************************************************
@@ -136,7 +136,8 @@
 
 * replace any +3 s.d. away from median as missing
 	replace			hvst_value = . if hvst_value > `r(p50)'+(3*`r(sd)')
-	*** replaced 15 values, max is now 805.11
+	replace			hvst_value = . if hvst_value == 0 & wgt_hvsted != 0
+	*** replaced 18 values, max is now 805.11
 	
 * impute missing values
 	mi set 			wide 	// declare the data to be wide.
@@ -155,15 +156,15 @@
 	replace			hvst_value = hvst_value_1_
 	lab var				hvst_value "Value of harvest (2010 USD)"
 	drop			hvst_value_1_
-	*** imputed 11 values out of 1298 total observations	
-	*** did not impute all missing values, is this okay?
+	*** imputed 18 values out of 1298 total observations	
+
 	
-* generate new varaible for measuring maize harvest
+* generate new variable for measuring maize harvest
 	gen					mz_hrv = wgt_hvsted if crop_code == 11
 	gen					mz_damaged = 1 if crop_code == 11 & mz_hrv == 0
 	tab					mz_damaged, missing
-	*** no obs with damaged maize harvest leading to zero harvested
-
+	*** 1 obs with damaged maize harvest
+	
 * summarize value of harvest
 	replace			mz_hrv = . if mz_hrv > 20000
 	sum				mz_hrv, detail
@@ -171,6 +172,7 @@
 	
 * replace any +3 s.d. away from median as missing
 	replace			mz_hrv = . if mz_hrv > `r(p50)' + (3*`r(sd)')
+
 	*** replaced 9 values, max is now 4480
 
 * impute missing values
@@ -190,9 +192,8 @@
 	replace			mz_hrv = mz_hrv_1_  if crop_code == 11
 	lab var			mz_hrv "Quantity of maize harvested (kg)"
 	drop			mz_hrv_1_
-	*** imputed 7 values out of 1298 total observations
-	*** not all missing values imputed again, is this ok?
-	
+	*** imputed 10 values out of 1298 total observations
+
 	
 * **********************************************************************
 * 3 - end matter, clean up to save

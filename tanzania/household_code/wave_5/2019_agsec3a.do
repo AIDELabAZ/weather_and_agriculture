@@ -15,7 +15,7 @@
 	* distinct.ado
 
 * TO DO:
-	* generate labor variables
+	*
 	
 * **********************************************************************
 **#0 - setup
@@ -64,7 +64,7 @@
 	sort			region district
 	egen			uq_dist = group(region district)
 	distinct		uq_dist
-	*** 92 distinct districts
+	*** 127 distinct districts
 
 * record if field was cultivated during long rains
 	gen 			status = ag3a_03==1 if ag3a_03!=.
@@ -120,7 +120,7 @@
 						longstub format(%9.3g) 
 	replace			kilo_fert = kilo_fert_1_
 	drop			kilo_fert_1_
-	*** imputed 15 values out of 1306 total observations	
+	*** imputed 22 values out of 1306 total observations	
 
 	
 * ***********************************************************************
@@ -196,7 +196,10 @@
 * no imputation necessary as no values are dropped
 
 * compiling labor inputs
-	egen			hh_labor_days = rsum(ag3a_74_1a ag3a_74_1b ag3a_74_2a ag3a_74_2b ag3a_74_3a ag3a_74_3b)
+	egen			hh_labor_days = rsum(ag3a_72c_1 ag3a_72c_2 ag3a_72c_3 ag3a_72c_4 ///
+						ag3a_72c_5 ag3a_72c_6 ag3a_72c_7 ag3a_72c_8 ag3a_72c_9 ag3a_72c_10 ag3a_72g_1 ag3a_72g_2 ag3a_72g_3 ag3a_72g_4 ///
+						ag3a_72g_5 ag3a_72g_6 ag3a_72g_7 ag3a_72g_8 ag3a_72g_9 ag3a_72g_10 ag3a_72k_1 ag3a_72k_2 ag3a_72k_3 ag3a_72k_4 ///
+						ag3a_72k_5 ag3a_72k_6 ag3a_72k_7 ag3a_72k_8 ag3a_72k_9 ag3a_72k_10)
 
 * generate hired labor by gender and activity
 	gen				plant_w = ag3a_74_1a
@@ -249,12 +252,12 @@
 	mi 				unset
 	
 * how did the imputation go?
-	replace			plant_w = plant_w_1_ // 0 changes
+	replace			plant_w = plant_w_1_ // 1 changes
 	replace			hrvst_w = hrvst_w_1_ // 0 changes
-	replace			plant_w = plant_w_2_ // 0 changes
+	replace			plant_w = plant_w_2_ // 1 changes
 	replace			hrvst_w = hrvst_w_2_ // 0 changes
 	replace			plant_m = plant_m_3_ // 0 changes
-	replace			hrvst_m = hrvst_m_3_ // 1 change
+	replace			hrvst_m = hrvst_m_3_ // 2 change
 	drop			mi_miss1- hrvst_m_3_
 
 

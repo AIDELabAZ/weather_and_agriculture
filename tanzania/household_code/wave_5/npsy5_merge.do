@@ -15,7 +15,7 @@
 	* customsave.ado
 
 * TO DO:
-	* everything
+	*
 * **********************************************************************
 **#0 - setup
 * **********************************************************************
@@ -68,7 +68,7 @@
 	drop			if irrigated == .
 	drop			if herbicide_any == .
 	drop			if pesticide_any == .
-	*** 109 plotsize observations dropped
+	*** 0 observations dropped
 
 	drop			_2A _3A
 	
@@ -113,7 +113,7 @@
 	}	
 	replace			mz_hrv = . if mz_damaged == . & mz_hrv == 0		
 	drop 			mz_damaged
-	*** 287 changes made
+	*** 311 changes made
 	
 * **********************************************************************
 **#2 - impute: total farm value, labor, fertilizer use 
@@ -155,7 +155,7 @@
 						& !inlist(vl_yld,.,0) & !mi(maxrep)
 	tabstat			vl_yld vl_yldimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 266 to 220
+	*** reduces mean from 246 to 200
 						
 	drop			stddev median replacement maxrep minrep
 	lab var			vl_yldimp	"value of yield (2010USD/ha), imputed"
@@ -192,7 +192,7 @@
 						& !inlist(labordays_ha,.,0) & !mi(maxrep)
 	tabstat 		labordays_ha labordays_haimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 21 to 18
+	*** reduces mean from 353 to 254
 	
 	drop			stddev median replacement maxrep minrep
 	lab var			labordays_haimp	"farm labor use (days/ha), imputed"
@@ -228,7 +228,7 @@
 						& !inlist(fert_ha,.,0) & !mi(maxrep)
 	tabstat 		fert_ha fert_haimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 24 to 23
+	*** reduces mean from 27 to 26
 	
 	drop			stddev median replacement maxrep minrep
 	lab var			fert_haimp	"fertilizer use (kg/ha), imputed"
@@ -270,7 +270,7 @@
 					& !inlist(mz_yld,.,0) & !mi(maxrep)
 	tabstat 		mz_yld mz_yldimp, ///
 					f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 1257 to 1099
+	*** reduces mean from 1344 to 1085
 					
 	drop 			stddev median replacement maxrep minrep
 	lab var 		mz_yldimp "maize yield (kg/ha), imputed"
@@ -307,8 +307,7 @@
 						& !inlist(mz_lab_ha,.,0) & !mi(maxrep)
 	tabstat 		mz_lab_ha mz_lab_haimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 16 to 15
-	*** i'm noticing that labor day means are very small, is this normal?
+	*** reduces mean from 323 to 234
 	
 	drop			stddev median replacement maxrep minrep
 	lab var			mz_lab_haimp	"maize labor use (days/ha), imputed"
@@ -344,7 +343,7 @@
 						& !inlist(mz_frt_ha,.,0) & !mi(maxrep)
 	tabstat 		mz_frt_ha mz_frt_haimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** mean remains at 30
+	*** mean reduces from 33 to 31
 	
 	drop			stddev median replacement maxrep minrep
 	lab var			mz_frt_haimp	"fertilizer use (kg/ha), imputed"
@@ -462,7 +461,7 @@
 	
 	collapse (max)	tf_* cp_*, by(sdd_hhid clusterid strataid ///
 						hhweight region district ward ea)
-	*** we went from 807 to 517 observations 
+	*** we went from 877 to 561 observations 
 	
 * return non-maize production to missing
 	replace			cp_yld = . if cp_yld == 0
