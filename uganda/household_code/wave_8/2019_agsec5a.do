@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: ek
-* Edited on: 05 Apr 24
+* Edited on: 12 Apr 24
 * Edited by: KCD
 * Stata v.18, Mac
 
@@ -50,7 +50,8 @@
 	rename 			s5aq06e_1 harvmonth
 		
 
-* Change hhid to str as hhidnew, rename hhid to hhidoldold, and hhidnew to hhid gen hhidnew = ustrtrim(hhid) 
+* Generate hhidnew as string of hhid, change hhid to str as hhidnew, rename hhid to hhidoldold, and hhidnew to hhid  
+	gen hhidnew = ustrtrim(hhid)
 	recast str32 hhidnew
 	rename hhid hhidoldold
 	rename hhidnew hhid
@@ -89,8 +90,8 @@
 **#2 - merge kg conversion file and create harvested quantity
 * **********************************************************************
 	
-	merge m:1 		cropid unit condition using ///
-						"`conv'/ValidCropUnitConditionCombinations.dta" 
+	merge m:1 		cropid unit condition using "$conversion_files/ValidCropUnitConditionCombinations.dta" 
+						
 	*** unmatched 413 from master 
 	
 * drop from using
