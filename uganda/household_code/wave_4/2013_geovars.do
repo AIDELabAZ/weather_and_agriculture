@@ -35,7 +35,7 @@
 
 * import wave 1 geovars
 	use 			"$root/UNPS_Geovars_1112.dta", clear
-	** we use the past wave geovariables because they were not provided in 2013/2014 data
+	** we use the past wave geovariables because variables were not provided in 2013/2014 data
 	
 * rename variables
 	isid 			HHID

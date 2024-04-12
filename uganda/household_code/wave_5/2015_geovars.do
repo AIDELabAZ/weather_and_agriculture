@@ -1,8 +1,9 @@
 * Project: WB Weather
-* Created on: Oct 2020
-* Created by: jdm
-* Edited by: jdm
-* Stata v.16
+* Created on: Feb 2024
+* Created by: rg
+* Edited on: 12 April 24
+* Edited by: rg
+* Stata v.18, mac
 
 * does
 	* cleans geovars
@@ -19,13 +20,13 @@
 * **********************************************************************
 
 * define paths	
-	loc root 		= "$data/household_data/uganda/wave_3/raw"  
-	loc export 		= "$data/household_data/uganda/wave_3/refined"
-	loc logout 		= "$data/household_data/uganda/logs"
+	global root 		"$data/household_data/uganda/wave_3/raw"  
+	global export 		"$data/household_data/uganda/wave_5/refined"
+	global logout 		"$data/household_data/uganda/logs"
 	
 * open log	
-	cap log 		close
-	log using 		"`logout'/2011_geovars", append
+	cap log 			close
+	log using 			"$logout/2015_geovars", append
 
 	
 * **********************************************************************
@@ -33,8 +34,9 @@
 * **********************************************************************
 
 * import wave 1 geovars
-	use 			"`root'/UNPS_Geovars_1112.dta", clear
-
+	use 			"$root/UNPS_Geovars_1112.dta", clear
+	** we use the past wave geovariables because variables were not provided in 2015 data
+	
 * rename variables
 	isid 			HHID
 	rename 			HHID hhid
@@ -53,8 +55,7 @@
 	summarize
 
 * save file
-		customsave , idvar(hhid) filename("2011_geovars.dta") ///
-			path("`export'") dofile(2011_geovars) user($user)
+	save			"$export/2015_geovars.dta", replace
 
 * close the log
 	log	close
