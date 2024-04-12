@@ -1,18 +1,19 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 5 April 24
+* Edited on: 12 April 24
 * Edited by: rg
 * Stata v.18, mac
 
 * does
 	* Crop output
-	* reads Uganda wave 3 crop output (2015_AGSEC5B) for the 1st season
+	* reads Uganda wave 5 crop output (2015_AGSEC5B) for the 1st season
 	* 3A - 5A are questionaires for the first planting season
 	* 3B - 5B are questionaires for the second planting season
 
 * assumes
 	* mdesc.ado
+	* access to raw data
 
 * TO DO:
 	* check section 3
