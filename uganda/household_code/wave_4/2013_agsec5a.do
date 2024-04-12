@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 10 April 24
+* Edited on: 11 April 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -15,7 +15,7 @@
 	* mdesc.ado
 
 * TO DO:
-	* section 6 and beyond
+	* section 9
 
 	
 ***********************************************************************
@@ -488,13 +488,13 @@
 
 * summarize harvest quantity prior to imputations
 	sum				harvqtykg
-	*** mean 542, max 80,000
+	*** mean 482.22, max 56,400
 
 * replace observations 3 std deviation from the mean and impute missing
 	*** 3 std dev from mean is 
 	sum 			harvqtykg, detail
 	replace			harvqtykg = . if harvqtykg > `r(p50)'+ (3*`r(sd)')
-	*** 111 changed to missing
+	*** 88 changed to missing
 
 * impute missing harvqtykg
 	mi set 			wide 	// declare the data to be wide.
@@ -509,11 +509,11 @@
 	
 * inspect imputation 
 	sum 				harvqtykg_1_, detail
-	*** mean 412, min 0, max 5600
+	*** mean 376, min 0, max 4625
 
 * replace the imputated variable
 	replace 			harvqtykg = harvqtykg_1_ 
-	*** 104 changes
+	*** 88 changes
 	
 	drop 				harvqtykg_1_ mi_miss
 	
@@ -524,12 +524,12 @@
 
 * summarize value of sales prior to imputations
 	sum				cropvl
-	*** mean 103, max 8304
+	*** mean 76, max 3,734.5
 	
 * replace cropvl with missing if over 3 std dev from the mean
 	sum 			cropvl, detail
 	replace			cropvl = . if cropvl > `r(p50)'+ (3*`r(sd)')
-	*** 40 changes
+	*** 47 changes
 	
 * impute cropvl if missing and harvest was sold
 	mi set 			wide 	// declare the data to be wide.
@@ -544,16 +544,16 @@
 	
 * how did impute go?
 	sum 			cropvl_1_, detail
-	*** mean 58.86, max 989
+	*** mean 46.6, max 545
 
 	replace 		cropvl = cropvl_1_
-	*** 5539 changes
+	*** 4,390 changes
 	
 	drop 			cropvl_1_ mi_miss
 	
 * do harvest value and harvest quantity contradict?
 	replace 		cropvl = 0 if harvqty == 0
-	*** 397 changes made
+	*** 1 changes made
 	
 		
 *********************************************************************
@@ -566,20 +566,20 @@
 	
 * replace cropvalue with cropvl if cropvl is not missing and crop value is missing
 	replace 		cropvalue = cropvl if cropvalue == . & cropvl != .
-	*** 4 change
+	*** 0 change
 	
 * verify that we have crop value for all observations
 	mdesc 			cropvalue
-	*** 3 missing
+	*** 0 missing
 
 * summarize value of harvest prior to imputations	
 	sum 			cropvalue
-	*** mean 71.5, max 12,365
+	*** mean 103.2, max 36,337
 
 * replace any +3 s.d. away from median as missing, by crop	
 	sum				cropvalue, detail
 	replace			cropvalue = . if cropvalue > `r(p50)'+ (3*`r(sd)')
-	*** replaced 74 values
+	*** replaced 31 values
 	
 * impute missing values
 	mi set 			wide 	// declare the data to be wide.
@@ -592,11 +592,11 @@
 
 * how did impute go?
 	sum 			cropvalue_1_, detail
-	*** mean 63.38, max 573
+	*** mean 66.5, max 2,271
 	
 	replace			cropvalue = cropvalue_1_
 	lab var			cropvalue "value of harvest, imputed"
-	*** 71 changes
+	*** 31 changes
 	
 	drop 			cropvalue_1_ mi_miss
 
@@ -607,11 +607,11 @@
 
 * summarize crop value, imputed crop value, and maize harvest
 	sum				cropvl
-	*** mean 56.21 max 989
+	*** mean 43.6 max 545
 	sum				cropvalue
-	*** mean 63.38 max 573
+	*** mean 66.5 max 2,271
 	sum				harvqtykg if cropid == 130
-	*** mean 271.27 max 5533
+	*** mean 288.5 max 4,625
 	
 * despite all the work to get prices and impute values
 * this process does not seem to work as well in Uganda as in other countries
@@ -620,16 +620,16 @@
 	replace			cropvalue = 0 if cropvalue == .
 	
 	keep 			hhid prcid pltid cropvalue harvqtykg region district ///
-						county subcounty parish cropid hh_status2011 ///
-						wgt11 harvmonth
+						subcounty parish cropid  ///
+						wgt13 harvmonth 
 
 	compress
 	describe
 	summarize
 
 * save file
-		customsave , idvar(hhid) filename("2011_AGSEC5A.dta") ///
-			path("`export'") dofile(2011_AGSEC5A) user($user)
+	save			"$export/2013_agsec5a.dta", replace
+	
 
 * close the log
 	log	close

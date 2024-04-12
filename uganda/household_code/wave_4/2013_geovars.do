@@ -1,8 +1,9 @@
 * Project: WB Weather
-* Created on: Oct 2020
-* Created by: jdm
-* Edited by: jdm
-* Stata v.16
+* Created on: Feb 2024
+* Created by: rg
+* Edited on: 11 April 24
+* Edited by: rg
+* Stata v.18, mac
 
 * does
 	* cleans geovars
@@ -11,29 +12,29 @@
 	* customsave.ado
 
 * TO DO:
-	* done
+	* everything
 
 	
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+***********************************************************************
+**# 0 - setup
+************************************************************************
 
 * define paths	
-	loc root 		= "$data/household_data/uganda/wave_3/raw"  
-	loc export 		= "$data/household_data/uganda/wave_3/refined"
-	loc logout 		= "$data/household_data/uganda/logs"
+	global root 		"$data/household_data/uganda/wave_4/raw"  
+	global export 		"$data/household_data/uganda/wave_4/refined"
+	global logout 		"$data/household_data/uganda/logs"
 	
 * open log	
 	cap log 		close
-	log using 		"`logout'/2011_geovars", append
+	log using 		"$logout3/2013_geovars", append
 
 	
-* **********************************************************************
-* 1 - UNPS 2011 (wave 1) - geovars 
-* **********************************************************************
+************************************************************************
+**#1 - UNPS 2011 (wave 1) - geovars 
+************************************************************************
 
 * import wave 1 geovars
-	use 			"`root'/UNPS_Geovars_1112.dta", clear
+	use 			"$root/UNPS_Geovars_1112.dta", clear
 
 * rename variables
 	isid 			HHID
@@ -42,9 +43,9 @@
 	rename 			ssa_aez09 aez
 	
 	
-* **********************************************************************
-* 2 - end matter, clean up to save
-* **********************************************************************
+************************************************************************
+**# 2 - end matter, clean up to save
+************************************************************************
 
 	keep 			hhid aez
 
