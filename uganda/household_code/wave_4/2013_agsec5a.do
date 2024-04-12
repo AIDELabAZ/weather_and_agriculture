@@ -1,21 +1,22 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 11 April 24
+* Edited on: 12 April 24
 * Edited by: rg
 * Stata v.18, mac
 
 * does
 	* Crop output
-	* reads Uganda wave 3 crop output (2013_AGSEC5A) for the 1st season
+	* reads Uganda wave 4 crop output (2013_AGSEC5A) for the 1st season
 	* 3A - 5A are questionaires for the first planting season
 	* 3B - 5B are questionaires for the second planting season
 
 * assumes
 	* mdesc.ado
+	* access to raw data
 
 * TO DO:
-	* section 9
+	* everything
 
 	
 ***********************************************************************
@@ -613,8 +614,8 @@
 	sum				harvqtykg if cropid == 130
 	*** mean 288.5 max 4,625
 	
-* despite all the work to get prices and impute values
-* this process does not seem to work as well in Uganda as in other countries
+* following method used in other waves which differs from other countries
+* we will use implied crop value as opposed to crop value based on prices
 * so we will got with crop value based on the imputation in sec 7
 	replace			cropvalue = cropvl
 	replace			cropvalue = 0 if cropvalue == .

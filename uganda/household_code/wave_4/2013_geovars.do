@@ -9,7 +9,7 @@
 	* cleans geovars
 
 * assumes
-	* customsave.ado
+	* access to raw data
 
 * TO DO:
 	* everything
@@ -20,22 +20,23 @@
 ************************************************************************
 
 * define paths	
-	global root 		"$data/household_data/uganda/wave_4/raw"  
+	global root 		"$data/household_data/uganda/wave_3/raw"  
 	global export 		"$data/household_data/uganda/wave_4/refined"
 	global logout 		"$data/household_data/uganda/logs"
 	
 * open log	
 	cap log 		close
-	log using 		"$logout3/2013_geovars", append
+	log using 		"$logout/2013_geovars", append
 
 	
 ************************************************************************
-**#1 - UNPS 2011 (wave 1) - geovars 
+**#1 - UNPS 2011 - geovars 
 ************************************************************************
 
 * import wave 1 geovars
 	use 			"$root/UNPS_Geovars_1112.dta", clear
-
+	** we use the past wave geovariables because they were not provided in 2013/2014 data
+	
 * rename variables
 	isid 			HHID
 	rename 			HHID hhid
@@ -54,8 +55,7 @@
 	summarize
 
 * save file
-		customsave , idvar(hhid) filename("2011_geovars.dta") ///
-			path("`export'") dofile(2011_geovars) user($user)
+	save			"$export/2013_geovars.dta", replace
 
 * close the log
 	log	close
