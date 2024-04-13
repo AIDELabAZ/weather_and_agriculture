@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 12 April 24
+* Edited on: 13 April 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -277,15 +277,12 @@
 
 * NOTE: Anna will check the conversions 	
 * generate crop is USD
-	gen 			cropvl_USD2013 = harvvlush / 2586.89
-	lab var 		cropvl_USD2013 "total value of harvest in 2013 USD"
-	*** value comes from World Bank.
-	
-	gen				cropvl = cropvl_USD2013 * 0.94
+	gen 			cropvl = harvvlush / 2860.0412
 	lab var 		cropvl "total value of harvest in 2010 USD"
+	*** value comes from World Bank. Used excel file "world_bank_exchange_rates.xlxs"
 		
 	sum 			cropvl, detail
-	*** mean 73.2, min 0.002, max 3,734.4
+	*** mean 70.4, min 0.002, max 3,593.48
 	
 	
 ***********************************************************************
@@ -372,7 +369,7 @@
 
 * look at crop value in USD
 	sum 			cropvl, detail
-	*** max 3734, mean 76, min 0.002
+	*** max 3,593.48, mean 73.2, min 0.002
 	
 * condensed crop codes
 	inspect 		cropid
@@ -382,7 +379,7 @@
 	sort 			cropid
 	by 				cropid: gen cropprice = cropvl / harvkgsold 
 	sum 			cropprice, detail
-	*** mean = 0.4826, max = 90.84, min = 0.0001
+	*** mean = 0.79, max = 87.41, min = 0.0001
 	*** will do some imputations later
 	
 * make datasets with crop price information
@@ -480,7 +477,7 @@
 	*** no missing
 	
 	sum 			cropprice croppricei
-	*** mean = 0.453, max = 66.62
+	*** mean = 0.436, max = 64.1
 
 	
 ***********************************************************************
@@ -525,7 +522,7 @@
 
 * summarize value of sales prior to imputations
 	sum				cropvl
-	*** mean 76, max 3,734.5
+	*** mean 73.2, max 3,593.48
 	
 * replace cropvl with missing if over 3 std dev from the mean
 	sum 			cropvl, detail
@@ -545,7 +542,7 @@
 	
 * how did impute go?
 	sum 			cropvl_1_, detail
-	*** mean 46.6, max 545
+	*** mean 41.9, max 524.46
 
 	replace 		cropvl = cropvl_1_
 	*** 4,390 changes
@@ -575,7 +572,7 @@
 
 * summarize value of harvest prior to imputations	
 	sum 			cropvalue
-	*** mean 103.2, max 36,337
+	*** mean 99.3, max 34,964
 
 * replace any +3 s.d. away from median as missing, by crop	
 	sum				cropvalue, detail
@@ -593,7 +590,7 @@
 
 * how did impute go?
 	sum 			cropvalue_1_, detail
-	*** mean 66.5, max 2,271
+	*** mean 64.05, max 2,185.2
 	
 	replace			cropvalue = cropvalue_1_
 	lab var			cropvalue "value of harvest, imputed"
@@ -608,9 +605,9 @@
 
 * summarize crop value, imputed crop value, and maize harvest
 	sum				cropvl
-	*** mean 43.6 max 545
+	*** mean 41.9 max 524.4
 	sum				cropvalue
-	*** mean 66.5 max 2,271
+	*** mean 64.05 max 2,185
 	sum				harvqtykg if cropid == 130
 	*** mean 288.5 max 4,625
 	

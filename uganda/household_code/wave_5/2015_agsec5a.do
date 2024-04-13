@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 12 April 24
+* Edited on: 13 April 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -257,19 +257,15 @@
 	
 * summarize the value of sales in shillings
 	sum 			harvvlush, detail
-	*** mean 2,697.5,  min 0, max 520,000
+	*** mean 2,706.03,  min 0, max 520,000
 
 * generate crop is USD
-	gen 			cropvl_USD2015 = harvvlush / 3240.65
-	lab var 		cropvl_USD2015 "total value of harvest in 2015 USD"
-	*** value comes from World Bank.
-	
-	gen 			cropvl = cropvl_USD2015 * 0.92
-	lab var			cropvl "total value of harvest in 2010 USD"
-	
-	
+	gen 			cropvl = harvvlush / 3240.6454
+	lab var 		cropvl "total value of harvest in 2010 USD"
+	*** value comes from World Bank. Used excel file "world_bank_exchange_rates.xlxs"
+		
 	sum 			cropvl, detail
-	*** mean 0.76, min 0, max 147.6
+	*** mean 0.83, min 0, max 160.46
 	
 	
 ***********************************************************************
