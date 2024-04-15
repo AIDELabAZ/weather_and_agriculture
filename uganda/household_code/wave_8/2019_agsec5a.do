@@ -117,48 +117,46 @@
 
 * manually replace conversion for the kilograms and sacks 
 * if the condition is other condition and the observation is unmatched
-**# Bookmark #4
 
 	*kgs
 		replace 		ucaconversion = 1 if unit == 1 & _merge == 1
-		*** 348 real changes made
+		*** 348 changes made
 		
 	*sack 120 kgs
 		replace 		ucaconversion = 120 if unit == 9 & _merge == 1
-		*** 56 real changes made
+		*** 56 changes made
 	*sack 100 kgs
 		replace 		ucaconversion = 100 if unit == 10 & _merge == 1
-		*** 328 real changes made
+		*** 328 changes made
 	* sack 80 kgs
 		replace 		ucaconversion = 80 if unit == 11 & _merge == 1
-		*** 0 real changes made
+		*** 0 changes made
 	* sack 50 kgs
 		replace 		ucaconversion = 50 if unit == 12 & _merge == 1
-		*** 38 real changes made
-**# Bookmark #2
+		*** 38 changes made
 	* jerrican 20 kgs
 		replace 		ucaconversion = 20 if unit == 14 & _merge == 1
-		*** 9 real changes
+		*** 9 changes
 		
 	* jerrican 10 kgs
 		replace 		ucaconversion = 10 if unit == 15 & _merge == 1
-		*** 3 real changes
+		*** 3 changes
 		
 	* jerrican 5 kgs
 		replace 		ucaconversion = 5 if unit == 16 & _merge == 1
-		*** 5 real changes
+		*** 5 changes
 		
 	* jerrican 2 kgs
 		replace 		ucaconversion = 2 if unit == 18 & _merge == 1
-		*** 2 real changes
+		*** 2 changes
 		
 	* tin 20 kgs
 		replace 		ucaconversion = 20 if unit == 20 & _merge == 1
-		*** 79 real changes
+		*** 79 changes
 		
 	* tin 5 kgs
 		replace 		ucaconversion = 5 if unit == 21 & _merge == 1
-		*** 4 real changes
+		*** 4 changes
 
 	* 15 kg plastic Basin
 		replace 		ucaconversion = 15 if unit == 22 & _merge == 1	
@@ -203,14 +201,13 @@
 	* nomi 0.5 kg
 		replace 		ucaconversion = 0.5 if unit == 120 & _merge == 1
 		*** 0 change 
-**# Bookmark #3
-	
+			
 * drop the unmatched remaining observations
 	drop 			if _merge == 1 & ucaconversion == .
-	*** 3 observatinos deleted
+	*** 299 observatinos deleted
 
 	replace 			ucaconversion = medconversion if _merge == 3 & ucaconversion == .
-	*** 1300 changes made
+	*** 232 changes made
 	
 		mdesc 			ucaconversion
 		*** 0 missing
@@ -218,8 +215,10 @@
 	drop 			_merge
 	
 	tab				cropid
-	*** beans are the most numerous crop being 21.55% of crops planted
-	***	maize is the second highest being 19.22%
+	
+	*** beans are the most numerous crop being 17.90% of crops planted
+	*** banana food is the second highest being 17.43
+	***	maize is the third highest being 16.04%
 	*** maize will be main crop following most other countries in the study
 	
 * Convert harv quantity to kg
@@ -227,11 +226,11 @@
 	*** included in the file are the conversions from other measurements to kg
 	
 * replace missing harvest quantity to 0
-	replace 		a5aq6a = 0 if a5aq6a == .
+	replace 		s5aq06a_1 = 0 if s5aq06a_1 == .
 	*** no changes
 	
 * Convert harv quantity to kg
-	gen 			harvqtykg = a5aq6a*ucaconversion
+	gen 			harvqtykg = s5aq06a_1*ucaconversion
 	label var		harvqtykg "quantity of crop harvested (kg)"
 	mdesc 			harvqtykg
 	*** all converted
@@ -241,15 +240,15 @@
 	*** three crazy values, replace with missing
 	
 	replace			harvqtykg = . if harvqtykg > 100000
-	*** replaced 3 observations
+	*** replaced 1 observations
 	
 * summarize maize quantity harvest
 	sum				harvqtykg if cropid == 130
-	*** 241 mean, 18000 max
+	*** 233.099 mean, 13750 max
 	
 	
 * **********************************************************************
-* 3 - value of harvest
+**#3 - value of harvest
 * **********************************************************************
 
 * value of crop sold in shillings
