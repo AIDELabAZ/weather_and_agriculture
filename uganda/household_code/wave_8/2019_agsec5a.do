@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: ek
-* Edited on: 12 Apr 24
+* Edited on: 15 Apr 24
 * Edited by: KCD
 * Stata v.18, Mac
 
@@ -32,24 +32,24 @@
 * open log	
 	cap log 		close
 	log using 		"$logout/2019_agsec5a", append
-
 	
 * **********************************************************************
 **#1 - import data and rename variables
 * **********************************************************************
 
-* import wave 2 season 1
-	use 			"$root/agric/agsec5a.dta", clear
+* import wave 8 season A
+	use 			"$root/agric/agsec5a", clear
 	compress
-		
+	
 		
 	rename 			cropID cropid
 	rename			parcelID prcid
-	rename 			s5aq06b_1 unit
-	rename			s5aq06c_1 condition
-	rename 			s5aq06e_1 harvmonth
+	rename			HHID hhid
+	rename			plotID pltid
+	rename 			a5aq6b unit
+	rename			a5aq6c condition
+	rename 			a5aq6e harvmonth
 		
-
 * Generate hhidnew as string of hhid, change hhid to str as hhidnew, rename hhid to hhidoldold, and hhidnew to hhid  
 	gen hhidnew = ustrtrim(hhid)
 	recast str32 hhidnew
@@ -57,10 +57,10 @@
 	rename hhidnew hhid
 	
 * sort for ease of access
-	sort 			hhid prcid pltid cropid
+	sort 			hhid prcid pltid cropid unit condition harvmonth
 	
 * drop observations from plots that did not harvest because crop was immature
-	drop if s5aq05_2 == 1
+	drop if a5aq5_2 == 1
 	*** 1034 observations deleted
 
 * missing cropid's also lack crop names, drop those observations
