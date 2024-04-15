@@ -24,7 +24,7 @@
 * **********************************************************************
 
 * define paths	
-	global root 		= "$data/household_data/uganda/wave_8/raw/raw"  
+	global root 		= "$data/household_data/uganda/wave_8/raw"  
 	global export 		= "$data/household_data/uganda/wave_8/refined"
 	global logout 		= "$data/household_data/uganda/logs"
 	global conv 		= "$data/household_data/uganda/conversion_files"  
@@ -39,8 +39,8 @@
 
 * import wave 8 season A
 	use 			"$root/agric/agsec5a.dta", clear
-	compress
 	
+* rename variables
 		
 	rename 			cropID cropid
 	rename			parcelID prcid
