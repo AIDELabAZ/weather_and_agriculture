@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: ek
-* Edited on 05 Apr 24
+* Edited on 15 Apr 24
 * Edited by KCD
 * Stata v.18, mac
 
@@ -24,9 +24,9 @@
 * **********************************************************************
 
 * define paths	
-	loc root 		= "$data/household_data/uganda/wave_8/raw"  
-	loc export 		= "$data/household_data/uganda/wave_8/refined"
-	loc logout 		= "$data/household_data/uganda/logs"
+	global root 		= "$data/household_data/uganda/wave_8/raw"  
+	global export 		= "$data/household_data/uganda/wave_8/refined"
+	global logout 		= "$data/household_data/uganda/logs"
 	
 * open log	
 	cap log 		close
