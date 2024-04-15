@@ -44,11 +44,9 @@
 		
 	rename 			cropID cropid
 	rename			parcelID prcid
-	rename			HHID hhid
-	rename			plotID pltid
-	rename 			a5aq6b unit
-	rename			a5aq6c condition
-	rename 			a5aq6e harvmonth
+	rename 			s5aq06b_1 unit
+	rename			s5aq06c_1 condition
+	rename 			s5aq06e_1 harvmonth
 		
 * Generate hhidnew as string of hhid, change hhid to str as hhidnew, rename hhid to hhidoldold, and hhidnew to hhid  
 	gen hhidnew = ustrtrim(hhid)
@@ -60,7 +58,7 @@
 	sort 			hhid prcid pltid cropid unit condition harvmonth
 	
 * drop observations from plots that did not harvest because crop was immature
-	drop if a5aq5_2 == 1
+	drop if s5aq05_2 == 1
 	*** 1034 observations deleted
 
 * missing cropid's also lack crop names, drop those observations
