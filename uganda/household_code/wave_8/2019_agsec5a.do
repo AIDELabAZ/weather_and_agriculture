@@ -88,16 +88,17 @@
 **#2 - merge kg conversion file and create harvested quantity
 * **********************************************************************
 	
-	merge m:1 		cropid unit condition using "$conversion_files/ValidCropUnitConditionCombinations.dta" 
-						
-	*** unmatched 413 from master 
+	merge m:1 		cropid unit condition using ///
+						"$conv/ValidCropUnitConditionCombinations.dta" 
+	*** unmatched 1788 from master 
 	
 * drop from using
 	drop 			if _merge == 2
-
+	*** 781 observations deleted 
+	
 * how many unmatched had a harvest of 0
-	tab 			a5aq6a if _merge == 1
-	*** 97% have a harvest of 0
+	tab 			s5aq06a_1 if _merge == 1
+	*** 23.27% have a harvest of 0
 	
 * how many unmatched because they used "other" to categorize the state of harvest?
 	tab 			condition if _merge == 1
@@ -106,6 +107,7 @@
 	tab 			cropid condition if condition != 99 & _merge == 1 & condition !=.
 	
 	tab 			unit if _merge == 1
+**# Bookmark #1
 	
 
 * replace ucaconversion to 1 if the harvest is 0
