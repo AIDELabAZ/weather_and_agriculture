@@ -125,12 +125,12 @@
 	*** hvst_value missing no observations
 
 *currency conversion
-	replace				hvst_value = hvst_value/2012.06173
+	replace				hvst_value = hvst_value/1755.0802
 	*** Value comes from World Bank: world_bank_exchange_rates.xlxs
 
 * summarize value of harvest
 	sum				hvst_value, detail
-	*** median 41.75, mean 114.91, max 12,176.56
+	*** median 47.86, mean 131.73, max 13,959.48
 
 * replace any +3 s.d. away from median as missing
 	replace			hvst_value = . if hvst_value > `r(p50)'+(3*`r(sd)')
@@ -217,7 +217,7 @@
 	lab var			ea "Village / Enumeration Area Code"	
 	lab var			mz_hrv "Quantity of Maize Harvested (kg)"
 	lab var			mz_damaged "Was Maize Harvest Damaged to the Point of No Yield"
-	lab var			hvst_value "Value of Harvest (2010 USD)"
+	lab var			hvst_value "Value of Harvest (2015 USD)"
 	lab var 		crop_code "Crop Identifier"
 	lab var			crop_id "Unique Crop ID Within Plot"
 	lab var			pure_stand "Is Crop Planted in Full Area of Plot (Purestand)?"
