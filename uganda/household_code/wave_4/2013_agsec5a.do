@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 13 April 24
+* Edited on: 17 April 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -16,7 +16,7 @@
 	* access to raw data
 
 * TO DO:
-	* everything
+	* done
 
 	
 ***********************************************************************
@@ -31,7 +31,7 @@
 
 * open log	
 	cap log 			close
-	log using 			"$logout/2011_AGSEC5A", append
+	log using 			"$logout/2013_AGSEC5A", append
 
 	
 ***********************************************************************
