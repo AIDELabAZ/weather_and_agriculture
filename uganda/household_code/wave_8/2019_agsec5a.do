@@ -252,23 +252,21 @@
 * **********************************************************************
 
 * value of crop sold in shillings
-	rename			a5aq8 harvvlush
+	rename			s5aq08_1 harvvlush
 	label var 		harvvlush "Value of crop sold in ugandan shilling"
 	
 * summarize the value of sales in shillings
 	sum 			harvvlush, detail
-	*** mean 238674 min 10, max 4.56e+07
+	*** mean 349634.8 min 50, max 1.50e+07 
 
 * generate crop is USD
-	gen 			cropvl = harvvlush / 2122.854348
+	gen 			cropvl = harvvlush / 3727.07
 	lab var 		cropvl "total value of harvest in 2010 USD"
-	*** value comes from World Bank: world_bank_exchange_rates.xlxs
-	
-* there are three large outliers in data, replace for imputation later
-	replace			cropvl = . if cropvl > 10000
+	*** value comes from World Bank. Used excel file "world_bank_exchange_rates.xlxs"
+**# Bookmark #7
 	
 	sum 			cropvl, detail
-	*** mean 100.5, min 0, max 8304
+	*** mean 93.81, min 0.013, max 4024.609
 	
 	
 * **********************************************************************
