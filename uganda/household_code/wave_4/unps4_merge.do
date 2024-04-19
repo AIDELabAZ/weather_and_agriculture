@@ -14,7 +14,7 @@
 	* previously cleaned household datasets
 
 * TO DO:
-	* section 3 and beyond
+	* section 8 and beyond
 	
 
 ************************************************************************
