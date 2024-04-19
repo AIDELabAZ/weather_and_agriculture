@@ -112,17 +112,16 @@
 
 * check correlation between the two
 	corr 			plotsize selfreport
+* twoway (scatter plotsize selfreport)
 	*** 0.97 correlation, high correlation between GPS and self reported
 	
-* compare GPS and self-report, and look for outliers in GPS 
+* Look for outliers in GPS 
 	sum				plotsize, detail
 	*** save command as above to easily access r-class stored results 
 
 * look at GPS and self-reported observations that are > ±3 Std. Dev's from the median 
 	list			plotsize selfreport if !inrange(plotsize,`r(p50)'-(3*`r(sd)'),`r(p50)'+(3*`r(sd)')) ///
 						& !missing(plotsize)
-						
-	
 	*** these all look good, largest size is 8.037 ha
 	
 * gps on the larger side vs self-report
@@ -131,14 +130,17 @@
 
 * correlation for larger plots	
 	corr			plotsize selfreport if plotsize > 3 & !missing(plotsize)
+* twoway (scatter plotsize selfreport if plotsize > 3 & !missing(plotsize))
 	*** this is very high, 0.9580, so these look good
 
 * correlation for smaller plots	
 	corr			plotsize selfreport if plotsize < .1 & !missing(plotsize)
-	*** this is sort of in the middle at 0.5259 
+* twoway (scatter plotsize selfreport if plotsize < .1 & !missing(plotsize))
+	*** this is sort of in the middle, positive but less strong correlation at 0.5259 
 		
 * correlation for extremely small plots	
 	corr			plotsize selfreport if plotsize < .01 & !missing(plotsize)
+* twoway (scatter plotsize selfreport if plotsize < .01 & !missing(plotsize))
 	*** this is very low at 0.2542
 	
 * summarize before imputation
