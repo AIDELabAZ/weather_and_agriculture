@@ -204,7 +204,7 @@
 
 	keep 			hhid hh_agric prcid region district subcounty ///
 					parish  wgt15 hwgt_W4_W5 ///
-					ea rotate fert_any kilo_fert labor_days pest_any herb_any
+					ea rotate fert_any kilo_fert labor_days pest_any herb_any pltid
 
 	compress
 	describe
