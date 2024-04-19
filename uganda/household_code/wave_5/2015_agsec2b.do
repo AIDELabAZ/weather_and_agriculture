@@ -1,15 +1,14 @@
 * Project: WB Weather
-* Created on: Feb 2024
-* Created by: rg
-* Edited on: 22 Feb 24
-* Edited by: rg
-* Stata v.18, mac
+* Created on: Apr 2024
+* Created by: jdm
+* Edited on: 19 Apr 24
+* Edited by: jdm
+* Stata v.18
 
 * does
-	* reads Uganda wave 5 owned plot info (2015_AGSEC2A) for the 1st season
-	* ready to append to rented plot info (2015_AGSEC2B)
-	* owned plots are in A and rented plots are in B
-	* ready to be appended to 2015_AGSEC2B to make 2015_AGSEC2
+	* reads Uganda wave 5 owned plot info (2015_AGSEC2B) for the 1st season
+	* appends to owned plot info (2015_AGSEC2A)
+	* outputs appended data to 2015_AGSEC2
 
 * assumes
 	* access to the raw data
@@ -30,7 +29,7 @@
 
 * open log	
 	cap 				log close
-	log using 			"$logout/2015_agsec2a", append
+	log using 			"$logout/2015_agsec2b", append
 
 	
 ***********************************************************************
@@ -38,23 +37,23 @@
 ***********************************************************************
 
 * import wave 5 season A
-	use "$root/agric/AGSEC2A.dta", clear
+	use "$root/agric/AGSEC2B.dta", clear
 		
 	rename			HHID hhid
 	rename			parcelID prcid
-	rename 			a2aq4 plotsizeGPS
-	rename 			a2aq5 plotsizeSR
-	rename			a2aq7 tenure
+	rename 			a2bq4 plotsizeGPS
+	rename 			a2bq5 plotsizeSR
+	rename			a2bq7 tenure
 	
 	describe
 	sort hhid prcid
 	isid hhid prcid
 
 * make a variable that shows the irrigation
-	gen				irr_any = 1 if a2aq18 == 1
+	gen				irr_any = 1 if a2bq16 == 1
 	replace			irr_any = 0 if irr_any == .
 	lab var			irr_any "Irrigation (=1)"
-	*** there are 39 observations irrigated
+	*** there are 15 observations irrigated
 
 
 ***********************************************************************
@@ -63,7 +62,7 @@
 	
 * merge the location identification
 	merge m:1 hhid using "$export/2015_gsec1"
-	*** merged 4,129, 1,128 unmerged total, 1,057 from using data
+	*** merged 1,348, 2,330 unmerged total, only 33 from master
 	*** 71 unmerged from master
 	
 	drop 		if _merge ! = 3
@@ -76,13 +75,13 @@
 
 * what was the primary use of the parcel
 	*** activity in the first season is recorded seperately from activity in the second season
-	*** even data label says first season is a2aq11b, by looking at previous waves and the documentation, we can say that a2aq11a is the first cropping season
-	tab 		 	a2aq11a
-	*** activities include renting out, pasture, forest. cultivation, and other
+	*** data label says first season is a2aq11b
+	tab 		 	a2bq12b
+	*** activities includepasture, forest. cultivation, and other
 	*** we will only include plots used for annual or perennial crops
 	
-	keep			if a2aq11a == 1 | a2aq11a == 2
-	*** 636 observations deleted	
+	keep			if a2bq12b == 1 | a2bq12b == 2
+	*** 247 observations deleted	
 
 	
 ***********************************************************************
@@ -91,15 +90,14 @@
 
 * summarize plot size
 	sum 			plotsizeGPS
-	***	mean 1.56, max 158, min 0
-	*** only 1 plotsize = 0
+	***	mean .93, max 4.9, min .01
 	
 	sum				plotsizeSR
-	*** mean 1.51, max 300, min .01
+	*** mean .97, max 25, min .05
 
 * how many missing values are there?
 	mdesc 			plotsizeGPS
-	*** 2,141 missing, 61.2% of observations
+	*** 1,001 missing, 90% of observations
 
 * convert acres to hectares
 	gen				plotsize = plotsizeGPS*0.404686
@@ -110,33 +108,16 @@
 
 * examine gps outlier values
 	sum				plotsize, detail
-	*** mean 0.63, min 0, max 63.94, std. dev. 1.88
+	*** mean 0.22, min 0, max 1.98, std. dev. .394
 	
-	sum				plotsize if plotsize < 60, detail
-	*** mean 0.585, max 9.3, min 0, std. dev 0.75
-	
-	list			plotsize selfreport if plotsize > 60 & !missing(plotsize)
-	*** gps plotsize is a hundred times larger self reported, which means a decimal point misplacement.
-	
-* recode outlier to be 1/100
-	replace			plotsize = plotsize/100 if plotsize > 60
-	
-	sum 			selfreport, detail
-	*** mean 0.61, max 121, min 0.004
-	
-	sum				selfreport if selfreport < 60, detail
-	*** mean 0.576, max 20.2, min 0.004
-	
-	list			plotsize selfreport if selfreport > 60 & !missing(selfreport)
-	*** self reported value of 121 hectares seems unreasonable.
-	*** plotsize value is missing for this observation.
-	** dividing by a 100 makes it a more reasonable plotsize
-	
-	replace 		selfreport = selfreport/100 if selfreport > 60 & plotsize == . 
+* examine gps outlier values
+	sum				selfreport, detail
+	*** mean 0.20, min 0, max 10.11, std. dev. .581
+	*** the self-reported 10 ha is large but not unreasonable	
 	
 * check correlation between the two
 	corr 			plotsize selfreport
-	*** 0.88 correlation, high correlation between GPS and self reported
+	*** 0.84 correlation, high correlation between GPS and self reported
 	
 * compare GPS and self-report, and look for outliers in GPS 
 	sum				plotsize, detail
@@ -145,28 +126,12 @@
 * look at GPS and self-reported observations that are > ±3 Std. Dev's from the median 
 	list			plotsize selfreport if !inrange(plotsize,`r(p50)'-(3*`r(sd)'),`r(p50)'+(3*`r(sd)')) ///
 						& !missing(plotsize)
-	*** these all look good, largest size is 9 ha
-	
-* gps on the larger side vs self-report
-	tab				plotsize if plotsize > 3, plot
-	*** distribution looks reasonable
-
-* correlation for larger plots	
-	corr			plotsize selfreport if plotsize > 3 & !missing(plotsize)
-	*** this is very high, 0.83, so these look good
+	*** these all look good
 
 * correlation for smaller plots	
 	corr			plotsize selfreport if plotsize < .1 & !missing(plotsize)
-	*** correlation is negative, -0.108
-		
-* correlation for extremely small plots	
-	corr			plotsize selfreport if plotsize < .01 & !missing(plotsize)
-	*** correlation is negative, -0.728
-	
-* summarize before imputation
-	sum				plotsize
-	*** mean 0.585, max 9.3, min 0
-	
+	*** correlation is negative, -0.42
+
 * encode district to be used in imputation
 	encode district, gen (districtdstrng) 	
 
@@ -181,10 +146,10 @@
 		
 * how did imputing go?
 	sum 			plotsize_1_
-	*** mean 0.59, max 9.3, min 0
+	*** mean 0.36, max 1.9, min .004
 	
 	corr 			plotsize_1_ selfreport if plotsize == .
-	*** strong correlation, 0.83
+	*** so-so correlation, 0.52
 	
 	replace 		plotsize = plotsize_1_ if plotsize == .
 	
@@ -193,14 +158,25 @@
 	mdesc 			plotsize
 	*** none missing
 
-	
 ***********************************************************************
-**# 4 - end matter, clean up to save
+**# 5 - appends sec2a
 ***********************************************************************
 	
+* keep only necessary variables
 	keep 			hhid hh_agric prcid region district subcounty ///
 					parish  wgt15 hwgt_W4_W5 ///
 					plotsize irr_any ea rotate
+
+* append owned plots
+	append			using "$export/2015_agsec2a.dta"
+	*** creates 1 duplicate observation
+	
+* drop duplicate
+	duplicates 		drop hhid prcid, force
+					
+***********************************************************************
+**# 6 - end matter, clean up to save
+***********************************************************************				
 					
 	isid			hhid prcid
 	compress
@@ -208,7 +184,7 @@
 	summarize
 
 * save file
-	save 			"$export/2015_agsec2a.dta", replace
+	save 			"$export/2015_agsec2.dta", replace
 
 * close the log
 	log	close

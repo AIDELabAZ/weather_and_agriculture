@@ -493,7 +493,7 @@
 * 8 - end matter, clean up to save
 * **********************************************************************
 
-* drop splot-off and mover households
+* drop split-off and mover households
 	keep			if hh_status2011 == 0
 	
 * verify unique household id

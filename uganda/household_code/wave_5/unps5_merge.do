@@ -40,7 +40,7 @@
 	isid 			hhid prcid pltid cropid
 	
 * merge in plot size data and irrigation data
-	merge			m:1 hhid prcid using "$root/2015_agsec2a", generate(_sec2)
+	merge			m:1 hhid prcid using "$root/2015_agsec2", generate(_sec2)
 	*** matched 5,406, unmatched 1,859 from master
 	*** a lot unmatched, means plots do not area data
 	*** for now as per Malawi (rs_plot) we drop all unmerged observations
