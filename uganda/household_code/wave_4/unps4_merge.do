@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 12 April 24
+* Edited on: 19 April 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -14,7 +14,7 @@
 	* previously cleaned household datasets
 
 * TO DO:
-	* everything
+	* section 3 and beyond
 	
 
 ************************************************************************
@@ -36,20 +36,20 @@
 ************************************************************************
 
 * start by loading harvest quantity and value, since this is our limiting factor
-	use 			"`root'/2011_AGSEC5A.dta", clear
+	use 			"$root/2013_agsec5a.dta", clear
 	isid 			hhid prcid pltid cropid
 	
 * merge in plot size data and irrigation data
-	merge			m:1 hhid prcid using "`root'/2011_AGSEC2A", generate(_sec2)
-	*** matched 7212, unmatched 2079 from master
+	merge			m:1 hhid prcid using "$root/2013_agsec2a", generate(_sec2)
+	*** matched 5,928, unmatched 2,044 from master
 	*** a lot unmatched, means plots do not area data
 	*** for now as per Malawi (rs_plot) we drop all unmerged observations
 
 	drop			if _sec2 != 3
 		
 * merging in labor, fertilizer and pest data
-	merge			m:1 hhid prcid pltid  using "`root'/2011_AGSEC3A", generate(_sec3a)
-	*** 10 unmerged from master
+	merge			m:1 hhid prcid pltid  using "$root/2013_agsec3a", generate(_sec3a)
+	*** 0 unmatched from master
 
 	drop			if _sec3a == 2
 	
@@ -92,8 +92,8 @@
 						mz_hrv mz_lnd mz_lab mz_frt  ///
 			 (max)	pest_any herb_any irr_any fert_any  ///
 						mz_pst mz_hrb mz_irr mz_damaged, ///
-						by(hhid prcid pltid region district county subcounty ///
-						parish hh_status2011 wgt11)
+						by(hhid prcid pltid region district subcounty ///
+						parish rotate wgt13)
 
 * replace non-maize harvest values as missing
 	tab				mz_damaged, missing
@@ -103,17 +103,16 @@
 	}	
 	replace			mz_hrv = . if mz_damaged == . & mz_hrv == 0		
 	drop 			mz_damaged
-	*** 4607 changes made
+	*** 3,348 changes made
 	
 * encode the string location data
 	encode 			district, gen(districtdstrng)
-	encode			county, gen(countydstrng)
 	encode			subcounty, gen(subcountydstrng)
 	encode			parish, gen(parishdstrng)
 
-	order			hhid prcid pltid region district districtdstrng county ///
-						countydstrng subcounty subcountydstrng parish ///
-						parishdstrng hh_status2011 wgt11 vl_hrv ///
+	order			hhid prcid pltid region district districtdstrng  ///
+						subcounty subcountydstrng parish ///
+						parishdstrng rotate wgt13 vl_hrv ///
 						plotsize labordays fert_any fert irr_any ///
 						pest_any herb_any mz_hrv mz_lnd mz_lab mz_frt ///
 						mz_irr mz_pst mz_hrb
@@ -141,7 +140,7 @@
 * construct production value per hectare
 	gen				vl_yld = vl_hrv / plotsize
 	assert 			!missing(vl_yld)
-	lab var			vl_yld "value of yield (2010USD/ha)"
+	lab var			vl_yld "value of yield (2015USD/ha)"
 
 * impute value per hectare outliers 
 	sum				vl_yld
@@ -160,15 +159,15 @@
 						& !inlist(vl_yld,.,0) & !mi(maxrep)
 	tabstat			vl_yld vl_yldimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 167 to 121
+	*** reduces mean from 171 to 119
 						
 	drop			stddev median replacement maxrep minrep
-	lab var			vl_yldimp	"value of yield (2010USD/ha), imputed"
+	lab var			vl_yldimp	"value of yield (2015USD/ha), imputed"
 
 * inferring imputed harvest value from imputed harvest value per hectare
 	generate		vl_hrvimp = vl_yldimp * plotsize 
-	lab var			vl_hrvimp "value of harvest (2010USD), imputed"
-	lab var			vl_hrv "value of harvest (2010USD)"
+	lab var			vl_hrvimp "value of harvest (2015USD), imputed"
+	lab var			vl_hrv "value of harvest (2015USD)"
 	
 
 ************************************************************************
@@ -197,7 +196,7 @@
 						& !inlist(labordays_ha,.,0) & !mi(maxrep)
 	tabstat 		labordays_ha labordays_haimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 351 to 260
+	*** reduces mean from 484 to 387
 	
 	drop			stddev median replacement maxrep minrep
 	lab var			labordays_haimp	"farm labor use (days/ha), imputed"
@@ -233,7 +232,7 @@
 						& !inlist(fert_ha,.,0) & !mi(maxrep)
 	tabstat 		fert_ha fert_haimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 2 to 1
+	*** mean stays the same 
 	
 	drop			stddev median replacement maxrep minrep
 	lab var			fert_haimp	"fertilizer use (kg/ha), imputed"

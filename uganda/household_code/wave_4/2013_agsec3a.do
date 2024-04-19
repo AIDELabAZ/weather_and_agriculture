@@ -1,13 +1,13 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 28 Feb 24
+* Edited on: 19 April 24
 * Edited by: rg
 * Stata v.18, mac
 
 * does
 	* fertilizer use
-	* reads Uganda wave 3 fertilizer and pest info (2013_AGSEC3A) for the 1st season
+	* reads Uganda wave 4 fertilizer and pest info (2013_AGSEC3A) for the 1st season
 	* 3A - 5A are questionaires for the first planting season
 	* 3B - 5B are questionaires for the second planting season
 
@@ -208,7 +208,7 @@
 
 	keep 			hhid hhid_pnl prcid region district subcounty ///
 					parish wgt13 ea rotate pest_any herb_any labor_days ///
-					fert_any kilo_fert
+					fert_any kilo_fert pltid
 
 	compress
 	describe
