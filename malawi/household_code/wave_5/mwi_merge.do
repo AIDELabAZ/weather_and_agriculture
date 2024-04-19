@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: March 2024
 * Created by: alj
-* Edited on: 20 March 2024
+* Edited on: 18 april 2024
 * Edited by: alj
 * Stata v.18
 
@@ -519,7 +519,7 @@
 	lab var			cp_irr	"Any maize plot has irrigation"
 		
 * generate year identifier
-	gen				year = 2014
+	gen				year = 2019
 	lab var			year "Year"
 	
 	order 			case_id HHID ea_id region district reside  ///
