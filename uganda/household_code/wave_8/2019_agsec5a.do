@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: ek
-* Edited on: 15 Apr 24
+* Edited on: 19 Apr 24
 * Edited by: KCD
 * Stata v.18, Mac
 
@@ -260,13 +260,13 @@
 	*** mean 349634.8 min 50, max 1.50e+07 
 
 * generate crop is USD
-	gen 			cropvl = harvvlush / 3727.07
-	lab var 		cropvl "total value of harvest in 2010 USD"
+	gen 			cropvl = harvvlush / 3029.3832
+	lab var 		cropvl "total value of harvest in 2015 USD"
 	*** value comes from World Bank. Used excel file "world_bank_exchange_rates.xlxs"
 **# Bookmark #7
 	
 	sum 			cropvl, detail
-	*** mean 93.81, min 0.013, max 4024.609
+	*** mean 115.4145, min 0.016, max 4951.503  
 	
 	
 * **********************************************************************

@@ -14,7 +14,7 @@
 	* previously cleaned household datasets
 
 * TO DO:
-	* section 3 and beyond
+	* section 8 and beyond
 	
 
 ************************************************************************
@@ -275,7 +275,7 @@
 						& !inlist(mz_yld,.,0) & !mi(maxrep)
 	tabstat 		mz_yld mz_yldimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 167 to 109
+	*** reduces mean from 109 to 82
 					
 	drop 			stddev median replacement maxrep minrep
 	lab var 		mz_yldimp "maize yield (kg/ha), imputed"
@@ -312,7 +312,7 @@
 						& !inlist(mz_lab_ha,.,0) & !mi(maxrep)
 	tabstat 		mz_lab_ha mz_lab_haimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 385 to 303
+	*** reduces mean from 521 to 387
 	
 	drop			stddev median replacement maxrep minrep
 	lab var			mz_lab_haimp	"maize labor use (days/ha), imputed"
@@ -348,7 +348,7 @@
 						& !inlist(mz_frt_ha,.,0) & !mi(maxrep)
 	tabstat 		mz_frt_ha mz_frt_haimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 2 to 1
+	*** mean stays the same
 	
 	drop			stddev median replacement maxrep minrep
 	lab var			mz_frt_haimp	"fertilizer use (kg/ha), imputed"
@@ -461,15 +461,15 @@
 	
 * count before collapse
 	count
-	*** 4938 obs
+	*** 4,352 obs
 	
-	collapse 		(max) tf_* cp_*, by(region district districtdstrng county ///
-						countydstrng subcounty subcountydstrng parish ///
-						parishdstrng hh_status2011 wgt11 hhid)
+	collapse 		(max) tf_* cp_*, by(region district districtdstrng ///
+						subcounty subcountydstrng parish ///
+						parishdstrng rotate wgt13 hhid)
 
 * count after collapse 
 	count 
-	*** 4938 to 1818 observations 
+	*** 4,352 to 1,903 observations 
 	
 * return non-maize production to missing
 	replace			cp_yld = . if cp_yld == 0
