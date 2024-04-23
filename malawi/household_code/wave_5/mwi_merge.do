@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: March 2024
 * Created by: alj
-* Edited on: 18 april 2024
+* Edited on: 23 april 2024
 * Edited by: alj
 * Stata v.18
 
@@ -134,11 +134,9 @@
 * construct production value per hectare
 
 *currency conversion
-	replace				vl_hrv = vl_hrv/745.54
+	replace				vl_hrv = vl_hrv/1451.09
 	*** Value comes from World Bank: world_bank_exchange_rates.xlxs
-	*** convert 2019 to USD
-	replace 			vl_hrv = vl_hrv/0.70423
-	*** convert 2019 usd to 2010 usd 
+	*** convert 2019 to 2015
 
 	gen				vl_yld = vl_hrv / plotsize
 	assert 			!missing(vl_yld)

@@ -19,7 +19,7 @@
 
 * TO DO:
 	* complete
-
+	* update converstion rates to 2015, line 236
 	
 * **********************************************************************
 * 0 - setup
@@ -233,18 +233,19 @@
 	rename		rsmz_irrigationany cp_irr
 	lab var		cp_irr "Irrigation for maize (=1)"
 
-* convert kwacha into 2010 USD
+* convert kwacha into 2015 USD
 * exchange rates come from world_bank_exchange_rates.xlsx
-	replace		rs_harvest_valueimp = rs_harvest_valueimp/124.3845647 ///
+	replace		rs_harvest_valueimp = rs_harvest_valueimp/273.51 ///
 					if year == 2008
-	replace		rs_harvest_valueimp = rs_harvest_valueimp/134.2107246 ///
+	replace		rs_harvest_valueimp = rs_harvest_valueimp/274.76 ///
 					if year == 2009
-	replace		rs_harvest_valueimp = rs_harvest_valueimp/201.9788745 ///
+	replace		rs_harvest_valueimp = rs_harvest_valueimp/484.85 ///
 					if year == 2012
-	replace		rs_harvest_valueimp = rs_harvest_valueimp/310.8160671 ///
+	replace		rs_harvest_valueimp = rs_harvest_valueimp/827 ///
 					if year == 2014
 	replace		rs_harvest_valueimp = rs_harvest_valueimp/374.6410851 ///
 					if year == 2015
+	*** need to update 
 		
 * create or rename variables for total farm production (seed rate missing)
 	rename		rs_harvest_valueimp tf_hrv
