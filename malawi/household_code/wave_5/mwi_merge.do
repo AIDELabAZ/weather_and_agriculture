@@ -134,13 +134,13 @@
 * construct production value per hectare
 
 *currency conversion
-	replace				vl_hrv = vl_hrv/1451.09
+	replace				vl_hrv = vl_hrv/635.34
 	*** Value comes from World Bank: world_bank_exchange_rates.xlxs
 	*** convert 2019 to 2015
 
 	gen				vl_yld = vl_hrv / plotsize
 	assert 			!missing(vl_yld)
-	lab var			vl_yld "value of yield (2010USD/ha)"
+	lab var			vl_yld "value of yield (2015USD/ha)"
 
 * impute value per hectare outliers 
 	sum				vl_yld
@@ -162,12 +162,12 @@
 	*** reduces mean from 464 to 326
 						
 	drop			stddev median replacement maxrep minrep
-	lab var			vl_yldimp	"value of yield (2010USD/ha), imputed"
+	lab var			vl_yldimp	"value of yield (2015USD/ha), imputed"
 
 * inferring imputed harvest value from imputed harvest value per hectare
 	generate		vl_hrvimp = vl_yldimp * plotsize 
-	lab var			vl_hrvimp "value of harvest (2010USD), imputed"
-	lab var			vl_hrv "value of harvest (2010USD)"
+	lab var			vl_hrvimp "value of harvest (2015USD), imputed"
+	lab var			vl_hrv "value of harvest (2015USD)"
 	
 
 * **********************************************************************
@@ -500,8 +500,8 @@
 
 * label variables
 	lab var			tf_lnd	"Total farmed area (ha)"
-	lab var			tf_hrv	"Total value of harvest (2010 USD)"
-	lab var			tf_yld	"value of yield (2010 USD/ha)"
+	lab var			tf_hrv	"Total value of harvest (2015 USD)"
+	lab var			tf_yld	"value of yield (2015 USD/ha)"
 	lab var			tf_lab	"labor rate (days/ha)"
 	lab var			tf_frt	"fertilizer rate (kg/ha)"
 	lab var			tf_pst	"Any plot has pesticide"
@@ -531,7 +531,6 @@
 * saving production dataset
 	save 			"`export'/mwi_merge.dta", replace
  
-
 * close the log
 	log	close
 

@@ -1,6 +1,8 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: jdm
+* Edited by: alj
+* Edited on: 23 April 2024
 * Stata v.16
 
 * does
@@ -28,6 +30,7 @@
 * define paths
 	loc		root 	= 	"$data/merged_data/malawi"
 	loc		export 	= 	"$data/regression_data/malawi"
+	loc		export5	=	"$data/household_data/malawi/wave_5/refined"
 	loc		logout 	= 	"$data/merged_data/malawi/logs"
 
 * open log	
@@ -235,21 +238,21 @@
 
 * convert kwacha into 2015 USD
 * exchange rates come from world_bank_exchange_rates.xlsx
-	replace		rs_harvest_valueimp = rs_harvest_valueimp/273.51 ///
+	replace		rs_harvest_valueimp = rs_harvest_valueimp/199.11 ///
 					if year == 2008
-	replace		rs_harvest_valueimp = rs_harvest_valueimp/274.76 ///
+	replace		rs_harvest_valueimp = rs_harvest_valueimp/184.65 ///
 					if year == 2009
-	replace		rs_harvest_valueimp = rs_harvest_valueimp/484.85 ///
+	replace		rs_harvest_valueimp = rs_harvest_valueimp/285.12 ///
 					if year == 2012
-	replace		rs_harvest_valueimp = rs_harvest_valueimp/827 ///
+	replace		rs_harvest_valueimp = rs_harvest_valueimp/436.79 ///
 					if year == 2014
-	replace		rs_harvest_valueimp = rs_harvest_valueimp/374.6410851 ///
+	replace		rs_harvest_valueimp = rs_harvest_valueimp/499.61 ///
 					if year == 2015
-	*** need to update 
+	*** 2019 converted in file
 		
 * create or rename variables for total farm production (seed rate missing)
 	rename		rs_harvest_valueimp tf_hrv
-	lab var 	tf_hrv "Harvest of all crops (2010 USD)"
+	lab var 	tf_hrv "Harvest of all crops (2015 USD)"
 		
 	rename		rs_cultivatedarea tf_lnd
 	lab var 	tf_lnd "Land area planted to all crops (ha)"
@@ -271,6 +274,9 @@
 		
 	rename		rs_irrigationany tf_irr
 	lab var		tf_irr "Irrigation for all crops (=1)"
+
+* going to append to this the 2019/2020 data, which is a bit different, but let's give it a go
+	append 		using "`export5'/mwi_merge.dta", force	
 	
 * rename household weights
 	rename		hhweight pw
@@ -304,6 +310,7 @@
 	
 * save file
 	qui: compress
+	
 	save 			"`export'/mwi_complete.dta", replace
 	
 * close the log
