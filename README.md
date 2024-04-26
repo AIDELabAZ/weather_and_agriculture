@@ -39,10 +39,9 @@ The code in this repository is primarily for replicating the cleaning of the hou
     1. `weather_command`
     2. `blindschemes`
     3. `estout`
-    4. `customsave`
-    5. `winsor2`
-    6. `mdesc`
-    7. `distinct`
+    4. `winsor2`
+    5. `mdesc`
+    6. `distinct`
 
 #### Folder structure
 
