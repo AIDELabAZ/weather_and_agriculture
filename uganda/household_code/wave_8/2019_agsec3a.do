@@ -1,8 +1,8 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: ek
-* Edited on 15 Apr 24
-* Edited by KCD
+* Edited on 26 Apr 24
+* Edited by alj
 * Stata v.18, mac
 
 * does
@@ -33,7 +33,27 @@
 	log using 		"$logout/2019_agsec3a", append
 	
 * **********************************************************************
-**#1 - import data and rename variables
+**#1 - import data and rename variables, manipulate hh labor 
+* **********************************************************************
+
+* import 3a_1 data for household labor - to be integrated later 
+
+* import wave 8 season A1
+	use 			"$root/agric/agsec3a_1.dta", clear
+	compress
+		
+* collapse household labor 
+	collapse	 	(sum) s3aq33_1, by (parcelID pltid hhid)
+	rename 			parcelID prcid
+	rename 			s3aq33_1 fam_lab 
+	replace			fam_lab = 0 if fam_lab == .
+	sum				fam_lab
+*	*** max 410, mean 35, min 0
+
+	save 			"$export/agsec3a_1hh.dta", replace 	
+		
+* **********************************************************************
+**#2 - import data and rename variables
 * **********************************************************************
 
 * import wave 8 season A
@@ -59,7 +79,7 @@
 
 	
 * **********************************************************************
-**#2 - merge location data
+**#3 - merge location data
 * **********************************************************************	
 	
 * merge the location identification
@@ -68,9 +88,10 @@
 	
 	drop if			_merge != 3
 	*** 846 observations deleted
+	drop 			_merge 
 
 * **********************************************************************
-**#3 - fertilizer, pesticide and herbicide
+**#4 - fertilizer, pesticide and herbicide
 * **********************************************************************
 
 * fertilizer use
@@ -121,7 +142,7 @@
 	*** 5710 real changes made
 	
 * **********************************************************************
-**#4 - pesticide & herbicide
+**#5 - pesticide & herbicide
 * **********************************************************************
 
 * pesticide & herbicide
@@ -137,63 +158,40 @@
 	*** 5,720 real changes made
 	
 * **********************************************************************
-**#5 - labor 
+**#6 - labor 
 * **********************************************************************
-	* per Palacios-Lopez et al. (2017) in Food Policy, we cap labor per activity
-	* 7 days * 13 weeks = 91 days for land prep and planting
-	* 7 days * 26 weeks = 182 days for weeding and other non-harvest activities
-	* 7 days * 13 weeks = 91 days for harvesting
-	* we will also exclude child labor_days
-	* includes all labor tasks performed on a plot during the first cropp season
+* per Palacios-Lopez et al. (2017) in Food Policy, we cap labor per activity
+* 7 days * 13 weeks = 91 days for land prep and planting
+* 7 days * 26 weeks = 182 days for weeding and other non-harvest activities
+* 7 days * 13 weeks = 91 days for harvesting
+* we will also exclude child labor_days
+* includes all labor tasks performed on a plot during the first cropp season
 
-* family labor	
-* This wave asked about specific household members who worked on the plot rather than the total number of members 
-
-* create a new variable counting how many household members worked on the plot 
-	egen 			household_count = rowtotal(s3aq35a s3aq35b)
-					
-* make a binary if they had family work
-	gen				fam = 1 if household_count > 0	
-	
-* how many household members worked on this plot?
-	tab			household_count
-	*** family labor is from 0 - 5 people
-	
-	sum 			household_count, detail
-	*** mean  2.98, min 1, max 240
-	*** don't need to impute any values
-	
-* fam lab = number of family members who worked on the farm*days they worked	
-	gen 			fam_lab = s3aq35a*s3aq35b
-	replace			fam_lab = 0 if fam_lab == .
-	sum				fam_lab
-*	*** max 14400, mean 14.91, min 0
-	
 * hired labor 
 * hired labor days
-	rename	 		s3aq34 hired_labor
+	egen	 		hired_labor = rsum(s3aq35a s3aq35b)
 		
-* make a binary if they had hired_men
-	gen 			yes = 1 if hired_labor != . & hired_labor != 0
-	
 * impute hired labor all at once
 	sum				hired_labor, detail
 	
 * replace values greater than 365 and turn missing to zeros
 	replace			hired_labor = 0 if hired_labor == .
-	*** 81 changes made
+	*** no changes made
 	replace			hired_labor = 365 if hired_labor > 365
 	*** no changes made
 	
+* merge in family labor 
+	merge 1:1 		hhid prcid pltid using "$export/agsec3a_1hh"
+	*** matched 5881, not matched = 19 from using (this means that 16 plots only used hired labor), seems fine
+	
 * generate labor days as the total amount of labor used on plot in person days
-	gen				labor_days = fam_lab + hired_labor
+	egen			labor_days = rsum(fam_lab hired_labor)
 	
 	sum 			labor_days
-	*** mean 16.62, max 14401, min 0	
-
+	*** mean 38, max 438, min 0	
 	
 * **********************************************************************
-**#6 - end matter, clean up to save
+**#7 - end matter, clean up to save
 * **********************************************************************
 	
 	keep 			hhid prcid region district subcounty ///
