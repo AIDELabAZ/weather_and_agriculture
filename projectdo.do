@@ -1,23 +1,20 @@
-* Project: WB Weather
-* Created on: May 2020
-* Created by: jdm
-* Edited on: 15 Feb 24
-* Edited by: jdm
+/* BEGIN */
+
+* Project: Translating Mali
+* Created on: March 2024
+* Created by: alj
+* Edited on: 25 March 2024
+* Edited by: alj
 * Stata v.18.0
 
 * does
-	* establishes an identical workspace between users
-	* sets globals that define absolute paths
-	* serves as the starting point to find any do-file, dataset or output
-	* runs all do-files needed for data work
-	* loads any user written packages needed for analysis
-
+	* 
+	
 * assumes
-	* access to all data and code
+	* access to french mali data files 
 
 * TO DO:
-	* complete
-
+	* 
 
 * **********************************************************************
 * 0 - setup
@@ -35,10 +32,6 @@
 * **********************************************************************
 
 * Define root folder globals
-    if `"`c(username)'"' == "jdmichler" {
-        global 		code  	"C:/Users/jdmichler/git/AIDELabAZ/weather_and_agriculture"
-		global 		data	"C:/Users/jdmichler/OneDrive - University of Arizona/weather_project"
-    }
 
     if `"`c(username)'"' == "rodrigoguerra" {
         global 		code  	"/Users/rodrigoguerra/Library/CloudStorage/OneDrive-UniversityofArizona/Documents/GitHub/weather_and_agriculture"
@@ -50,8 +43,8 @@
 		
     }
 	    if `"`c(username)'"' == "annal" {
-        global 		code  	"C:/Users/aljosephson/git/weather_and_agriculture"
-		global 		data	"C:/Users/aljosephson/OneDrive - University of Arizona/weather_project"
+        global 		code  	"C:/Users/aljosephson/git/translating-mali"
+		global 		data	"C:/Users/aljosephson/Dropbox/Classification"
 		}
 	
 * **********************************************************************
@@ -96,61 +89,11 @@ if $pack == 1 {
 }
 
 * **********************************************************************
-* 1 - run weather data cleaning .do file
+* 1 - run data cleaning .do file
 * **********************************************************************
 
-/*	this code requires access to the weather data sets, which are confidential
-	and held by the World Bank. They are not publically available
-
-	do 			"$code/ethiopia/weather_code/eth_ess_masterdo.do"
-	do 			"$code/malawi/weather_code/mwi_ihs_masterdo.do"
-	do 			"$code/niger/weather_code/ngr_ecvma_masterdo.do"
-	do 			"$code/nigeria/weather_code/nga_ghs_masterdo.do"
-	do 			"$code/tanzania/weather_code/tza_nps_masterdo.do"
-	do 			"$code/uganda/weather_code/uga_unps_masterdo.do"
-
-
 * **********************************************************************
-* 2 - run household data cleaning .do files and merge with weather data
+* 2 - run analysis .do files
 * **********************************************************************
 
-/*	this code requires a user to have downloaded the publically available 
-	household data sets and placed them into the folder structure detailed
-	in the readme file accompanying this repo.
-*/	
-	do 			"$code/ethiopia/household_code/eth_hh_masterdo.do"
-	do 			"$code/malawi/household_code/mwi_hh_masterdo.do"
-	do 			"$code/niger/household_code/ngr_hh_masterdo.do"
-	do 			"$code/nigeria/household_code/nga_hh_masterdo.do"
-	do 			"$code/tanzania/household_code/tza_hh_masterdo.do"
-	do 			"$code/uganda/household_code/uga_hh_masterdo.do"
-
-
-
-* **********************************************************************
-* 3 - build cross-country household panel data set
-* **********************************************************************
-
-	do			"$code/analysis/reg_code/panel_build.do"
-
-
-* **********************************************************************
-* 4 - run regression .do files
-* **********************************************************************
-
-	do			"$code/analysis/reg_code/regressions.do"
-	do			"$code/analysis/reg_code/regressions-linear-combo.do"
-	do			"$code/analysis/reg_code/regressions-multi-combo.do"
-
-
-* **********************************************************************
-* 5 - run analysis .do files
-* **********************************************************************
-
-	do			"$code/analysis/viz_code/sum_table.do"
-	do			"$code/analysis/viz_code/sum_vis.do"
-	do			"$code/analysis/viz_code/r2_vis.do"
-	do			"$code/analysis/viz_code/pval_vis.do"
-	do			"$code/analysis/viz_code/coeff_vis.do"
-	do			"$code/analysis/viz_code/coeff_lc_vis.do"
-	do			"$code/analysis/viz_code/coeff_mc_vis.do"
+/* END */
