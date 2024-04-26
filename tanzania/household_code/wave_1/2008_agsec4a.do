@@ -1,6 +1,8 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: McG
+* Edited on: April 26, 2024
+* Edited on: reece
 * Stata v.15
 
 * does
@@ -21,13 +23,13 @@
 * **********************************************************************
 
 * define paths
-	loc root = "$data/household_data/tanzania/wave_1/raw"
-	loc export = "$data/household_data/tanzania/wave_1/refined"
-	loc logout = "$data/household_data/tanzania/logs"
+	global root 	"$data/household_data/tanzania/wave_1/raw"
+	global export 	"$data/household_data/tanzania/wave_1/refined"
+	global logout 	"$data/household_data/tanzania/logs"
 
-* open log
+* open log 
 	cap log close 
-	log using "`logout'/wv1_AGSEC4A", append
+	log using "$logout/wv1_AGSEC4A", append
 
 	
 * **********************************************************************
@@ -35,7 +37,7 @@
 * **********************************************************************
 
 * load data
-	use 		"`root'/SEC_4A", clear
+	use 		"$root/SEC_4A", clear
 	
 * dropping duplicates
 	duplicates 		drop
@@ -90,7 +92,7 @@
 	*** 0 duplicate crop_ids	
 	
 * must merge in regional identifiers from 2008_HHSECA to impute
-	merge			m:1 hhid using "`export'/HH_SECA"
+	merge			m:1 hhid using "$export/HH_SECA"
 	tab				_merge
 	*** 1,386 not matched
 	
@@ -147,7 +149,7 @@
 	*** missing maize ob (w/ hvst_value) will be left unchnaged
 	*** to be imputed
 
-* currency conversion
+* currency conversion to 2015 usd
 	replace				hvst_value = hvst_value/1823.0731
 	*** Value comes from World Bank: world_bank_exchange_rates.xlxs
 	
@@ -244,15 +246,14 @@
 	lab var			any_pure "Is Crop Planted in Full Area of Plot (Purestand)?"
 	lab var			any_mixed "Is Crop Planted in Less Than Full Area of Plot?"
 	lab var			percent_field "Percent of Field Crop Was Planted On"
-	
+		
 * prepare for export
 	isid			hhid plotnum crop_code
 	compress
 	describe
 	summarize 
-	sort plot_id
-	customsave , idvar(plot_id) filename(AG_SEC4A.dta) path("`export'") ///
-		dofile(2008_AGSEC4A) user($user)
+	sort 			plot_id
+	save 			"$export/AG_SEC4A.dta", replace
 
 * close the log
 	log	close

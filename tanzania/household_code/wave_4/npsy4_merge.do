@@ -1,6 +1,8 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: McG
+* Edited on: April 26, 2024
+* Edited by: reece
 * Stata v.16
 
 * does
@@ -21,13 +23,13 @@
 * **********************************************************************
 
 * define paths
-	loc		root	=	"$data/household_data/tanzania/wave_4/refined"
-	loc		export	=	"$data/household_data/tanzania/wave_4/refined"
-	loc		logout	=	"$data/merged_data/tanzania/logs"
+	global root 	"$data/household_data/tanzania/wave_4/refined"
+	global export 	"$data/household_data/tanzania/wave_4/refined"
+	global logout 	"$data/household_data/tanzania/logs"
 
-* open log
-	cap log close
-	log		using	"`logout'/npsy4_merge", append
+* open log 
+	cap log 		close 
+	log 			using "$logout/npsy4_merge", append
 
 
 * **********************************************************************
@@ -35,12 +37,12 @@
 * **********************************************************************
 
 * start by loading harvest quantity and value, since this is our limiting factor
-	use 			"`root'/AG_SEC4A", clear
+	use 			"$root/AG_SEC4A", clear
 
 	isid			crop_id
 
 * merge in plot size data
-	merge 			m:1 plot_id using "`root'/AG_SEC2A", generate(_2A)
+	merge 			m:1 plot_id using "$root/AG_SEC2A", generate(_2A)
 	*** 0 out of 5,398 missing in master 
 	*** all unmerged obs came from using data 
 	*** meaning we lacked production data
@@ -52,7 +54,7 @@
 	replace			plotsize = percent_field * plotsize if percent_field != .
 	
 * merging in production inputs data
-	merge			m:1 plot_id using "`root'/AG_SEC3A", generate(_3A)
+	merge			m:1 plot_id using "$root/AG_SEC3A", generate(_3A)
 	*** 0 out of 5,398 missing in master 
 	*** all unmerged obs came from using data 
 	*** meaning we lacked production data
@@ -525,8 +527,7 @@
 	summarize 
 	
 * saving production dataset
-	customsave , idvar(y4_hhid) filename(hhfinal_npsy4.dta) path("`export'") ///
-			dofile(NPSY4_merge) user($user) 
+	save 			"$export/hhfinal_npsy4.dta", replace 
 
 * close the log
 	log	close

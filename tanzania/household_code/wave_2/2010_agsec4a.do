@@ -1,6 +1,8 @@
 * Project: WB Weather
 * Created on: April 2020
 * Created by: McG
+* Edited on: April 26, 2024
+* Edited by: reece
 * Stata v.16
 
 * does
@@ -20,14 +22,15 @@
 * 0 - setup
 * **********************************************************************
 
-* define paths
-	loc root = "$data/household_data/tanzania/wave_2/raw"
-	loc export = "$data/household_data/tanzania/wave_2/refined"
-	loc logout = "$data/household_data/tanzania/logs"
 
-* open log
+* define paths
+	global root 	"$data/household_data/tanzania/wave_2/raw"
+	global export 	"$data/household_data/tanzania/wave_2/refined"
+	global logout 	"$data/household_data/tanzania/logs"
+
+* open log 
 	cap log close 
-	log using "`logout'/wv2_AGSEC4A", append
+	log using "$logout/wv2_AGSEC4A", append
 
 	
 * ***********************************************************************
@@ -35,7 +38,7 @@
 * ***********************************************************************
 
 * load data
-	use "`root'/AG_SEC4A", clear
+	use "$root/AG_SEC4A", clear
 	
 * dropping duplicates
 	duplicates 		drop
@@ -88,7 +91,7 @@
 	*** 0 duplicate crop_ids	
 	
 * must merge in regional identifiers from 2008_HHSECA to impute
-	merge			m:1 y2_hhid using "`export'/HH_SECA"
+	merge			m:1 y2_hhid using "$export/HH_SECA"
 	tab				_merge
 	*** 1,808 not matched, from using
 	
@@ -122,7 +125,7 @@
 	replace				hvst_value = 0 if wgt_hvsted == 0 & hvst_value == .
 	*** 1 change made
 
-*currency conversion
+*currency conversion to 2015 usd
 	replace				hvst_value = hvst_value/1899.9643
 	*** Value comes from World Bank: world_bank_exchange_rates.xlxs
 
@@ -218,16 +221,15 @@
 	lab var			any_pure "Is Crop Planted in Full Area of Plot (Purestand)?"
 	lab var			any_mixed "Is Crop Planted in Less Than Full Area of Plot?"
 	lab var			percent_field "Percent of Field Crop Was Planted On"
-	
+		
 * prepare for export
 	isid			y2_hhid plotnum crop_code
 	compress
 	describe
 	summarize 
-	sort plot_id
-	customsave , idvar(plot_id) filename(AG_SEC4A.dta) path("`export'") ///
-		dofile(2010_AGSEC4A) user($user)
-
+	sort 			plot_id
+	save 			"$export/AG_SEC4A.dta", replace
+	
 * close the log
 	log	close
 

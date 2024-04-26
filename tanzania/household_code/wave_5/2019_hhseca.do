@@ -78,8 +78,7 @@
 	summarize
 	sort sdd_hhid
 	
-	customsave , idvar(sdd_hhid) filename(HH_SECA.dta) ///
-		path("$export") dofile(2019_hhseca) user($user)
+	save 			"$export/HH_SECA.dta", replace
 
 * close the log
 	log	close

@@ -1,6 +1,8 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: McG
+* Edited on: April 26, 2024
+* Edited by: reece
 * Stata v.16
 
 * does
@@ -21,13 +23,14 @@
 * **********************************************************************
 
 * define paths
-	loc		root	=	"$data/household_data/tanzania/wave_3/raw"
-	loc		export	=	"$data/household_data/tanzania/wave_3/refined"
-	loc		logout	=	"$data/household_data/tanzania/logs"
+	global root 	"$data/household_data/tanzania/wave_3/raw"
+	global export 	"$data/household_data/tanzania/wave_3/refined"
+	global logout 	"$data/household_data/tanzania/logs"
 
-* open log
+* open log 
 	cap log close 
-	log		using	"`logout'/wv3_AGSEC4A", append
+	log using "$logout/wv3_AGSEC4A", append
+
 
 	
 * ***********************************************************************
@@ -35,7 +38,7 @@
 * ***********************************************************************
 
 * load data
-	use				"`root'/AG_SEC_4A", clear
+	use				"$root/AG_SEC_4A", clear
 	
 * dropping duplicates
 	duplicates 		drop
@@ -90,7 +93,7 @@
 	*** five duplicate crop_ids
 
 * must merge in regional identifiers from 2008_HHSECA to impute
-	merge			m:1 y3_hhid using "`export'/HH_SECA"
+	merge			m:1 y3_hhid using "$export/HH_SECA"
 	tab				_merge
 	*** 1,710 not matched
 	
@@ -114,7 +117,7 @@
 	tab					hvst_value, missing
 	*** hvst_value missing no observations
 
-* currency conversion
+* currency conversion to 2015 usd
 	replace				hvst_value = hvst_value/1901.6280
 	*** Value comes from World Bank: world_bank_exchange_rates.xlxs
 
@@ -223,9 +226,8 @@
 	compress
 	describe
 	summarize 
-	sort plot_id
-	customsave , idvar(crop_id) filename(AG_SEC4A.dta) path("`export'") ///
-		dofile(2012_AGSEC4A) user($user)
+	sort 			plot_id
+	save 			"$export/AG_SEC4A.dta", replace
 
 * close the log
 	log	close

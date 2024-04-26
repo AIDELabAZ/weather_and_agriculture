@@ -123,7 +123,7 @@
 	tab					hvst_value, missing
 	*** hvst_value missing no observations
 
-*currency conversion
+*currency conversion to 2015 usd
 	replace				hvst_value = hvst_value/1797.3250
 	*** tza to usd 2015
 	*** Value comes from World Bank: world_bank_exchange_rates.xlxs

@@ -112,7 +112,7 @@
 	tab					hvst_value, missing
 	*** hvst_value missing no observations
 
-*currency conversion
+*currency conversion to 2015 usd
 	replace				hvst_value = hvst_value/1766.7963
 
 	*** tza to usd 2015

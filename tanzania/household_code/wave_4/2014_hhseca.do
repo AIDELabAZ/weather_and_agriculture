@@ -1,6 +1,8 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: McG
+* Edited on: April 26, 2024
+* Edited by: reece
 * Stata v.16
 
 * does
@@ -21,20 +23,20 @@
 * **********************************************************************
 
 * define paths
-	loc	root	=	"$data/household_data/tanzania/wave_4/raw"
-	loc export	=	"$data/household_data/tanzania/wave_4/refined"
-	loc logout	=	"$data/household_data/tanzania/logs"
+	global	root		"$data/household_data/tanzania/wave_4/raw"
+	global export		"$data/household_data/tanzania/wave_4/refined"
+	global logout		"$data/household_data/tanzania/logs"
 
 * open log
 	cap log close 
-	log	using	"`logout'/wv4_HHSECA", append
+	log	using	"$logout/wv4_HHSECA", append
 
-* ***********************************************************************
-* 1 - TZA 2014 (Wave 4) - Household Section A
-* *********************1*************************************************
+*************************************************************************
+**#1 - TZA 2014 (Wave 4) - Household Section A
+***********************1*************************************************
 
 * load data
-	use 		"`root'/hh_sec_a", clear
+	use 		"$root/hh_sec_a", clear
 	
 * dropping duplicates
 	duplicates 	drop
@@ -76,8 +78,8 @@
 	summarize
 	sort y4_hhid
 	
-	customsave , idvar(y4_hhid) filename(HH_SECA.dta) ///
-		path("`export'") dofile(2014_HHSECA) user($user)
+	save 			"$export/HH_SECA.dta", replace
+
 
 * close the log
 	log	close

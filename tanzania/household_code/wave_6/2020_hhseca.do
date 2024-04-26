@@ -29,7 +29,7 @@
 	log	using	"$logout/wv6_HHSECA", append
 
 *************************************************************************
-**#1 - TZA 2014 (Wave 4) - Household Section A
+**#1 - TZA 2020 (Wave 6) - Household Section A
 ***********************1*************************************************
 
 * load data
@@ -66,8 +66,7 @@
 	summarize
 	sort y5_hhid
 	
-	customsave , idvar(y5_hhid) filename(HH_SECA.dta) ///
-		path("$export") dofile(2020_hhseca) user($user)
+	save 			"$export/HH_SECA.dta", replace
 
 * close the log
 	log	close

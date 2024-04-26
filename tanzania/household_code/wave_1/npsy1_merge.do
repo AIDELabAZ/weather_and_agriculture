@@ -19,15 +19,15 @@
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
-
+	
 * define paths
-	loc		root	=	"$data/household_data/tanzania/wave_1/refined"
-	loc		export	=	"$data/household_data/tanzania/wave_1/refined"
-	loc		logout	=	"$data/merged_data/tanzania/logs"
+	global root 	"$data/household_data/tanzania/wave_1/refined"
+	global export 	"$data/household_data/tanzania/wave_1/refined"
+	global logout 	"$data/household_data/tanzania/logs"
 
-* open log
-	cap log close
-	log		using	"`logout'/npsy1_merge", append
+* open log 
+	cap log 		close 
+	log 			using "$logout/npsy1_merge", append
 
 	
 * **********************************************************************
@@ -35,12 +35,12 @@
 * **********************************************************************
 
 * start by loading harvest quantity and value, since this is our limiting factor
-	use 			"`root'/AG_SEC4A", clear
+	use 			"$root/AG_SEC4A", clear
 
 	isid			crop_id
 
 * merge in plot size data
-	merge 			m:1 plot_id using "`root'/AG_SEC2A", generate(_2A)
+	merge 			m:1 plot_id using "$root/AG_SEC2A", generate(_2A)
 	*** 23 out of 5,167 missing in using data (master only) 
 	*** meaning these 23 have no plotsize info...
 	
@@ -54,7 +54,7 @@
 	replace			plotsize = percent_field * plotsize if percent_field != .
 	
 * merging in production inputs data
-	merge			m:1 plot_id using "`root'/AG_SEC3A", generate(_3A)
+	merge			m:1 plot_id using "$root/AG_SEC3A", generate(_3A)
 	*** 0 out of 5,167 missing in master 
 	*** all unmerged obs came from using data 
 	*** meaning we lacked production data
@@ -516,7 +516,7 @@
 	lab var			cp_irr	"Any maize plot has irrigation"
 
 * merge in geovars
-	merge			m:1 hhid using "`root'/2008_geovars", force
+	merge			m:1 hhid using "$root/2008_geovars", force
 	keep			if _merge == 3
 	drop			_merge
 	
@@ -534,8 +534,7 @@
 	summarize 
 	
 * saving production dataset
-	customsave , idvar(hhid) filename(hhfinal_npsy1.dta) path("`export'") ///
-			dofile(NPSY1_merge) user($user) 
+	save 			"$export/hhfinal_npsy1.dta", replace
 
 * close the log
 	log	close
