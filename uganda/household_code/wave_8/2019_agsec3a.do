@@ -167,6 +167,34 @@
 * we will also exclude child labor_days
 * includes all labor tasks performed on a plot during the first cropp season
 
+<<<<<<< Updated upstream
+=======
+* family labor	
+* This wave asked about specific household members who worked on the plot rather than the total number of members 
+
+**# Bookmark #1
+
+* create a new variable counting how many household members worked on the plot 
+	egen 			household_count = rowtotal(s3aq35a s3aq35b)
+					
+* make a binary if they had family work
+	gen				fam = 1 if household_count > 0	
+	
+* how many household members worked on this plot?
+	tab			household_count
+	*** family labor is from 0 - 5 people
+	
+	sum 			household_count, detail
+	*** mean  2.98, min 1, max 240
+	*** don't need to impute any values
+	
+* fam lab = number of family members who worked on the farm*days they worked	
+	gen 			fam_lab = s3aq35a*s3aq35b
+	replace			fam_lab = 0 if fam_lab == .
+	sum				fam_lab
+*	*** max 14400, mean 14.91, min 0
+	
+>>>>>>> Stashed changes
 * hired labor 
 * hired labor days
 	egen	 		hired_labor = rsum(s3aq35a s3aq35b)

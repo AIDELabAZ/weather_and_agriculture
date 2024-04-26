@@ -33,7 +33,6 @@
 
 * Define root folder globals
 
-<<<<<<< Updated upstream
     if `"`c(username)'"' == "rodrigoguerra" {
         global 		code  	"/Users/rodrigoguerra/Library/CloudStorage/OneDrive-UniversityofArizona/Documents/GitHub/weather_and_agriculture"
 		global 		data	"/Users/rodrigoguerra/Library/CloudStorage/OneDrive-UniversityofArizona/weather_project"
@@ -43,8 +42,6 @@
 		global 		data	"/Users/fvkrysbackpackpc/Library/CloudStorage/OneDrive-UniversityofArizona/weather_project"
 		
     }
-=======
->>>>>>> Stashed changes
 	    if `"`c(username)'"' == "annal" {
         global 		code  	"C:/Users/aljosephson/git/translating-mali"
 		global 		data	"C:/Users/aljosephson/Dropbox/Classification"
