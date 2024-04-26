@@ -1,9 +1,9 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: jdm
-* Edited by: ek
-* Stata v.16
-
+* Edited on: 26 Apr 24
+* Edited by: rg
+* Stata v.18, mac
 * does
 	* merges individual cleaned plot datasets together
 	* imputes values for continuous variables
@@ -11,8 +11,7 @@
 
 * assumes
 	* previously cleaned household datasets
-	* customsave.ado
-
+	
 * TO DO:
 	* done
 	
@@ -22,13 +21,13 @@
 * **********************************************************************
 
 * define paths
-	loc root 		= "$data/household_data/uganda/wave_1/refined"  
-	loc export 		= "$data/household_data/uganda/wave_1/refined"
-	loc logout 		= "$data/household_data/uganda/logs"
+	global root 		"$data/household_data/uganda/wave_1/refined"  
+	global export 		"$data/household_data/uganda/wave_1/refined"
+	global logout 		"$data/household_data/uganda/logs"
 	
 * open log
-	cap log 		close
-	log using 		"`logout'/unps1_merge", append
+	cap log 			close
+	log using 			"$logout/unps1_merge", append
 
 	
 * **********************************************************************
@@ -36,12 +35,12 @@
 * **********************************************************************
 
 * start by loading harvest quantity and value, since this is our limiting factor
-	use 			"`root'/2009_AGSEC5A.dta", clear
+	use 			"$root/2009_AGSEC5A.dta", clear
 
 	isid 			hhid prcid pltid cropid
 	
 * merge in plot size data and irrigation data
-	merge			m:1 hhid prcid using "`root'/2009_AGSEC2A", generate(_sec2)
+	merge			m:1 hhid prcid using "$root/2009_AGSEC2A", generate(_sec2)
 	*** matched 8903, unmatched 2601 from master
 	*** a lot unmatched, means plots do not area data
 	*** for now as per Malawi (rs_plot) we drop all unmerged observations
@@ -49,7 +48,7 @@
 	drop			if _sec2 != 3
 		
 * merging in labor, fertilizer and pest data
-	merge			m:1 hhid prcid pltid  using "`root'/2009_AGSEC3A", generate(_sec3a)
+	merge			m:1 hhid prcid pltid  using "$root/2009_AGSEC3A", generate(_sec3a)
 	*** no unmatched from master
 
 	drop			if _sec3a != 3
@@ -522,14 +521,14 @@
 	lab var			year "Year"
 
 * merge in harvest season
-	merge			m:1 county using "`root'/harv_month", force
+	merge			m:1 county using "$root/harv_month", force
 	drop			if _merge == 2
 	drop			_merge
 	
 	replace			season = 0 if season == 1 & district == 211
 
 * merge in geovars
-	merge			m:1 hhid using "`root'/2009_geovars", force
+	merge			m:1 hhid using "$root/2009_geovars", force
 	keep			if _merge == 3
 	
 * replace missing values
@@ -551,9 +550,8 @@
 	summarize 
 	
 * saving production dataset
-	customsave , idvar(hhid) filename(hhfinal_unps1.dta) path("`export'") ///
-			dofile(unps1_merge) user($user) 
-
+	save 			"$export/hhfinal_unps1.dta", replace
+	
 * close the log
 	log	close
 

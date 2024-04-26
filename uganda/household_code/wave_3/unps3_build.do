@@ -1,8 +1,9 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: jdm
-* Edited by: ek
-* Stata v.16
+* Edited on: 26 Apr 24
+* Edited by: rg
+* Stata v.18, mac
 
 * does
 	* merges weather data into unps3 household data
@@ -11,33 +12,32 @@
 * assumes
 	* cleaned GHSY3 data
 	* processed wave 3 weather data
-	* customsave.ado
 
 * TO DO:
 	* done
 
 	
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+************************************************************************
+**# 0 - setup
+************************************************************************
 
 * define paths
-	loc		rootw 	= 	"$data/weather_data/uganda/wave_3/refined"
-	loc		rooth 	= 	"$data/household_data/uganda/wave_3/refined"
-	loc		export 	= 	"$data/merged_data/uganda/wave_3"
-	loc		logout 	= 	"$data/merged_data/uganda/logs"
+	global	rootw 	 	"$data/weather_data/uganda/wave_3/refined"
+	global	rooth 	 	"$data/household_data/uganda/wave_3/refined"
+	global	export 	 	"$data/merged_data/uganda/wave_3"
+	global	logout 	 	"$data/merged_data/uganda/logs"
 
 * open log	
-	cap log close
-	log 	using 		"`logout'/unps3_build", append
+	cap 				log close
+	log 	using 		"$logout/unps3_build", append
 
 	
-* **********************************************************************
-* 1 - merge northern household data with rainfall data
-* **********************************************************************
+************************************************************************
+**# 1 - merge northern household data with rainfall data
+************************************************************************
 
 * import the .dta houeshold file
-	use 		"`rooth'/hhfinal_unps3.dta", clear
+	use 		"$rooth/hhfinal_unps3.dta", clear
 
 *keep northern	
 	keep if		season == 1
@@ -47,19 +47,19 @@
 	lab var 	data "Data Source"
 	
 * define local with all sub-folders in it
-	loc 		folderList : dir "`rootw'" dirs "unpsy3_rf*"
+	loc 		folderList : dir "$rootw" dirs "unpsy3_rf*"
 
 * define local with all files in each sub-folder	
 	foreach 	folder of local folderList {
 
 	* define each file in the above local
-		loc 		fileList : dir "`rootw'/`folder'" files "*_n.dta"
+		loc 		fileList : dir "$rootw/`folder'" files "*_n.dta"
 	
 	* loop through each file in the above local
 		foreach 	file in `fileList' {	
 	
 		* merge weather data with household data
-			merge 	1:1 hhid using "`rootw'/`folder'/`file'"	
+			merge 	1:1 hhid using "$rootw/`folder'/`file'"	
 	
 		* drop files that did not merge
 			drop 	if 	_merge != 3
@@ -133,24 +133,24 @@
 }
 
 	
-* **********************************************************************
-* 2 - merge northern temperature data with household data
-* **********************************************************************
+************************************************************************
+**# 2 - merge northern temperature data with household data
+************************************************************************
 
 * define local with all sub-folders in it
-	loc 		folderList : dir "`rootw'" dirs "unpsy3_t*"
+	loc 		folderList : dir "$rootw" dirs "unpsy3_t*"
 
 * define local with all files in each sub-folder	
 	foreach 	folder of local folderList {
 
 * define each file in the above local
-	loc 		fileList : dir "`rootw'/`folder'" files "*_n.dta"
+	loc 		fileList : dir "$rootw/`folder'" files "*_n.dta"
 	
 * loop through each file in the above local
 	foreach 	file in `fileList' {	
 	
 	* merge weather data with household data
-		merge 	1:1 hhid using "`rootw'/`folder'/`file'"	
+		merge 	1:1 hhid using "$rootw/`folder'/`file'"	
 	
 		* drop files that did not merge
 			drop 	if 	_merge != 3
@@ -219,16 +219,14 @@
 	
 	qui: compress
 	
-	customsave 	, idvar(hhid) filename("unps3_merged_n.dta") ///
-		path("`export'") dofile(unps3_build) user($user)
-
+	save 			"$export/unps3_merged_n.dta", replace
 	
-* **********************************************************************
-* 3 - merge southern household data with rainfall data
-* **********************************************************************
+************************************************************************
+**# 3 - merge southern household data with rainfall data
+************************************************************************
 
 * import the .dta houeshold file
-	use 		"`rooth'/hhfinal_unps3.dta", clear
+	use 		"$rooth/hhfinal_unps3.dta", clear
 
 * drop northern regions
 	keep if		season == 0
@@ -238,19 +236,19 @@
 	lab var 	data "Data Source"
 	
 * define local with all sub-folders in it
-	loc 		folderList : dir "`rootw'" dirs "unpsy3_rf*"
+	loc 		folderList : dir "$rootw" dirs "unpsy3_rf*"
 
 * define local with all files in each sub-folder	
 	foreach 	folder of local folderList {
 
 	* define each file in the above local
-		loc 		fileList : dir "`rootw'/`folder'" files "*_s.dta"
+		loc 		fileList : dir "$rootw/`folder'" files "*_s.dta"
 	
 	* loop through each file in the above local
 		foreach 	file in `fileList' {	
 	
 		* merge weather data with household data
-			merge 	1:1 hhid using "`rootw'/`folder'/`file'"	
+			merge 	1:1 hhid using "$rootw/`folder'/`file'"	
 	
 		* drop files that did not merge
 			drop 	if 	_merge != 3
@@ -324,24 +322,24 @@
 }
 
 	
-* **********************************************************************
-* 4 - merge southern temperature data with household data
-* **********************************************************************
+************************************************************************
+**# 4 - merge southern temperature data with household data
+************************************************************************
 
 * define local with all sub-folders in it
-	loc 		folderList : dir "`rootw'" dirs "unpsy3_t*"
+	loc 		folderList : dir "$rootw" dirs "unpsy3_t*"
 
 * define local with all files in each sub-folder	
 	foreach 	folder of local folderList {
 
 * define each file in the above local
-	loc 		fileList : dir "`rootw'/`folder'" files "*_s.dta"
+	loc 		fileList : dir "$rootw/`folder'" files "*_s.dta"
 	
 * loop through each file in the above local
 	foreach 	file in `fileList' {	
 	
 	* merge weather data with household data
-		merge 	1:1 hhid using "`rootw'/`folder'/`file'"	
+		merge 	1:1 hhid using "$rootw/`folder'/`file'"	
 	
 		* drop files that did not merge
 			drop 	if 	_merge != 3
@@ -410,19 +408,17 @@
 	
 	qui: compress
 	
-	customsave 	, idvar(hhid) filename("unps3_merged_s.dta") ///
-		path("`export'") dofile(ghsy3_build) user($user)
-
+	save 			"$export/unps3_merged_s.dta", replace
 	
-* **********************************************************************
-* 5 - append northern and southern data sets
-* **********************************************************************
+************************************************************************
+**# 5 - append northern and southern data sets
+************************************************************************
 
 * import northern data
-	use 			"`export'/unps3_merged_n.dta", clear
+	use 			"$export/unps3_merged_n.dta", clear
 
 * append southern data
-	append			using "`export'/unps3_merged_s.dta", force
+	append			using "$export/unps3_merged_s.dta", force
 
 * check to verify that there are observations for all variables
 	isid			hhid
@@ -431,12 +427,11 @@
 	summarize 
 	
 * save file
-	customsave 	, idvar(hhid) filename("unps3_merged.dta") ///
-		path("`export'") dofile(unps3_build) user($user)
+	save 			"$export/unps3_merged.dta", replace
 
 * erase northern and southern files
-	erase		"`export'/unps3_merged_n.dta"
-	erase		"`export'/unps3_merged_s.dta"
+	erase			"$export/unps3_merged_n.dta"
+	erase			"$export/unps3_merged_s.dta"
 
 * close the log
 	log	close

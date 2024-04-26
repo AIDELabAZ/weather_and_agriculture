@@ -1,8 +1,9 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: jdm
-* Edited by: ek
-* Stata v.16
+* Edited on: 26 Apr 24
+* Edited by: rg
+* Stata v.18, mac
 
 * does
 	* merges weather data into unps1 household data
@@ -11,7 +12,6 @@
 * assumes
 	* cleaned GHSY1 data
 	* processed wave 1 weather data
-	* customsave.ado
 
 * TO DO:
 	* complete
@@ -22,14 +22,14 @@
 * **********************************************************************
 
 * define paths
-	loc		rootw 	= 	"$data/weather_data/uganda/wave_1/refined"
-	loc		rooth 	= 	"$data/household_data/uganda/wave_1/refined"
-	loc		export 	= 	"$data/merged_data/uganda/wave_1"
-	loc		logout 	= 	"$data/merged_data/uganda/logs"
+	global	rootw 		"$data/weather_data/uganda/wave_1/refined"
+	global	rooth 	 	"$data/household_data/uganda/wave_1/refined"
+	global	export 	 	"$data/merged_data/uganda/wave_1"
+	global	logout 	 	"$data/merged_data/uganda/logs"
 
 * open log	
 	cap log close
-	log 	using 		"`logout'/unps1_build", append
+	log 	using 		"$logout/unps1_build", append
 
 	
 * **********************************************************************
@@ -37,7 +37,7 @@
 * **********************************************************************
 
 * import the .dta houeshold file
-	use 		"`rooth'/hhfinal_unps1.dta", clear
+	use 		"$rooth/hhfinal_unps1.dta", clear
 
 *keep northern	
 	keep if		season == 1
@@ -47,19 +47,19 @@
 	lab var 	data "Data Source"
 	
 * define local with all sub-folders in it
-	loc 		folderList : dir "`rootw'" dirs "unpsy1_rf*"
+	loc 		folderList : dir "$rootw" dirs "unpsy1_rf*"
 
 * define local with all files in each sub-folder	
 	foreach 	folder of local folderList {
 
 	* define each file in the above local
-		loc 		fileList : dir "`rootw'/`folder'" files "*_n.dta"
+		loc 		fileList : dir "$rootw/`folder'" files "*_n.dta"
 	
 	* loop through each file in the above local
 		foreach 	file in `fileList' {	
 	
 		* merge weather data with household data
-			merge 	1:1 hhid using "`rootw'/`folder'/`file'"	
+			merge 	1:1 hhid using "$rootw/`folder'/`file'"	
 	
 		* drop files that did not merge
 			drop 	if 	_merge != 3
@@ -138,19 +138,19 @@
 * **********************************************************************
 
 * define local with all sub-folders in it
-	loc 		folderList : dir "`rootw'" dirs "unpsy1_t*"
+	loc 		folderList : dir "$rootw" dirs "unpsy1_t*"
 
 * define local with all files in each sub-folder	
 	foreach 	folder of local folderList {
 
 * define each file in the above local
-	loc 		fileList : dir "`rootw'/`folder'" files "*_n.dta"
+	loc 		fileList : dir "$rootw/`folder'" files "*_n.dta"
 	
 * loop through each file in the above local
 	foreach 	file in `fileList' {	
 	
 	* merge weather data with household data
-		merge 	1:1 hhid using "`rootw'/`folder'/`file'"	
+		merge 	1:1 hhid using "$rootw/`folder'/`file'"	
 	
 		* drop files that did not merge
 			drop 	if 	_merge != 3
@@ -219,8 +219,8 @@
 
 	qui: compress
 	
-	customsave 	, idvar(hhid) filename("unps1_merged_n.dta") ///
-		path("`export'") dofile(unps1_build) user($user)
+	
+	save 			"$export/unps1_merged_n.dta", replace
 
 	
 * **********************************************************************
@@ -228,7 +228,7 @@
 * **********************************************************************
 
 * import the .dta houeshold file
-	use 		"`rooth'/hhfinal_unps1.dta", clear
+	use 		"$rooth/hhfinal_unps1.dta", clear
 
 * drop northern regions
 	keep if		season == 0
@@ -238,19 +238,19 @@
 	lab var 	data "Data Source"
 	
 * define local with all sub-folders in it
-	loc 		folderList : dir "`rootw'" dirs "unpsy1_rf*"
+	loc 		folderList : dir "$rootw" dirs "unpsy1_rf*"
 
 * define local with all files in each sub-folder	
 	foreach 	folder of local folderList {
 
 	* define each file in the above local
-		loc 		fileList : dir "`rootw'/`folder'" files "*_s.dta"
+		loc 		fileList : dir "$rootw/`folder'" files "*_s.dta"
 	
 	* loop through each file in the above local
 		foreach 	file in `fileList' {	
 	
 		* merge weather data with household data
-			merge 	1:1 hhid using "`rootw'/`folder'/`file'"	
+			merge 	1:1 hhid using "$rootw/`folder'/`file'"	
 	
 		* drop files that did not merge
 			drop 	if 	_merge != 3
@@ -329,19 +329,19 @@
 * **********************************************************************
 
 * define local with all sub-folders in it
-	loc 		folderList : dir "`rootw'" dirs "unpsy1_t*"
+	loc 		folderList : dir "$rootw" dirs "unpsy1_t*"
 
 * define local with all files in each sub-folder	
 	foreach 	folder of local folderList {
 
 * define each file in the above local
-	loc 		fileList : dir "`rootw'/`folder'" files "*_s.dta"
+	loc 		fileList : dir "$rootw/`folder'" files "*_s.dta"
 	
 * loop through each file in the above local
 	foreach 	file in `fileList' {	
 	
 	* merge weather data with household data
-		merge 	1:1 hhid using "`rootw'/`folder'/`file'"	
+		merge 	1:1 hhid using "$rootw/`folder'/`file'"	
 	
 		* drop files that did not merge
 			drop 	if 	_merge != 3
@@ -410,19 +410,18 @@
 	
 	qui: compress
 	
-	customsave 	, idvar(hhid) filename("unps1_merged_s.dta") ///
-		path("`export'") dofile(ghsy1_build) user($user)
 
+	save 			"$export/unps1_merged_s.dta", replace
 	
 * **********************************************************************
 * 5 - append northern and southern data sets
 * **********************************************************************
 
 * import northern data
-	use 		"`export'/unps1_merged_n.dta", clear
+	use 		"$export/unps1_merged_n.dta", clear
 
 * append southern data
-	append		using "`export'/unps1_merged_s.dta", force
+	append		using "$export/unps1_merged_s.dta", force
 
 	isid		hhid
 	
@@ -430,12 +429,13 @@
 	summarize 
 	
 * save file
-	customsave 	, idvar(hhid) filename("unps1_merged.dta") ///
-		path("`export'") dofile(unps1_build) user($user)
+		
+	save 			"$export/unps1_merged.dta", replace
+
 
 * erase northern and southern files
-	erase		"`export'/unps1_merged_n.dta"
-	erase		"`export'/unps1_merged_s.dta"
+	erase		"$export/unps1_merged_n.dta"
+	erase		"$export/unps1_merged_s.dta"
 
 * close the log
 	log	close

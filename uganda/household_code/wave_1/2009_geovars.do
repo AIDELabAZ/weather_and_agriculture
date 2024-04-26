@@ -1,14 +1,15 @@
 * Project: WB Weather
 * Created on: Oct 2020
 * Created by: jdm
-* Edited by: jdm
-* Stata v.16
+* Edited on: 26 Apr 24
+* Edited by: rg
+* Stata v.18, mac
 
 * does
 	* cleans geovars
 
 * assumes
-	* customsave.ado
+	* access to raw data
 
 * TO DO:
 	* done
@@ -19,13 +20,13 @@
 * **********************************************************************
 
 * define paths	
-	loc root 		= "$data/household_data/uganda/wave_1/raw"  
-	loc export 		= "$data/household_data/uganda/wave_1/refined"
-	loc logout 		= "$data/household_data/uganda/logs"
+	global root 		"$data/household_data/uganda/wave_1/raw"  
+	global export 		"$data/household_data/uganda/wave_1/refined"
+	global logout 		"$data/household_data/uganda/logs"
 	
 * open log	
 	cap log 		close
-	log using 		"`logout'/2009_geovars", append
+	log using 		"$logout/2009_geovars", append
 
 	
 * **********************************************************************
@@ -33,7 +34,7 @@
 * **********************************************************************
 
 * import wave 1 geovars
-	use 			"`root'/2009_UNPS_Geovars_0910.dta", clear
+	use 			"$root/2009_UNPS_Geovars_0910.dta", clear
 
 * rename variables
 	isid 			HHID
@@ -53,9 +54,7 @@
 	summarize
 
 * save file
-		customsave , idvar(hhid) filename("2009_geovars.dta") ///
-			path("`export'") dofile(2009_geovars) user($user)
-
+	save 			"$export/2009_geovars.dta", replace
 * close the log
 	log	close
 
