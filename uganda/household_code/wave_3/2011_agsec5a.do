@@ -186,7 +186,7 @@
 
 * generate crop is USD
 	gen 			cropvl = harvvlush / 3000.1051
-	lab var 		cropvl "total value of harvest in 2010 USD"
+	lab var 		cropvl "total value of harvest in 2015 USD"
 	*** value comes from World Bank: world_bank_exchange_rates.xlxs
 	
 * there are three large outliers in data, replace for imputation later

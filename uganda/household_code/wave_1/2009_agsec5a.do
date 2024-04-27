@@ -166,8 +166,8 @@
 		*** 2011: mean 238,674 min 10, max 4.56e+07
 
 * generate crop is USD
-	gen 		cropvl = harvvlush / 1834.975213
-	lab var 	cropvl "total value of harvest in 2010 USD"
+	gen 		cropvl = harvvlush / 2790.3360
+	lab var 	cropvl "total value of harvest in 2015 USD"
 	*** value comes from World Bank: world_bank_exchange_rates.xlxs
 	
 	sum 		cropvl, detail

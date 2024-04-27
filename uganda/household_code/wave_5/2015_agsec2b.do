@@ -53,7 +53,6 @@
 	gen				irr_any = 1 if a2bq16 == 1
 	replace			irr_any = 0 if irr_any == .
 	lab var			irr_any "Irrigation (=1)"
-	*** there are 15 observations irrigated
 
 
 ***********************************************************************
@@ -63,7 +62,6 @@
 * merge the location identification
 	merge m:1 hhid using "$export/2015_gsec1"
 	*** merged 1,348, 2,330 unmerged total, only 33 from master
-	*** 71 unmerged from master
 	
 	drop 		if _merge ! = 3
 	drop		_merge

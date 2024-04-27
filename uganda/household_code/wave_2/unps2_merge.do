@@ -1,8 +1,9 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: jdm
-* Edited by: ek
-* Stata v.16
+* Edited on: 26 Apr 24
+* Edited by: rg
+* Stata v.18, mac
 
 * does
 	* merges individual cleaned plot datasets together
@@ -40,16 +41,15 @@
 	isid 			hhid prcid pltid cropid
 	
 * merge in plot size data and irrigation data
-	merge			m:1 hhid prcid using "$root/2010_AGSEC2A", generate(_sec2)
-	*** matched 9159, unmatched 2098 from master
-	*** a lot unmatched, means plots do not area data
+	merge			m:1 hhid prcid using "$root/2010_agsec2.dta", generate(_sec2)
+	*** matched 10,953, unmatched 304 from master
 	*** for now as per Malawi (rs_plot) we drop all unmerged observations
 
 	drop			if _sec2 != 3
 		
 * merging in labor, fertilizer and pest data
 	merge			m:1 hhid prcid pltid  using "$root/2010_AGSEC3A", generate(_sec3a)
-	*** 24 unmerged from master
+	*** 33 unmerged from master
 
 	drop			if _sec3a != 3
 	

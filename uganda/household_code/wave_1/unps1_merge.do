@@ -40,8 +40,8 @@
 	isid 			hhid prcid pltid cropid
 	
 * merge in plot size data and irrigation data
-	merge			m:1 hhid prcid using "$root/2009_AGSEC2A", generate(_sec2)
-	*** matched 8903, unmatched 2601 from master
+	merge			m:1 hhid prcid using "$root/2009_agsec2.dta", generate(_sec2)
+	*** matched 10,836, unmatched 668 from master
 	*** a lot unmatched, means plots do not area data
 	*** for now as per Malawi (rs_plot) we drop all unmerged observations
 
@@ -140,7 +140,7 @@
 * construct production value per hectare
 	gen				vl_yld = vl_hrv / plotsize
 	assert 			!missing(vl_yld)
-	lab var			vl_yld "value of yield (2010USD/ha)"
+	lab var			vl_yld "value of yield (2015USD/ha)"
 
 * impute value per hectare outliers 
 	sum				vl_yld

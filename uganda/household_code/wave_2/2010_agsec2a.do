@@ -39,7 +39,7 @@
 ************************************************************************
 
 * import wave 2 season A
-	use "$root/2010_AGSEC2A.dta", clear
+	use 			"$root/2010_AGSEC2A.dta", clear
 
 	rename 			HHID hhid
 	rename 			a2aq4 plotsizeGPS
@@ -47,8 +47,8 @@
 	rename			a2aq7 tenure
 	
 	describe
-	sort hhid prcid
-	isid hhid prcid
+	sort 			hhid prcid
+	isid 			hhid prcid
 	
 * make a variable that shows the irrigation
 	gen irr_any = 1 if a2aq20 == 1

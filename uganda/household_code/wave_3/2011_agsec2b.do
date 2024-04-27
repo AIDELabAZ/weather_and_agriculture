@@ -22,14 +22,14 @@
 ***********************************************************************
 
 * define paths	
-	global 	root 		"$data/household_data/uganda/wave_5/raw"  
-	global  export 		"$data/household_data/uganda/wave_5/refined"
+	global 	root 		"$data/household_data/uganda/wave_3/raw"  
+	global  export 		"$data/household_data/uganda/wave_3/refined"
 	global 	logout 		"$data/household_data/uganda/logs"
 
 
 * open log	
 	cap 				log close
-	log using 			"$logout/2015_agsec2b", append
+	log using 			"$logout/2011_agsec2b", append
 
 	
 ***********************************************************************
@@ -37,23 +37,25 @@
 ***********************************************************************
 
 * import wave 5 season A
-	use "$root/agric/AGSEC2B.dta", clear
-		
-	rename			HHID hhid
+	use 			"$root/2011_AGSEC2B.dta", clear
+
+* unlike other waves, HHID is a numeric here
+	format 			%18.0g HHID
+	tostring		HHID, gen(hhid) format(%18.0g)
+	
 	rename			parcelID prcid
 	rename 			a2bq4 plotsizeGPS
 	rename 			a2bq5 plotsizeSR
 	rename			a2bq7 tenure
 	
 	describe
-	sort hhid prcid
-	isid hhid prcid
+	sort 			hhid prcid
+	isid 			hhid prcid
 
 * make a variable that shows the irrigation
 	gen				irr_any = 1 if a2bq16 == 1
 	replace			irr_any = 0 if irr_any == .
 	lab var			irr_any "Irrigation (=1)"
-	*** there are 15 observations irrigated
 
 
 ***********************************************************************
@@ -61,8 +63,8 @@
 ***********************************************************************	
 	
 * merge the location identification
-	merge m:1 hhid using "$export/2015_gsec1"
-	*** merged 1,348, 2,330 unmerged total, only 33 from master
+	merge m:1 hhid using "$export/2011_GSEC1"
+	*** merged 994, 2,049 unmerged total, only 83 from master
 	*** 71 unmerged from master
 	
 	drop 		if _merge ! = 3
@@ -76,12 +78,12 @@
 * what was the primary use of the parcel
 	*** activity in the first season is recorded seperately from activity in the second season
 	*** data label says first season is a2aq11b
-	tab 		 	a2bq12b
+	tab 		 	a2bq12a
 	*** activities includepasture, forest. cultivation, and other
 	*** we will only include plots used for annual or perennial crops
 	
-	keep			if a2bq12b == 1 | a2bq12b == 2
-	*** 247 observations deleted	
+	keep			if a2bq12a == 1 | a2bq12a == 2
+	*** 133 observations deleted	
 
 	
 ***********************************************************************
@@ -90,14 +92,14 @@
 
 * summarize plot size
 	sum 			plotsizeGPS
-	***	mean .93, max 4.9, min .01
+	***	mean 1.23, max 12.2, min .07
 	
 	sum				plotsizeSR
-	*** mean .97, max 25, min .05
+	*** mean 1.1, max 12, min .01
 
 * how many missing values are there?
 	mdesc 			plotsizeGPS
-	*** 1,001 missing, 90% of observations
+	*** 732 missing, 85.02% of observations
 
 * convert acres to hectares
 	gen				plotsize = plotsizeGPS*0.404686
@@ -108,16 +110,16 @@
 
 * examine gps outlier values
 	sum				plotsize, detail
-	*** mean 0.22, min 0, max 1.98, std. dev. .394
+	*** mean 0.50, min 0.02, max 4.93, std. dev. .60
 	
 * examine gps outlier values
 	sum				selfreport, detail
-	*** mean 0.20, min 0, max 10.11, std. dev. .581
+	*** mean 0.44, min 0.004, max4.85, std. dev. .45
 	*** the self-reported 10 ha is large but not unreasonable	
 	
 * check correlation between the two
 	corr 			plotsize selfreport
-	*** 0.84 correlation, high correlation between GPS and self reported
+	*** 0.90 correlation, high correlation between GPS and self reported
 	
 * compare GPS and self-report, and look for outliers in GPS 
 	sum				plotsize, detail
@@ -130,7 +132,7 @@
 
 * correlation for smaller plots	
 	corr			plotsize selfreport if plotsize < .1 & !missing(plotsize)
-	*** correlation is negative, -0.42
+	*** this is very low 0.03
 
 * encode district to be used in imputation
 	encode district, gen (districtdstrng) 	
@@ -146,10 +148,10 @@
 		
 * how did imputing go?
 	sum 			plotsize_1_
-	*** mean 0.36, max 1.9, min .004
+	*** mean 0.56, max 4.9, min .02
 	
 	corr 			plotsize_1_ selfreport if plotsize == .
-	*** so-so correlation, 0.52
+	*** so-so correlation, 0.55
 	
 	replace 		plotsize = plotsize_1_ if plotsize == .
 	
@@ -163,12 +165,12 @@
 ***********************************************************************
 	
 * keep only necessary variables
-	keep 			hhid hh_agric prcid region district subcounty ///
-					parish  wgt15 hwgt_W4_W5 ///
-					plotsize irr_any ea rotate
+	keep 			hhid HHID prcid region district county subcounty ///
+					parish hh_status2011 wgt11 ///
+					plotsize irr_any
 
 * append owned plots
-	append			using "$export/2015_agsec2a.dta"
+	append			using "$export/2011_AGSEC2A.dta"
 	*** creates 1 duplicate observation
 	
 * drop duplicate
@@ -184,7 +186,7 @@
 	summarize
 
 * save file
-	save 			"$export/2015_agsec2.dta", replace
+	save 			"$export/2011_agsec2.dta", replace
 
 * close the log
 	log	close
