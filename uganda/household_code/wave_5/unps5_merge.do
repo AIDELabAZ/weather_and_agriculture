@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 19 April 24
+* Edited on: 29 April 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -41,7 +41,7 @@
 	
 * merge in plot size data and irrigation data
 	merge			m:1 hhid prcid using "$root/2015_agsec2", generate(_sec2)
-	*** matched 5,406, unmatched 1,859 from master
+	*** matched 6,811, unmatched 454from master
 	*** a lot unmatched, means plots do not area data
 	*** for now as per Malawi (rs_plot) we drop all unmerged observations
 
@@ -49,7 +49,7 @@
 		
 * merging in labor, fertilizer and pest data
 	merge			m:1 hhid prcid pltid  using "$root/2015_agsec3a", generate(_sec3a)
-	*** 907 unmatched from master
+	*** 1,404 unmatched from master
 	*** check why there are so many unmatched
 
 	drop			if _sec3a == 2

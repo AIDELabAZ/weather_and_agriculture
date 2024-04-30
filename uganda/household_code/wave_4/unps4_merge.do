@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 19 April 24
+* Edited on: 29 April 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -15,7 +15,7 @@
 
 * TO DO:
 	* section 8 and beyond
-	
+	* check harvest month file
 
 ************************************************************************
 **# 0 - setup
@@ -40,9 +40,8 @@
 	isid 			hhid prcid pltid cropid
 	
 * merge in plot size data and irrigation data
-	merge			m:1 hhid prcid using "$root/2013_agsec2a", generate(_sec2)
-	*** matched 5,928, unmatched 2,044 from master
-	*** a lot unmatched, means plots do not area data
+	merge			m:1 hhid prcid using "$root/2013_agsec2", generate(_sec2)
+	*** matched 7,337, unmatched 0 from master
 	*** for now as per Malawi (rs_plot) we drop all unmerged observations
 
 	drop			if _sec2 != 3
@@ -103,7 +102,7 @@
 	}	
 	replace			mz_hrv = . if mz_damaged == . & mz_hrv == 0		
 	drop 			mz_damaged
-	*** 3,348 changes made
+	*** 4,038 changes made
 	
 * encode the string location data
 	encode 			district, gen(districtdstrng)
@@ -159,7 +158,7 @@
 						& !inlist(vl_yld,.,0) & !mi(maxrep)
 	tabstat			vl_yld vl_yldimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 171 to 119
+	*** reduces mean from 168 to 122
 						
 	drop			stddev median replacement maxrep minrep
 	lab var			vl_yldimp	"value of yield (2015USD/ha), imputed"
@@ -196,7 +195,7 @@
 						& !inlist(labordays_ha,.,0) & !mi(maxrep)
 	tabstat 		labordays_ha labordays_haimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 484 to 387
+	*** reduces mean from 502 to 397
 	
 	drop			stddev median replacement maxrep minrep
 	lab var			labordays_haimp	"farm labor use (days/ha), imputed"
@@ -275,7 +274,7 @@
 						& !inlist(mz_yld,.,0) & !mi(maxrep)
 	tabstat 		mz_yld mz_yldimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 109 to 82
+	*** reduces mean from 116 to 90
 					
 	drop 			stddev median replacement maxrep minrep
 	lab var 		mz_yldimp "maize yield (kg/ha), imputed"
@@ -312,7 +311,7 @@
 						& !inlist(mz_lab_ha,.,0) & !mi(maxrep)
 	tabstat 		mz_lab_ha mz_lab_haimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 521 to 387
+	*** reduces mean from 550 to 425
 	
 	drop			stddev median replacement maxrep minrep
 	lab var			mz_lab_haimp	"maize labor use (days/ha), imputed"
@@ -461,7 +460,7 @@
 	
 * count before collapse
 	count
-	*** 4,352 obs
+	*** 5,433 obs
 	
 	collapse 		(max) tf_* cp_*, by(region district districtdstrng ///
 						subcounty subcountydstrng parish ///
@@ -469,7 +468,7 @@
 
 * count after collapse 
 	count 
-	*** 4,352 to 1,903 observations 
+	*** 5,433 to 2,192 observations 
 	
 * return non-maize production to missing
 	replace			cp_yld = . if cp_yld == 0
@@ -491,17 +490,14 @@
 ************************************************************************
 **# 8 - end matter, clean up to save
 ************************************************************************
-
-* drop splot-off and mover households
-	keep			if hh_status2011 == 0
 	
 * verify unique household id
 	isid			hhid
 
 * label variables
 	lab var			tf_lnd	"Total farmed area (ha)"
-	lab var			tf_hrv	"Total value of harvest (2010 USD)"
-	lab var			tf_yld	"value of yield (2010 USD/ha)"
+	lab var			tf_hrv	"Total value of harvest (2015 USD)"
+	lab var			tf_yld	"value of yield (2015 USD/ha)"
 	lab var			tf_lab	"labor rate (days/ha)"
 	lab var			tf_frt	"fertilizer rate (kg/ha)"
 	lab var			tf_pst	"Any plot has pesticide"
@@ -517,7 +513,8 @@
 	lab var			cp_irr	"Any maize plot has irrigation"
 
 * merge in harvest season
-	merge			m:1 region district using "`root'/harv_month", force
+	merge			m:1 region district using "$root/harv_month", force
+	*** using the same file as wave 3
 	drop			if _merge == 2
 	drop			_merge
 
