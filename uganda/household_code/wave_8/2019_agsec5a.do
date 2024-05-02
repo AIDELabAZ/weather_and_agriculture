@@ -263,14 +263,13 @@
 	gen 			cropvl = harvvlush / 3029.3832
 	lab var 		cropvl "total value of harvest in 2015 USD"
 	*** value comes from World Bank. Used excel file "world_bank_exchange_rates.xlxs"
-**# Bookmark #7
 	
 	sum 			cropvl, detail
 	*** mean 115.4145, min 0.016, max 4951.503  
 	
 	
 * **********************************************************************
-* 4 - generate sold harvested values
+**#4 - generate sold harvested values
 * **********************************************************************
 
 * drop converstion factor variables
@@ -278,45 +277,42 @@
 						medconversion medcount borrowed unit
 					
 * rename units and condition
-	rename			a5aq7c unit
+	rename			s5aq07c_1 unit
 	
 * replace unit with 1 if unit is missing
 	replace			unit = 1 if unit == .
 	
 * merge conversion file in for sold
 	merge m:1 		cropid unit condition using ///
-						"`conv'/ValidCropUnitConditionCombinations.dta" 
-	*** unmatched 429 from master
+						"$conv/ValidCropUnitConditionCombinations.dta" 
+	*** unmatched 1490 from master
+**# Bookmark #1: Why so many unmatched from master?
 	
-	drop			if _merge == 2
-	
-* most unmatched seem to be 0 production and unit = kg
-	replace			ucaconversion = 1 if ucaconversion == . & ///
-						harvqtykg == 0
+	drop			if _merge !=3	
+	*** 1490 observations deleted
+
+	harvqtykg == 0
 	*** replaces 404 of the 429 unmatched obs
 	
 * replace missing ucaconversion with kg if unit = kg
 	replace			ucaconversion = 1 if ucaconversion == . & ///
 						unit == 1
-	*** replaces 686
+	*** replaces 186
 	
 * replace missing ucaconversion with median
 	replace			ucaconversion = medconversion if ucaconversion == .
-	*** 476 changes made, only 5 missing left
-	
-* set remaining missing equal to conversion factor in data
-	replace			ucaconversion = A5AQ7D if ucaconversion == .
-	*** 5 changes made, now have conversion factor for all
+	*** 44 changes made
 	
 * replace zeros in sold data as missing
-	replace			a5aq7a = . if a5aq7a == 0
+	replace			s5aq07a_1 = . if s5aq07a_1 == 0
+	*** 3633 real changes made (converted to missing?)
 	
 * convert quantity sold into kg
-	gen 			harvkgsold = a5aq7a*ucaconversion
+	gen 			harvkgsold = s5aq07a_1*ucaconversion
 	lab	var			harvkgsold "quantity sold, in kilograms"
 
 	sum				harvkgsold, detail
-	*** 0.04 min, mean 550, max 80000
+	*** 0.5 min, mean 970.06, max 75000
 
 * replace missing values to 0
 	replace 		cropvl = 0 if cropvl == .
@@ -334,12 +330,12 @@
 	
 	
 * ********************************************************************
-* 5 - generate price data
+**#5 - generate price data
 * ********************************************************************	
 	
 * merge the location identification
-	merge m:1 		hhid using "`export'/2011_GSEC1"
-	*** 533 unmatched from master
+	merge m:1 		hhid using "$export/2019_gsec1"
+	*** 3 unmatched from master, 1113 from using
 	
 	drop 			if _merge == 2
 	drop			_merge
