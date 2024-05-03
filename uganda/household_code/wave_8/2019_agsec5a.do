@@ -87,11 +87,15 @@
 * **********************************************************************
 **#2 - merge kg conversion file and create harvested quantity
 * **********************************************************************
+
+* coffee has 3 identifications in this file, but only one in conversion file 
+	replace 		cropid = 810 if cropid == 811
+	replace 		cropid = 810 if cropid == 812
 	
 	merge m:1 		cropid unit condition using ///
 						"$conv/ValidCropUnitConditionCombinations.dta" 
-	*** unmatched 1788 from master 
-	*** unmatched 781 from using
+	*** unmatched 1322 from master 
+	*** unmatched 762 from using
 	*** total unmatched, 2569 
 	
 * drop from using
@@ -285,14 +289,62 @@
 * merge conversion file in for sold
 	merge m:1 		cropid unit condition using ///
 						"$conv/ValidCropUnitConditionCombinations.dta" 
-	*** unmatched 1490 from master
-**# Bookmark #1: Why so many unmatched from master?
+	*** unmatched 1022 from master
 	
-	drop			if _merge !=3	
-	*** 1490 observations deleted
+	drop			if _merge == 2
+	*** 843 observations deleted
+	
+* most unmatched seem to be 0 production and unit = kg
+	replace			ucaconversion = 1 if ucaconversion == . & ///
+						harvqtykg == 0
+	*** replaces 416 
+	
+* replace missing ucaconversion with kg if unit = kg
+	replace			ucaconversion = 1 if ucaconversion == . & ///
+						unit == 1
+	*** replaces 777
+	
+* replace missing ucaconversion with median
+	replace			ucaconversion = medconversion if ucaconversion == .
+	*** 301 changes made, 226 missing left
+	
+* set remaining missing equal to conversion factor in data
+	replace			ucaconversion = unit if ucaconversion == .
+	*** 225 changes made, now have conversion factor for all
+	
+	**** STOP HERE
+	
+* replace zeros in sold data as missing
+	replace			a5aq7a = . if a5aq7a == 0
+	
+* convert quantity sold into kg
+	gen 			harvkgsold = a5aq7a*ucaconversion
+	lab	var			harvkgsold "quantity sold, in kilograms"
 
-	harvqtykg == 0
-	*** replaces 404 of the 429 unmatched obs
+	sum				harvkgsold, detail
+	*** 0.04 min, mean 550, max 80000
+
+* replace missing values to 0
+	replace 		cropvl = 0 if cropvl == .
+	replace 		harvkgsold = 0 if harvkgsold == .
+
+* collapse the data to the crop level so that our imputations are reproducable and consistent
+	collapse 		(sum) harvqtykg cropvl harvkgsold (mean) harvmonth, ///
+						by(hhid prcid pltid cropid)
+
+	isid 			hhid prcid pltid cropid	
+
+* revert 0 to missing values
+	replace 		cropvl = . if cropvl == 0
+	replace 		harvkgsold = . if harvkgsold == 0	
+		
+	
+	
+	
+	
+	
+	
+	
 	
 * replace missing ucaconversion with kg if unit = kg
 	replace			ucaconversion = 1 if ucaconversion == . & ///
