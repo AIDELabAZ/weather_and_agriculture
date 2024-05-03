@@ -42,10 +42,11 @@
 		global 		data	"/Users/fvkrysbackpackpc/Library/CloudStorage/OneDrive-UniversityofArizona/weather_project"
 		
     }
-	    if `"`c(username)'"' == "annal" {
-        global 		code  	"C:/Users/aljosephson/git/translating-mali"
-		global 		data	"C:/Users/aljosephson/Dropbox/Classification"
-		}
+	
+    if `"`c(username)'"' == "annal" {
+        global 		code  	"C:/Users/aljosephson/git/weather_and_agriculture"
+		global 		data	"C:/Users/aljosephson/OneDrive - University of Arizona/weather_project"
+    }	
 	
 * **********************************************************************
 * 0 (b) - Check if any required packages are installed:
