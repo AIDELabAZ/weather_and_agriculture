@@ -104,11 +104,11 @@
 	
 * how many unmatched had a harvest of 0
 	tab 			s5aq06a_1 if _merge == 1
-	*** 23.27% have a harvest of 0
+	*** 31.47% have a harvest of 0
 	
-* how many unmatched because they used "other" to categorize the state of harvest?
+* how many unmatched because they used "Not Applicable" to categorize the state of harvest?
 	tab 			condition if _merge == 1
-	*** No "other" category
+	*** 37 observations, 4.09% of unmatched
 	
 	tab 			cropid condition if condition != 99 & _merge == 1 & condition !=.
 	
@@ -124,94 +124,77 @@
 
 	*kgs
 		replace 		ucaconversion = 1 if unit == 1 & _merge == 1
-		*** 348 changes made
-		
+		*** 141 real changes made
 	*sack 120 kgs
 		replace 		ucaconversion = 120 if unit == 9 & _merge == 1
-		*** 56 changes made
+		*** 50 real changes made
 	*sack 100 kgs
 		replace 		ucaconversion = 100 if unit == 10 & _merge == 1
-		*** 328 changes made
+		*** 189 real changes made
 	* sack 80 kgs
 		replace 		ucaconversion = 80 if unit == 11 & _merge == 1
-		*** 0 changes made
+		*** 0 real changes made
 	* sack 50 kgs
 		replace 		ucaconversion = 50 if unit == 12 & _merge == 1
-		*** 38 changes made
+		*** 21 real changes made
 	* jerrican 20 kgs
 		replace 		ucaconversion = 20 if unit == 14 & _merge == 1
-		*** 9 changes
-		
+		*** 9 real changes made
 	* jerrican 10 kgs
 		replace 		ucaconversion = 10 if unit == 15 & _merge == 1
-		*** 3 changes
-		
+		*** 3 real changes made
 	* jerrican 5 kgs
 		replace 		ucaconversion = 5 if unit == 16 & _merge == 1
-		*** 5 changes
-		
+		*** 5 real changes made 
 	* jerrican 2 kgs
 		replace 		ucaconversion = 2 if unit == 18 & _merge == 1
-		*** 2 changes
-		
+		*** 2 real changes made
 	* tin 20 kgs
 		replace 		ucaconversion = 20 if unit == 20 & _merge == 1
-		*** 79 changes
-		
+		*** 34 real changes made
 	* tin 5 kgs
 		replace 		ucaconversion = 5 if unit == 21 & _merge == 1
-		*** 4 changes
-
+		*** 4 real changes made
 	* 15 kg plastic Basin
 		replace 		ucaconversion = 15 if unit == 22 & _merge == 1	
-		*** 1 change
-		
+		*** 125 real changes made
 	* kimbo 2 kg 
 		replace 		ucaconversion = 2 if unit == 29 & _merge == 1
-		*** 3 changes
-		
+		*** 1 real change made
 	* kimbo 1 kg
 		replace 		ucaconversion = 1 if unit == 30 & _merge == 1
-		*** 1 change
-
+		*** 0 real changes made
 	* kimbo 0.5 kg
 		replace 		ucaconversion = 0.5 if unit == 31 & _merge == 1	
-		*** 2 changes 
-
+		*** 2 real changes made
 	* cup 0.5 kg
 		replace 		ucaconversion = 0.5 if unit == 32 & _merge == 1		
-		*** 0 changes
-		
+		*** 3 real changes made
 	* basket 20 kg 
 		replace 		ucaconversion = 20 if unit == 37 & _merge == 1
-		*** 3 changes
-		
+		*** 10 real changes made
 	* basket 10 kg 
 		replace 		ucaconversion = 10 if unit == 38 & _merge == 1
-		*** 0 changes 
-
+		*** 2 real changes made
 	* basket 5 kg 
 		replace 		ucaconversion = 5 if unit == 39 & _merge == 1	
-		*** 1 change
-
+		*** 5 real changes made
 	* basket 2 kg
 		replace 		ucaconversion = 2 if unit == 40 & _merge == 1	
-		*** 0 changes
-		
+		*** 0 real changes made
 	* nomi 1 kg
 		replace 		ucaconversion = 1 if unit == 119 & _merge == 1	
-		*** 0 changes
-
+		*** 0 real changes made
 	* nomi 0.5 kg
 		replace 		ucaconversion = 0.5 if unit == 120 & _merge == 1
-		*** 0 change 
-			
+		*** 1 real change made
+
 * drop the unmatched remaining observations
 	drop 			if _merge == 1 & ucaconversion == .
 	*** 299 observatinos deleted
 
 	replace 			ucaconversion = medconversion if _merge == 3 & ucaconversion == .
-	*** 232 changes made
+	*** 698 real changes made
 	
 		mdesc 			ucaconversion
 		*** 0 missing
@@ -221,7 +204,7 @@
 	tab				cropid
 	
 	*** beans are the most numerous crop being 17.90% of crops planted
-	*** banana food is the second highest being 17.43
+	*** banana food is the second highest being 17.43% of crops planted
 	***	maize is the third highest being 16.04%
 	*** maize will be main crop following most other countries in the study
 	
@@ -244,7 +227,7 @@
 	*** three crazy values, replace with missing
 	
 	replace			harvqtykg = . if harvqtykg > 100000
-	*** replaced 1 observations
+	*** 1 real change made, 1 converted to missing 
 	
 * summarize maize quantity harvest
 	sum				harvqtykg if cropid == 130
@@ -266,6 +249,7 @@
 * generate crop is USD
 	gen 			cropvl = harvvlush / 3029.3832
 	lab var 		cropvl "total value of harvest in 2015 USD"
+	*** 4349 missing values generated
 	*** value comes from World Bank. Used excel file "world_bank_exchange_rates.xlxs"
 	
 	sum 			cropvl, detail
@@ -285,6 +269,7 @@
 	
 * replace unit with 1 if unit is missing
 	replace			unit = 1 if unit == .
+	*** 4348 real changes made
 	
 * merge conversion file in for sold
 	merge m:1 		cropid unit condition using ///
@@ -310,24 +295,29 @@
 	
 * set remaining missing equal to conversion factor in data
 	replace			ucaconversion = unit if ucaconversion == .
-	*** 225 changes made, now have conversion factor for all
+	*** 226 real changes made, now have conversion factor for all
 	
 	**** STOP HERE
+**# Bookmark #3
 	
 * replace zeros in sold data as missing
-	replace			a5aq7a = . if a5aq7a == 0
+	replace			s5aq07a_1 = . if s5aq07a_1 == 0
+	*** 3932 to missing
 	
 * convert quantity sold into kg
-	gen 			harvkgsold = a5aq7a*ucaconversion
+	gen 			harvkgsold = s5aq07a_1*ucaconversion
+	*** 4348 missing values generated
 	lab	var			harvkgsold "quantity sold, in kilograms"
 
 	sum				harvkgsold, detail
-	*** 0.04 min, mean 550, max 80000
+	*** 0.5 min, mean 738.71, max 75000
 
 * replace missing values to 0
 	replace 		cropvl = 0 if cropvl == .
 	replace 		harvkgsold = 0 if harvkgsold == .
-
+	*** 4348 real changes made
+**# Bookmark #4 tons of missing generated 
+	
 * collapse the data to the crop level so that our imputations are reproducable and consistent
 	collapse 		(sum) harvqtykg cropvl harvkgsold (mean) harvmonth, ///
 						by(hhid prcid pltid cropid)
@@ -337,14 +327,8 @@
 * revert 0 to missing values
 	replace 		cropvl = . if cropvl == 0
 	replace 		harvkgsold = . if harvkgsold == 0	
-		
-	
-	
-	
-	
-	
-	
-	
+	*** 4348 addede to missing
+**# Bookmark #5 tons of missing generated
 	
 * replace missing ucaconversion with kg if unit = kg
 	replace			ucaconversion = 1 if ucaconversion == . & ///
