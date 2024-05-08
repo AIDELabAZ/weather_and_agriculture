@@ -1,6 +1,6 @@
 * Project: WB Weather
-* Created on: Oct 2020
-* Created by: jdm
+* Created on: May 2024
+* Created by: rg
 * Edited on: 8 May 24
 * Edited by: rg
 * Stata v.18, mac
@@ -9,7 +9,7 @@
 	* determines if regions are in "north" or "south"
 
 * assumes
-	* cleaned 2010_AGSEC5A.dta, 2011_AGSEC5A.dta, and 2010_GSEC1
+	* cleaned 2013_agsec5a.dta and 2013_agsec1
 
 * TO DO:
 	* done
@@ -31,44 +31,34 @@
 **# 1 - import data and rename variables
 ************************************************************************
 	
-	use 			"$root/wave_2/refined/2010_AGSEC5A.dta", clear
+	use 			"$root/wave_4/refined/2013_agsec5a.dta", clear
 		
-	gen				year = 2010
-
-	append			using "$root/wave_3/refined/2011_AGSEC5A.dta"
-	
-	replace			year = 2011 if year == .
+	gen				year = 2013
 		
 	keep if 		cropid == 130
-
+	
+	*destring		hhid, replace 
 	sum 			cropid
 			
 * merge the location identification
-	merge m:1 		hhid using "$root/wave_2/refined/2010_GSEC1"
+	merge m:1 		hhid using "$root/wave_4/refined/2013_agsec1"
 	
 	keep if 		_merge == 3
 	drop			_merge hhid prcid pltid cropid harvqtykg ///
-						hh_status2010 spitoff09_10 spitoff10_11 wgt10 ///
-						cropvalue hh_status2011 wgt11
-	
-* encode district for the imputation
-	encode 			district, gen (districtdstrng)
-	encode			county, gen (countydstrng)
-	encode			subcounty, gen (subcountydstrng)
-	encode			parish, gen (parishdstrng)
+						hh ea hhid_pnl rotate ///
+						cropvalue  wgt13
 	
 * generate average harvest month for district
-	egen			harv = mean(harvmonth), by(districtdstrng)
+	egen			harv = mean(harvmonth), by(district)
 	
 * round to nearest integer
 	replace			harv = round(harv,1)
 	lab var			harv "Start of harvest month"
 
 * drop duplicates
-	duplicates 		drop region district harv, force
+	duplicates 		drop region district  harv, force
 	
-	drop if			districtdstrng == .
-	keep			region district county harv
+	keep			region district subcounty harv parish
 	
 * create "north"/"south" dummy
 	gen				season = 0 if harv < 8
@@ -86,10 +76,7 @@
 	summarize
 
 * save file
-			
-	save 			"$root/wave_1/refined/harv_month.dta", replace
-	save 			"$root/wave_2/refined/harv_month.dta", replace
-	save 			"$root/wave_3/refined/harv_month.dta", replace
+	save 			"$root/wave_4/refined/harv_month.dta", replace
 
 * close the log
 	log	close

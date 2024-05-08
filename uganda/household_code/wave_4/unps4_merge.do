@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 29 April 24
+* Edited on: 8 May 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -15,7 +15,8 @@
 
 * TO DO:
 	* section 8 and beyond
-	* check harvest month file
+	* missing aez since no geovars in wave 4
+		* check for geovar file from talip or xfill in panel build
 
 ************************************************************************
 **# 0 - setup
@@ -514,38 +515,24 @@
 
 * merge in harvest season
 	merge			m:1 region district using "$root/harv_month", force
-	*** using the same file as wave 3
+	
 	drop			if _merge == 2
 	drop			_merge
-
-* merge in geovars
-	merge			m:1 hhid using "`root'/2011_geovars", force
-	keep			if _merge == 3
 	
-* replace missing values
-	replace			aez = 314 if aez == . & parish == "AYEOLYEC"
-	replace			aez = 313 if aez == . & parish == "KABINGO"
-	replace			aez = 314 if aez == . & parish == "KAKOORA"
-	replace			aez = 323 if aez == . & parish == "MUKO WARD"
-	replace			aez = 314 if aez == . & parish == "NTIBA"
-	replace			aez = 313 if aez == . & county == "BWAMBA"
-	replace			aez = 324 if aez == . & county == "BUWEKULA"
-	replace			aez = 314 if aez == . & county == "NAKIFUMA"
-	replace			aez = 324 if aez == . & district == "Gomba"
-	replace			aez = 314 if aez == . & district == "bushenyi"
+	tostring		hhid, replace
 	
 * replace missing values
 	replace			season = 1 if region == 3
 	replace			season = 0 if season == .	
 	
-	drop			districtdstrng countydstrng subcountydstrng ///
-						parishdstrng hh_status2011 harv _merge
+	drop			districtdstrng  subcountydstrng ///
+						parishdstrng harv 
 
 * generate year identifier
-	gen				year = 2011
+	gen				year = 2013
 	lab var			year "Year"
 			
-	order 			region district county subcounty parish aez hhid wgt11 /// 	
+	order 			region district  subcounty parish  hhid wgt13 /// 	
 					year season tf_hrv tf_lnd tf_yld tf_lab tf_frt ///
 					tf_pst tf_hrb tf_irr cp_hrv cp_lnd cp_yld cp_lab ///
 					cp_frt cp_pst cp_hrb cp_irr 
@@ -555,8 +542,8 @@
 	summarize 
 	
 * saving production dataset
-	customsave , idvar(hhid) filename(hhfinal_unps3.dta) ///
-		path("`export'") dofile(unps3_merge) user($user) 
+	save		"$export/hhfinal_unps4.dta", replace
+
 
 * close the log
 	log	close
