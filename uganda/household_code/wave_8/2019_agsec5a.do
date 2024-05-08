@@ -301,19 +301,23 @@
 **# Bookmark #3
 	
 * replace zeros in sold data as missing
-	replace			a5aq7a = . if a5aq7a == 0
+	replace			s5aq07a_1 = . if s5aq07a_1 == 0
+	*** 3932 to missing
 	
 * convert quantity sold into kg
-	gen 			harvkgsold = a5aq7a*ucaconversion
+	gen 			harvkgsold = s5aq07a_1*ucaconversion
+	*** 4348 missing values generated
 	lab	var			harvkgsold "quantity sold, in kilograms"
 
 	sum				harvkgsold, detail
-	*** 0.04 min, mean 550, max 80000
+	*** 0.5 min, mean 738.71, max 75000
 
 * replace missing values to 0
 	replace 		cropvl = 0 if cropvl == .
 	replace 		harvkgsold = 0 if harvkgsold == .
-
+	*** 4348 real changes made
+**# Bookmark #4 tons of missing generated 
+	
 * collapse the data to the crop level so that our imputations are reproducable and consistent
 	collapse 		(sum) harvqtykg cropvl harvkgsold (mean) harvmonth, ///
 						by(hhid prcid pltid cropid)
@@ -323,14 +327,8 @@
 * revert 0 to missing values
 	replace 		cropvl = . if cropvl == 0
 	replace 		harvkgsold = . if harvkgsold == 0	
-		
-	
-	
-	
-	
-	
-	
-	
+	*** 4348 addede to missing
+**# Bookmark #5 tons of missing generated
 	
 * replace missing ucaconversion with kg if unit = kg
 	replace			ucaconversion = 1 if ucaconversion == . & ///
