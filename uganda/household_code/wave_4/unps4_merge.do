@@ -14,7 +14,7 @@
 	* previously cleaned household datasets
 
 * TO DO:
-	* section 8 and beyond
+	* done
 	* missing aez since no geovars in wave 4
 		* check for geovar file from talip or xfill in panel build
 

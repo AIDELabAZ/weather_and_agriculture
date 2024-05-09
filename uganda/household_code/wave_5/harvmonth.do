@@ -1,0 +1,84 @@
+* Project: WB Weather
+* Created on: May 2024
+* Created by: rg
+* Edited on: 8 May 24
+* Edited by: rg
+* Stata v.18, mac
+
+* does
+	* determines if regions are in "north" or "south"
+
+* assumes
+	* cleaned 2015_agsec5a.dta and 2015_gsec1
+
+* TO DO:
+	* check south\north dummies, harvest month > 12
+
+
+************************************************************************
+**# 0 - setup
+************************************************************************
+
+* define paths
+	global root 		 "$data/household_data/uganda"
+	global logout 		 "$data/household_data/uganda/logs"
+	
+	cap log 			close
+	log using 			"$logout/harvmonth", append
+	
+	
+************************************************************************
+**# 1 - import data and rename variables
+************************************************************************
+	
+	use 			"$root/wave_5/refined/2015_agsec5a.dta", clear
+		
+	gen				year = 2015
+		
+	keep if 		cropid == 130
+	
+	*destring		hhid, replace 
+	sum 			cropid
+			
+* merge the location identification
+	merge m:1 		hhid using "$root/wave_5/refined/2015_gsec1"
+	
+	keep if 		_merge == 3
+	drop			_merge hhid prcid pltid cropid harvqtykg ///
+						hh ea rotate ///
+						cropvalue  wgt15 hwgt_W4_W5
+	
+* generate average harvest month for district
+	egen			harv = mean(harvmonth), by(district)
+	
+* round to nearest integer
+	replace			harv = round(harv,1)
+	lab var			harv "Start of harvest month"
+
+* drop duplicates
+	duplicates 		drop region district  harv, force
+	
+	keep			region district subcounty harv parish
+	
+* create "north"/"south" dummy
+	gen				season = 0 if harv < 8
+	replace			season = 1 if harv > 7
+	lab def			season 0 "South" 1 "North"
+	lab val			season season
+	lab var			season "South/North season"
+	
+************************************************************************
+**# 2 - end matter, clean up to save
+************************************************************************
+
+	compress
+	describe
+	summarize
+
+* save file
+	save 			"$root/wave_5/refined/harv_month.dta", replace
+
+* close the log
+	log	close
+
+/* END */
