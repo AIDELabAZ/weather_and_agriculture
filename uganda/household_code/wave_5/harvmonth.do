@@ -31,7 +31,17 @@
 **# 1 - import data and rename variables
 ************************************************************************
 	
-	use 			"$root/wave_5/refined/2015_agsec5a.dta", clear
+	use 			"$root/wave_5/raw/agric/AGSEC5B.dta", clear
+	
+	rename 			cropID cropid
+	rename			plotID pltid
+	rename			parcelID prcid
+	rename 			a5bq6c unit
+	rename			a5bq6b condition
+	rename 			a5bq6e harvmonth
+	rename			HHID hhid
+	
+	sort 			hhid prcid pltid cropid
 		
 	gen				year = 2015
 		
@@ -39,14 +49,13 @@
 	
 	*destring		hhid, replace 
 	sum 			cropid
-			
+		
 * merge the location identification
 	merge m:1 		hhid using "$root/wave_5/refined/2015_gsec1"
 	
 	keep if 		_merge == 3
-	drop			_merge hhid prcid pltid cropid harvqtykg ///
-						hh ea rotate ///
-						cropvalue  wgt15 hwgt_W4_W5
+	
+	keep			harvmonth region district subcounty parish year
 	
 * generate average harvest month for district
 	egen			harv = mean(harvmonth), by(district)
