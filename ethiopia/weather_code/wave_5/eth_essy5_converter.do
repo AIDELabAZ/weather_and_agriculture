@@ -6,7 +6,7 @@
 * Stata v.18
 
 * does
-	* reads in Ethiopia, wave 1 .csv files
+	* reads in Ethiopia, wave 5 .csv files
 	* outputs .dta file ready for processing by the weather program
 	* does the above for both rainfall and temperature data
 
@@ -22,13 +22,13 @@
 * **********************************************************************
 
 * define paths
-	loc root = "$data/weather_data/ethiopia/wave_1/raw/erssy1_up"
-	loc export = "$data/weather_data/ethiopia/wave_1/daily/erssy1_up"
+	loc root = "$data/weather_data/ethiopia/wave_5/raw/erssy1_up"
+	loc export = "$data/weather_data/ethiopia/wave_5/daily/erssy1_up"
 	loc logout = "$data/weather_data/ethiopia/logs"
 
 * open log
 	cap log		close
-	log using 	"`logout'/eth_essy1_converter", append
+	log using 	"`logout'/eth_essy5_converter", append
 
 
 * **********************************************************************
@@ -39,7 +39,7 @@
 	loc fileList : dir "`root'" files "*.csv"
 		
 * loop through each file in the above local	
-	foreach file in `fileList' {
+foreach file in `fileList' {
 		
 	* import the .csv files - this takes time	
 	import delimited "`root'/`file'", varnames (1)  ///
@@ -52,9 +52,10 @@
 	* define locals to govern file naming	
 		loc dat = substr("`file'", 1, length("`file'") - 4) 
 
+
 	* save file
 		save			"`export'/`dat'_daily.dta", replace
-}
+	}
 
 * close the log
 	log	close

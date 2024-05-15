@@ -46,11 +46,8 @@
 * install packages if global is set to 1
 if $pack == 1 {
 	
-	* temporarily set delimiter to ; so can break the line
-		#delimit ;
 	* for packages/commands, make a local containing any required packages
-		loc userpack "blindschemes mdesc estout distinct winsor2" ;
-		#delimit cr
+		loc userpack "blindschemes mdesc estout distinct winsor2" 
 	
 	* install packages that are on ssc	
 		foreach package in `userpack' {
@@ -71,10 +68,6 @@ if $pack == 1 {
 
 	* install -xfill- package
 		net install xfill, replace from(https://www.sealedenvelope.com/)
-		
-	* install -customsave package
-		net install StataConfig, ///
-		from(https://raw.githubusercontent.com/etjernst/Materials/master/stata/) replace
 
 	* install -weather- package
 		net install WeatherConfig, ///
@@ -111,7 +104,7 @@ if $pack == 1 {
 /*	this code requires a user to have downloaded the publically available 
 	household data sets and placed them into the folder structure detailed
 	in the readme file accompanying this repo.
-*/	
+	
 	do 			"$code/ethiopia/household_code/eth_hh_masterdo.do"
 	do 			"$code/malawi/household_code/mwi_hh_masterdo.do"
 	do 			"$code/niger/household_code/ngr_hh_masterdo.do"
