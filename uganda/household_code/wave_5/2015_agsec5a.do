@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 17 April 24
+* Edited on: 14 May 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -16,7 +16,7 @@
 	* access to raw data
 
 * TO DO:
-	* done
+	* section 5 and beyond
 
 	
 ***********************************************************************
@@ -39,40 +39,36 @@
 ***********************************************************************
 
 * import wave 5 season 1
-	*** for some reason 1st season is agsec5b not 5a
 	
-	use 			"$root/agric/AGSEC5B.dta", clear
+	use 			"$root/agric/AGSEC5A.dta", clear
 		
 	rename 			cropID cropid
 	rename			plotID pltid
 	rename			parcelID prcid
-	rename 			a5bq6c unit
-	rename			a5bq6b condition
-	rename 			a5bq6e harvmonth
+	rename 			a5aq6c unit
+	rename			a5aq6b condition
+	rename 			a5aq6e harvmonth
 	rename			HHID hhid
 	
 	sort 			hhid prcid pltid cropid
 	
 * drop observations from plots that did not harvest because crop was immature
-	drop 			if a5bq5_2 == 1
-	*** 2 observations deleted
+	drop 			if a5aq5_2 == 1
+	*** 1 observation deleted
 
 * missing cropid's also lack crop names, drop those observations
 	mdesc 			cropid
-	*** 8 observations missing
+	*** 2 observations missing
 	drop			if cropid ==.
-	** 8 obs deleted
+	*** 2 obs deleted
 	
 * drop cropid is other, fallow, pasture, and trees
 	drop 			if cropid > 880
-	*** 18 observations dropped
+	*** 14 observations dropped
 	
-* replace harvests with 99999 with a 0, 99999 is code for missing
-	replace 		a5bq6a = 0 if a5bq6a == 99999
-	*** 0 changed to zero
 	
 * replace missing cropharvests with 0
-	replace 		a5bq6a = 0 if a5bq6a == .
+	replace 		a5aq6a = 0 if a5aq6a == .
 	*** 0 changed to zero
 
 * missing prcid and pltid don't allow for unique id, drop missing
@@ -88,17 +84,17 @@
 	
 	merge m:1 		cropid unit condition using ///
 						"$conv/ValidCropUnitConditionCombinations.dta" 
-	*** unmatched 198 from master 
-	*** unmatched 717 from using
-	*** total unmatched, 915
+	*** unmatched 871 from master 
+	*** unmatched 688 from using
+	*** total unmatched, 1,559
 	
 	
 * drop from using
 	drop 			if _merge == 2
-	** 717 obs dropped
+	** 688 obs dropped
 
 * how many unmatched had a harvest of 0
-	tab 			a5bq6a if _merge == 1
+	tab 			a5aq6a if _merge == 1
 	*** 0% have a harvest of 0
 	
 * how many unmatched because they used "other" to categorize the state of harvest?
@@ -112,7 +108,7 @@
 	
 
 * replace ucaconversion to 1 if the harvest is 0
-	replace 		ucaconversion = 1 if a5bq6a == 0 & _merge == 1
+	replace 		ucaconversion = 1 if a5aq6a == 0 & _merge == 1
 	*** 0 changes
 
 * manually replace conversion for the kilograms and sacks 
@@ -120,63 +116,56 @@
 
 	*kgs
 		replace 		ucaconversion = 1 if unit == 1 & _merge == 1
-		*** 4 changes
+		*** 234 changes
 		
 	*sack 120 kgs
 		replace 		ucaconversion = 120 if unit == 9 & _merge == 1
-		*** 1 change
+		*** 9 changes
 	
 	*sack 100 kgs
 		replace 		ucaconversion = 100 if unit == 10 & _merge == 1
-		*** 1 change
-	
-	* sack 80 kgs
-		replace 		ucaconversion = 80 if unit == 11 & _merge == 1
-		*** 0 changes
-	
+		*** 183 changes
+		
 	* sack 50 kgs
 		replace 		ucaconversion = 50 if unit == 12 & _merge == 1
-		*** 2 changes
+		*** 17 changes
 		
 	* jerrican 20 kgs
 		replace 		ucaconversion = 20 if unit == 14 & _merge == 1
-		*** 8 changes
+		*** 20 changes
 		
 	* jerrican 10 kgs
 		replace 		ucaconversion = 10 if unit == 15 & _merge == 1
-		*** 1 change
+		*** 3 changes
 		
 	* jerrican 5 kgs
 		replace 		ucaconversion = 5 if unit == 16 & _merge == 1
 		*** 1 change
 		
-	* jerrican 2 kgs
-		replace 		ucaconversion = 2 if unit == 18 & _merge == 1
-		*** 1 change 
+	* jerrican 3 kgs
+		replace 		ucaconversion = 2 if unit == 17 & _merge == 1
+		*** 2 changes 
 		
 	* tin 20 kgs
 		replace 		ucaconversion = 20 if unit == 20 & _merge == 1
-		*** 0 changes
+		*** 88 changes
 		
 	* tin 5 kgs
 		replace 		ucaconversion = 5 if unit == 21 & _merge == 1
-		*** 1 change 
+		*** 5 changes 
 
 	* 15 kg plastic Basin
 		replace 		ucaconversion = 15 if unit == 22 & _merge == 1	
-		*** 1 change
+		*** 60 changes
 		
 	* kimbo 2 kg 
 		replace 		ucaconversion = 2 if unit == 29 & _merge == 1
-		*** 3 changes
+		*** 2 changes
 		
-	* kimbo 1 kg
-		replace 		ucaconversion = 1 if unit == 30 & _merge == 1
-		*** 1 change
 
 	* kimbo 0.5 kg
 		replace 		ucaconversion = 0.5 if unit == 31 & _merge == 1	
-		*** 2 changes 
+		*** 1 change 
 
 	* cup 0.5 kg
 		replace 		ucaconversion = 0.5 if unit == 32 & _merge == 1		
@@ -184,34 +173,26 @@
 		
 	* basket 20 kg 
 		replace 		ucaconversion = 20 if unit == 37 & _merge == 1
-		*** 3 changes
+		*** 4 changes
 		
 	* basket 10 kg 
 		replace 		ucaconversion = 10 if unit == 38 & _merge == 1
-		*** 0 changes 
+		*** 2 changes 
 
 	* basket 5 kg 
 		replace 		ucaconversion = 5 if unit == 39 & _merge == 1	
-		*** 1 change
+		*** 5 changes
 
 	* basket 2 kg
 		replace 		ucaconversion = 2 if unit == 40 & _merge == 1	
-		*** 0 changes
+		*** 1 changes
 		
-	* nomi 1 kg
-		replace 		ucaconversion = 1 if unit == 119 & _merge == 1	
-		*** 0 changes
-
-	* nomi 0.5 kg
-		replace 		ucaconversion = 0.5 if unit == 120 & _merge == 1
-		*** 0 change 
-	
 * drop the unmatched remaining observations
 	drop 			if _merge == 1 & ucaconversion == .
-	*** 198 observatinos deleted
+	*** 234 observatinos deleted
 
 	replace 			ucaconversion = medconversion if _merge == 3 & ucaconversion == .
-	*** 579 changes made
+	*** 380 changes made
 	
 		mdesc 			ucaconversion
 		*** 0 missing
@@ -219,8 +200,8 @@
 	drop 			_merge
 	
 	tab				cropid
-	*** beans are the most numerous crop being 23.29% of crops planted
-	***	maize is the second highest being 22.93%
+	*** beans are the most numerous crop being 22.94% of crops planted
+	***	maize is the second highest being 20.05%
 	*** maize will be main crop following most other countries in the study
 	
 * Convert harv quantity to kg
@@ -228,11 +209,11 @@
 	*** included in the file are the conversions from other measurements to kg
 	
 * replace missing harvest quantity to 0
-	replace 		a5bq6a = 0 if a5bq6a == .
+	replace 		a5aq6a = 0 if a5aq6a == .
 	*** no changes
 	
 * Convert harv quantity to kg
-	gen 			harvqtykg = a5bq6a*ucaconversion
+	gen 			harvqtykg = a5aq6a*ucaconversion
 	label var		harvqtykg "quantity of crop harvested (kg)"
 	mdesc 			harvqtykg
 	*** all converted
@@ -243,7 +224,7 @@
 	
 * summarize maize quantity harvest
 	sum				harvqtykg if cropid == 130
-	*** 272 mean, 13,800 max
+	*** 238.5 mean, 12,500 max
 	
 	
 ***********************************************************************
@@ -251,12 +232,12 @@
 ***********************************************************************
 
 * value of crop sold in shillings
-	rename			a5bq8 harvvlush
+	rename			a5aq8 harvvlush
 	label var 		harvvlush "Value of crop sold in ugandan shilling"
 	
 * summarize the value of sales in shillings
 	sum 			harvvlush, detail
-	*** mean 2,706.03,  min 0, max 520,000
+	*** mean 2,147.5,  min 0, max 80,000
 
 * generate crop is USD
 	gen 			cropvl = harvvlush / 3240.6454
@@ -264,13 +245,13 @@
 	*** value comes from World Bank. Used excel file "world_bank_exchange_rates.xlxs"
 		
 	sum 			cropvl, detail
-	*** mean 0.83, min 0, max 160.46
+	*** mean 0.66, min 0, max 24.68
 	*** compared to other waves, the mean is off by 100th
 	*** multiply cropvl * 100
 	
 	replace			cropvl = cropvl * 100
 	sum 			cropvl, detail
-	*** mean 83.5, min 0, max 16,046
+	*** mean 66.2, min 0, max 2,468.6
 			
 	
 ***********************************************************************
@@ -282,7 +263,7 @@
 						medconversion medcount borrowed unit
 					
 * rename units and condition
-	rename			a5bq7c unit
+	rename			a5aq7c unit
 	
 * replace unit with 1 if unit is missing
 	replace			unit = 1 if unit == .
@@ -290,7 +271,9 @@
 * merge conversion file in for sold
 	merge m:1 		cropid unit condition using ///
 						"$conv/ValidCropUnitConditionCombinations.dta" 
-	*** unmatched 22 from master
+	*** unmatched 617 from master
+	*** unmatched 803 from using 
+	** matched 9,810
 	
 	drop			if _merge !=3
 	*** dropping unmatched observations
@@ -298,21 +281,21 @@
 * replace missing ucaconversion with kg if unit = kg
 	replace			ucaconversion = 1 if ucaconversion == . & ///
 						unit == 1
-	*** replaces 386
+	*** replaces 361
 	
 * replace missing ucaconversion with median
 	replace			ucaconversion = medconversion if ucaconversion == .
-	*** 247 changes made
+	*** 86 changes made
 	
 * replace zeros in sold data as missing
-	replace			a5bq7a = . if a5bq7a == 0
+	replace			a5aq7a = . if a5aq7a == 0
 	
 * convert quantity sold into kg
-	gen 			harvkgsold = a5bq7a*ucaconversion
+	gen 			harvkgsold = a5aq7a*ucaconversion
 	lab	var			harvkgsold "quantity sold, in kilograms"
 
 	sum				harvkgsold, detail
-	*** 1 min, mean 476.5, max 90000
+	*** 0.3 min, mean 511,38, max 71,396
 
 * replace missing values to 0
 	replace 		cropvl = 0 if cropvl == .
