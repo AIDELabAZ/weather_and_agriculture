@@ -22,8 +22,8 @@
 * **********************************************************************
 
 * define paths
-	loc root = "$data/weather_data/ethiopia/wave_5/raw/erssy1_up"
-	loc export = "$data/weather_data/ethiopia/wave_5/daily/erssy1_up"
+	loc root = "$data/weather_data/ethiopia/wave_5/raw/essy5_up"
+	loc export = "$data/weather_data/ethiopia/wave_5/daily/essy5_up"
 	loc logout = "$data/weather_data/ethiopia/logs"
 
 * open log

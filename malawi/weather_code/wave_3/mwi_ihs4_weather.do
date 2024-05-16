@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: April 2020
 * Created by: jdm
-* Stata v.16
+* edited by: jdm
+* edited on: 16 May 2024
+* Stata v.18
 
 * does
 	* reads in Malawi IHS4, which we term wave 3, .dta files with daily values
@@ -11,12 +13,12 @@
 	/* 	-the growing season that we care about is defined on the FAO website:
 			http://www.fao.org/giews/countrybrief/country.jsp?code=MWI
 		-we measure rainfall during the months that the FAO defines as sowing and growing
-		-we define the relevant months as October 1 - April 30 */
+		-we define the relevant months as November 1 - April 30 
+		-but in code below we keep the Jan 1 to Jul 1 since these are "rename" months */
 
 * assumes
-	* MWI_IHS4_converter.do
+	* daily data converted to .dta
 	* weather_command.ado
-	* customsave.ado
 
 * TO DO:
 	* completed
@@ -27,8 +29,8 @@
 * **********************************************************************
 
 * define paths
-	loc 	root 	= 	"$data/weather_data/malawi/wave_3/daily"
-	loc 	export 	= 	"$data/weather_data/malawi/wave_3/refined"
+	loc 	root 	= 	"$data/weather_data/malawi/wave_3/daily/ihs4_up"
+	loc 	export 	= 	"$data/weather_data/malawi/wave_3/refined/ihs4_up"
 	loc 	logout 	= 	"$data/weather_data/malawi/logs"
 
 * open log
@@ -39,74 +41,118 @@
 * 1 - run command for rainfall
 * **********************************************************************
 
-* define local with all sub-folders in it
-	loc folderList : dir "`root'" dirs "IHS4_rf*"
+* import the daily ARC2 data file
+	use "`root'/ihs4_arc2_daily.dta", clear
+		
+	* define locals to govern file naming	
+		loc dat = substr("`file'", 1, length("`file'") - 4) 
+		
+	* run the user written weather command - this takes a while
+		weather rf_ , rain_data ini_month(1) fin_month(7) day_month(1) keep(household_id)
+		
+	* save file
+		save			"`export'/ihs4_arc2.dta", replace
 
-* loop through each of the sub-folders in the above local
-foreach folder of local folderList {
+* import the daily CHIRPS data file
+	use "`root'/ihs4_chirps_daily.dta", clear
+		
+	* define locals to govern file naming	
+		loc dat = substr("`file'", 1, length("`file'") - 4) 
+		
+	* run the user written weather command - this takes a while
+		weather rf_ , rain_data ini_month(1) fin_month(7) day_month(1) keep(household_id)
+		
+	* save file
+		save			"`export'/ihs4_chirps.dta", replace
 
-	* create directories to write output to
-	qui: capture mkdir "`export'/`folder'/"
+* import the daily CPC RF data file
+	use "`root'/ihs4_cpcrf_daily.dta", clear
+		
+	* define locals to govern file naming	
+		loc dat = substr("`file'", 1, length("`file'") - 4) 
+		
+	* run the user written weather command - this takes a while
+		weather rf_ , rain_data ini_month(1) ini_month(7) day_month(1) keep(household_id)
+		
+	* save file
+		save			"`export'/ihs4_cpcrf.dta", replace
 
-	* define local with all files in each sub-folder
-		loc fileList : dir "`root'/`folder'" files "*.dta"
+* import the daily ERA5 RF data file
+	use "`root'/ihs4_erarf_daily.dta", clear
+		
+	* define locals to govern file naming	
+		loc dat = substr("`file'", 1, length("`file'") - 4) 
+		
+	* run the user written weather command - this takes a while
+		weather rf_ , rain_data ini_month(1) ini_month(7) day_month(1) keep(household_id)
+		
+	* save file
+		save			"`export'/ihs4_erarf.dta", replace
 
-	* loop through each file in the above local
-	foreach file in `fileList' {
+* import the daily TAMSAT data file
+	use "`root'/ihs4_tamsat_daily.dta", clear
+		
+	* define locals to govern file naming	
+		loc dat = substr("`file'", 1, length("`file'") - 4) 
+		
+	* run the user written weather command - this takes a while
+		weather rf_ , rain_data ini_month(1) ini_month(7) day_month(1) keep(household_id)
+		
+	* save file
+		save			"`export'/ihs4_tamsat.dta", replace
 
-		* import the daily data file
-		use "`root'/`folder'/`file'", clear
-
-		* define locals to govern file naming
-		loc dat = substr("`file'", 1, 4)
-		loc ext = substr("`file'", 6, 2)
-		loc sat = substr("`file'", 9, 3)
-
-		* run the user written weather command - this takes a while
-		weather rf_ , rain_data ini_month(1) fin_month(8) day_month(1) keep(hhid)
-
-		* save file
-		customsave , idvar(hhid) filename("`dat'_`ext'_`sat'.dta") ///
-			path("`export'/`folder'") dofile(MWI_IHS4_weather) user($user)
-	}
-}
-
+* import the daily MERRA-2 RF data file
+	use "`root'/ihs4_merrarf_daily.dta", clear
+		
+	* define locals to govern file naming	
+		loc dat = substr("`file'", 1, length("`file'") - 4) 
+		
+	* run the user written weather command - this takes a while
+		weather rf_ , rain_data ini_month(1) ini_month(7) day_month(1) keep(household_id)
+		
+	* save file
+		save			"`export'/ihs4_merrarf.dta", replace
 
 * **********************************************************************
 * 2 - run command for temperature
 * **********************************************************************
 
-* define local with all sub-folders in it
-	loc folderList : dir "`root'" dirs "IHS4_t*"
+* import the daily CPC TP data file
+	use "`root'/ihs4_cpct_daily.dta", clear
+		
+	* define locals to govern file naming	
+		loc dat = substr("`file'", 1, length("`file'") - 4) 
+		
+	* run the user written weather command - this takes a while
+		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(1) ini_month(7) day_month(1) keep(household_id)
+		
+	* save file
+		save			"`export'/ihs4_cpct.dta", replace
 
-* loop through each of the sub-folders in the above local
-foreach folder of local folderList {
+* import the daily ERA5 TP data file
+	use "`root'/ihs4_erat_daily.dta", clear
+		
+	* define locals to govern file naming	
+		loc dat = substr("`file'", 1, length("`file'") - 4) 
+		
+	* run the user written weather command - this takes a while
+		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(1) ini_month(7) day_month(1) keep(household_id)
+		
+	* save file
+		save			"`export'/ihs4_erat.dta", replace
 
-	* create directories to write output to
-	qui: capture mkdir "`export'/`folder'/"
+* import the daily MERRA-2 TP data file
+	use "`root'/ihs4_merrat_daily.dta", clear
+		
+	* define locals to govern file naming	
+		loc dat = substr("`file'", 1, length("`file'") - 4) 
+		
+	* run the user written weather command - this takes a while
+		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(1) ini_month(7) day_month(1) keep(household_id)
+		
+	* save file
+		save			"`export'/ihs4_merrat.dta", replace
 
-	* define local with all files in each sub-folder
-	loc fileList : dir "`root'/`folder'" files "*.dta"
-
-	* loop through each file in the above local
-	foreach file in `fileList' {
-
-		* import the daily data file
-		use "`root'/`folder'/`file'", clear
-
-		* define locals to govern file naming
-		loc dat = substr("`file'", 1, 4)
-		loc ext = substr("`file'", 6, 2)
-		loc sat = substr("`file'", 9, 2)
-
-		* run the user written weather command - this takes a while
-		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(1) fin_month(8) day_month(1) keep(hhid)
-
-		* save file
-		customsave , idvar(hhid) filename("`dat'_`ext'_`sat'.dta") ///
-			path("`export'/`folder'") dofile(MWI_IHS4_weather) user($user)
-		}
-}
 
 * close the log
 	log	close
