@@ -1,15 +1,15 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 28 Feb 24
+* Edited on: 16 May 24
 * Edited by: rg
 * Stata v.18, mac
 
 * does
 	* fertilizer use
-	* reads Uganda wave 3 fertilizer and pest info (2015_AGSEC3A) for the 1st season
-	* 3A - 5A are questionaires for the first planting season
-	* 3B - 5B are questionaires for the second planting season
+	* reads Uganda wave 5 fertilizer and pest info (2015_AGSEC3B) for the 1st season
+	* 3A - 5A are questionaires for the second planting season
+	* 3B - 5B are questionaires for the first planting season
 
 * assumes
 	* access to raw data
@@ -37,14 +37,12 @@
 ***********************************************************************
 
 * import wave 5 season A
-	use 			"$root/agric/AGSEC3A.dta", clear
+	use 			"$root/agric/AGSEC3B.dta", clear
 	
 * rename variables	
 	rename 			HHID hhid
 	rename			parcelID prcid
 	rename			plotID pltid
-
-	replace			prcid = 1 if prcid == .
 	
 	sort 			hhid prcid pltid
 	isid 			hhid prcid pltid
@@ -56,9 +54,9 @@
 	
 * merge the location identification
 	merge m:1 		hhid using "$export/2015_gsec1"
-	*** 166 unmatched from master
-	*** 922 unmatched from using
-	*** 7,621 matched 
+	*** 53 unmatched from master
+	*** 1,107 unmatched from using
+	*** 6,739 matched 
 	
 	
 	drop if			_merge != 3
@@ -69,8 +67,8 @@
 ***********************************************************************
 
 * fertilizer use
-	rename 		a3aq13 fert_any
-	rename 		a3aq15 kilo_fert
+	rename 		a3bq13 fert_any
+	rename 		a3bq15 kilo_fert
 
 		
 * replace the missing fert_any with 0
@@ -81,11 +79,11 @@
 	*** 1 change
 			
 	sum 			kilo_fert if fert_any == 1, detail
-	*** 12.92, min 0.01, max 150
+	*** mean 33.19, min 0.25, max 1000
 
-* replace zero to missing, missing to zero, and outliers to mizzing
+* replace zero to missing, missing to zero, and outliers to missing
 	replace			kilo_fert = . if kilo_fert > 264
-	*** 0 outliers changed to missing
+	*** 1 outlier changed to missing
 
 * encode district to be used in imputation
 	encode 			district, gen (districtdstrng) 	
@@ -104,7 +102,7 @@
 	
 * how did impute go?	
 	sum 		kilo_fert_1_ if fert_any == 1, detail
-	*** max 150, mean 12.81, min 0.01
+	*** max 100, mean 23.5, min 0.25
 	
 	replace			kilo_fert = kilo_fert_1_ if fert_any == 1
 	*** 1 changed
@@ -120,14 +118,14 @@
 ***********************************************************************
 
 * pesticide & herbicide
-	tab 		a3aq22
-	*** 3.98 percent of the sample used pesticide or herbicide
-	tab 		a3aq23
+	tab 		a3bq22
+	*** 3.83 percent of the sample used pesticide or herbicide
+	tab 		a3bq23
 	
-	gen 		pest_any = 1 if a3aq23 != . & a3aq23 != 4 & a3aq23 != 96
+	gen 		pest_any = 1 if a3bq23 != . & a3bq23 != 4 & a3bq23 != 96
 	replace		pest_any = 0 if pest_any == .
 	
-	gen 		herb_any = 1 if a3aq23 == 4 | a3aq23 == 96
+	gen 		herb_any = 1 if a3bq23 == 4 | a3bq23 == 96
 	replace		herb_any = 0 if herb_any == .
 
 	
@@ -145,36 +143,36 @@
 
 * family labor	
 * make a binary if they had family work
-	gen				fam = 1 if a3aq33 > 0
+	gen				fam = 1 if a3bq33 > 0
 	
 * how many household members worked on this plot?
-	tab 			a3aq33
-	*** family labor is from 0 - 15 people
+	tab 			a3bq33
+	*** family labor is from 0 - 13 people
 	
 * hours worked on plot are recorded per household member not total
 * create variable of total days worked on plot
-	egen			days_worked = rowtotal (a3aq33a_1 a3aq33b_1 ///
-					a3aq33c_1 a3aq33d_1 a3aq33e_1)
+	egen			days_worked = rowtotal (a3bq33a_1 a3bq33b_1 ///
+					a3bq33c_1 a3bq33d_1 a3bq33e_1)
 	
 	sum 			days_worked, detail
-	*** mean 41.33, min 0, max 300
+	*** mean 42.7, min 0, max 400
 	*** don't need to impute any values
 	
 * fam lab = number of family members who worked on the farm*days they worked	
-	gen 			fam_lab = a3aq33*days_worked
+	gen 			fam_lab = a3bq33*days_worked
 	replace			fam_lab = 0 if fam_lab == .
 	sum				fam_lab
-	*** max 1490, mean 133.75, min 0
+	*** max 2,400, mean 140.4, min 0
 	
 * hired labor 
 * hired men days
-	rename	 		a3aq35a hired_men
+	rename	 		a3bq35a hired_men
 		
 * make a binary if they had hired_men
 	gen 			men = 1 if hired_men != . & hired_men != 0
 	
 * hired women days
-	rename			a3aq35b hired_women 
+	rename			a3bq35b hired_women 
 		
 * make a binary if they had hired_men
 	gen 			women = 1 if hired_women != . & hired_women != 0
@@ -195,7 +193,7 @@
 	gen				labor_days = fam_lab + hired_men + hired_women
 	
 	sum 			labor_days
-	*** mean 136.65, max 1,538, min 0	
+	*** mean 142.9, max 2,400, min 0	
 
 	
 ***********************************************************************

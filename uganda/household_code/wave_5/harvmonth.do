@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: May 2024
 * Created by: rg
-* Edited on: 8 May 24
+* Edited on: 15 May 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -31,23 +31,12 @@
 **# 1 - import data and rename variables
 ************************************************************************
 	
-	use 			"$root/wave_5/raw/agric/AGSEC5B.dta", clear
-	
-	rename 			cropID cropid
-	rename			plotID pltid
-	rename			parcelID prcid
-	rename 			a5bq6c unit
-	rename			a5bq6b condition
-	rename 			a5bq6e harvmonth
-	rename			HHID hhid
-	
-	sort 			hhid prcid pltid cropid
-		
+	use 			"$root/wave_5/refined/2015_agsec5a.dta", clear
+			
 	gen				year = 2015
 		
 	keep if 		cropid == 130
 	
-	*destring		hhid, replace 
 	sum 			cropid
 		
 * merge the location identification
