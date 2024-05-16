@@ -1,8 +1,8 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: jet
-* Edited on: 19 March 2024
-* Edited by: jet
+* Edited on: May 16, 2024
+* Edited by: reece
 * Stata v.18
 
 * does
@@ -30,8 +30,8 @@
 	*log close
 	
 * open log	
-	*cap log close
-	*log using "`logout'/ph_sect11c2", append
+	cap log close
+	log using "$logout/ph_sect11c2", append
 
 * **********************************************************************
 * 1 - determine pesticide, herbicide, etc.
@@ -78,8 +78,7 @@ describe
 summarize 
 
 * save file
-		customsave , idvar(hhid) filename("ph_sect11c2.dta") ///
-			path("$export/`folder'") dofile(ph_sect11c2) user($user)
+	save			"$export/ph_sect11c2.dta", replace
 
 * close the log
 	log	close

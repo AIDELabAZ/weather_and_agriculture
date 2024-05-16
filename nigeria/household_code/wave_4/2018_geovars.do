@@ -2,6 +2,8 @@
 * Created on: Feb 24
 * Created by: jet
 * Edited by: jet
+* Edited on: May 16, 2024
+* Edited by: reece
 * Stata v.18
 
 * does
@@ -11,8 +13,7 @@
 	* customsave.ado
 
 * TO DO:
-	* customsave, log
-
+	* 
 	
 * **********************************************************************
 * 0 - setup
@@ -24,8 +25,8 @@
 	global logout 		= "$data/household_data/nigeria/logs"
 	
 * open log	
-	*cap log 		close
-	*log using 		"$logout/wave_4_geovars", append
+	cap log 		close
+	log using 		"$logout/wave_4_geovars", append
 
 	
 * **********************************************************************
@@ -52,8 +53,7 @@
 	summarize
 
 * save file
-		customsave , idvar(hhid) filename("NGA_geovars.dta") ///
-			path("`export'") dofile(NGA_geovars) user($user)
+	save			"$export/NGA_geovars.dta", replace
 
 * close the log
 	log	close
