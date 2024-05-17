@@ -1,8 +1,8 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: jet
-* Edited on: 2 Apr 2024
-* Edited by: jet
+* Edited on: May 17, 2024
+* Edited by: reece
 * Stata v.18
 
 * does
@@ -16,6 +16,8 @@
 	
 * TO DO:
 	* everything
+	* i think this file should be combined with 2018_ph_sect11c2, going to clean fertilizer variables there
+	* variables of interest not in sect11d_harvestwv4 but in sect11c2
 
 * **********************************************************************
 * 0 - setup
@@ -27,8 +29,8 @@
 	global logout = "$data/household_data/nigeria/logs"
 
 * open log	
-	*cap log close
-	*log using "$logout/ph_sect11d", append
+	cap log close
+	log using "$logout/ph_sect11d", append
 
 * **********************************************************************
 * 1 - determine fertilizer and conversion to kgs
