@@ -2,7 +2,7 @@
 * Created on: April 2020
 * Created by: jdm
 * edited by: jdm
-* edited on: 16 May 2024
+* edited on: 18 May 2024
 * Stata v.18
 
 * does
@@ -26,12 +26,13 @@
 * **********************************************************************
 
 * define paths
-	loc 	root	= 	"$data/weather_data/malawi/wave_1/raw/ihs3_up"
-	loc 	export 	= 	"$data/weather_data/malawi/wave_1/daily/ihs3_up"
-	loc 	logout 	= 	"$data/weather_data/malawi/logs"
+	loc 		root	= 	"$data/weather_data/malawi/wave_1/raw/ihs3_up"
+	loc 		export 	= 	"$data/weather_data/malawi/wave_1/daily/ihs3_up"
+	loc 		logout 	= 	"$data/weather_data/malawi/logs"
 
 * open log
-	log 	using 		"`logout'/mwi_ihs3_converter", append
+	cap log		close
+	log 		using 		"`logout'/mwi_ihs3_converter", append
 
 
 * **********************************************************************
@@ -39,8 +40,8 @@
 * **********************************************************************
 
 * define each file in the above local
-	loc fileList : dir "`root'" files "*.csv"
-
+	loc fileList : dir "`root'" files "*rf.csv"
+	
 * loop through each file in the above local
 	foreach file in `fileList' {
 
@@ -48,8 +49,7 @@
 		import delimited "`root'/`file'", varnames (1) clear
 
 	* drop early and late observations
-		drop 	rf_19830101-rf_19831031 ///
-				rf_20100601-rf_20101231
+		keep 	case_id rf_19831031-rf_20100531
 
 		* drop unnecessary months, this will make renaming variables easier (June-Oct)
 		foreach var of varlist rf_* {
@@ -123,8 +123,8 @@
 		loc dat = substr("`file'", 1, length("`file'") - 4) 
 
 	* save file
+		compress
 		save			"`export'/`dat'_daily.dta", replace
-	}
 }
 
 
@@ -133,7 +133,7 @@
 * **********************************************************************
 
 * define local with all files in each sub-folder
-	loc fileList : dir "`root'" files "*.csv"
+	loc fileList : dir "`root'" files "*tp.csv"
 
 * loop through each file in the above local
 	foreach file in `fileList' {
@@ -142,8 +142,7 @@
 		import delimited "`root'/`file'", varnames (1) clear
 
 	* drop early and late observations
-		drop 	tmp_19830101-tmp_19831031 ///
-				tmp_20190601-tmp_20231231
+		keep 	case_id tmp_19831031-tmp_20100531
 
 		* drop unnecessary months, this will make renaming variables easier (June-Oct)
 		foreach var of varlist tmp_* {
@@ -151,7 +150,7 @@
 			if substr("`var'", 9, 2) == "07" drop `var'
 			if substr("`var'", 9, 2) == "08" drop `var'
 			if substr("`var'", 9, 2) == "09" drop `var'
-			if substr("`var'", 8, 2) == "10" drop `var'
+			if substr("`var'", 9, 2) == "10" drop `var'
 		}
 		* shift early month variables one year forward
 		foreach var of varlist tmp_* {
@@ -217,8 +216,8 @@
 		loc dat = substr("`file'", 1, length("`file'") - 4) 
 
 	* save file
+		compress
 		save			"`export'/`dat'_daily.dta", replace
-	}
 }
 
 * close the log

@@ -2,7 +2,7 @@
 * Created on: May 2024
 * Created by: jdm
 * edited by: jdm
-* edited on: 16 May 2024
+* edited on: 18 May 2024
 * Stata v.18
 
 * does
@@ -29,12 +29,13 @@
 * **********************************************************************
 
 * define paths
-	loc 	root 	= 	"$data/weather_data/malawi/wave_5/daily/ihs5_up"
-	loc 	export 	= 	"$data/weather_data/malawi/wave_5/refined/ihs5_up"
-	loc 	logout 	= 	"$data/weather_data/malawi/logs"
+	loc 		root 	= 	"$data/weather_data/malawi/wave_5/daily/ihs5_up"
+	loc 		export 	= 	"$data/weather_data/malawi/wave_5/refined/ihs5_up"
+	loc 		logout 	= 	"$data/weather_data/malawi/logs"
 
 * open log
-	log 	using 		"`logout'/mwi_ihs5_weather", replace
+	cap log		close
+	log 		using 		"`logout'/mwi_ihs5_weather", append
 
 
 * **********************************************************************
@@ -42,28 +43,30 @@
 * **********************************************************************
 
 * import the daily ARC2 data file
-	use "`root'/ihs5_arc2_daily.dta", clear
+	use "`root'/ihs5_arc2rf_daily.dta", clear
 		
 	* define locals to govern file naming	
 		loc dat = substr("`file'", 1, length("`file'") - 4) 
 		
 	* run the user written weather command - this takes a while
-		weather rf_ , rain_data ini_month(1) fin_month(7) day_month(1) keep(household_id)
+		weather rf_ , rain_data ini_month(1) fin_month(7) day_month(1) keep(case_id)
 		
 	* save file
-		save			"`export'/ihs5_arc2.dta", replace
+		compress
+		save			"`export'/ihs5_arc2rf.dta", replace
 
 * import the daily CHIRPS data file
-	use "`root'/ihs5_chirps_daily.dta", clear
+	use "`root'/ihs5_chirpsrf_daily.dta", clear
 		
 	* define locals to govern file naming	
 		loc dat = substr("`file'", 1, length("`file'") - 4) 
 		
 	* run the user written weather command - this takes a while
-		weather rf_ , rain_data ini_month(1) fin_month(7) day_month(1) keep(household_id)
+		weather rf_ , rain_data ini_month(1) fin_month(7) day_month(1) keep(case_id)
 		
 	* save file
-		save			"`export'/ihs5_chirps.dta", replace
+		compress
+		save			"`export'/ihs5_chirpsrf.dta", replace
 
 * import the daily CPC RF data file
 	use "`root'/ihs5_cpcrf_daily.dta", clear
@@ -72,9 +75,10 @@
 		loc dat = substr("`file'", 1, length("`file'") - 4) 
 		
 	* run the user written weather command - this takes a while
-		weather rf_ , rain_data ini_month(1) ini_month(7) day_month(1) keep(household_id)
+		weather rf_ , rain_data ini_month(1) fin_month(7) day_month(1) keep(case_id)
 		
 	* save file
+		compress
 		save			"`export'/ihs5_cpcrf.dta", replace
 
 * import the daily ERA5 RF data file
@@ -84,22 +88,24 @@
 		loc dat = substr("`file'", 1, length("`file'") - 4) 
 		
 	* run the user written weather command - this takes a while
-		weather rf_ , rain_data ini_month(1) ini_month(7) day_month(1) keep(household_id)
+		weather rf_ , rain_data ini_month(1) fin_month(7) day_month(1) keep(case_id)
 		
 	* save file
+		compress
 		save			"`export'/ihs5_erarf.dta", replace
 
 * import the daily TAMSAT data file
-	use "`root'/ihs5_tamsat_daily.dta", clear
+	use "`root'/ihs5_tamsatrf_daily.dta", clear
 		
 	* define locals to govern file naming	
 		loc dat = substr("`file'", 1, length("`file'") - 4) 
 		
 	* run the user written weather command - this takes a while
-		weather rf_ , rain_data ini_month(1) ini_month(7) day_month(1) keep(household_id)
+		weather rf_ , rain_data ini_month(1) fin_month(7) day_month(1) keep(case_id)
 		
 	* save file
-		save			"`export'/ihs5_tamsat.dta", replace
+		compress
+		save			"`export'/ihs5_tamsatrf.dta", replace
 
 * import the daily MERRA-2 RF data file
 	use "`root'/ihs5_merrarf_daily.dta", clear
@@ -108,9 +114,10 @@
 		loc dat = substr("`file'", 1, length("`file'") - 4) 
 		
 	* run the user written weather command - this takes a while
-		weather rf_ , rain_data ini_month(1) ini_month(7) day_month(1) keep(household_id)
+		weather rf_ , rain_data ini_month(1) fin_month(7) day_month(1) keep(case_id)
 		
 	* save file
+		compress
 		save			"`export'/ihs5_merrarf.dta", replace
 
 * **********************************************************************
@@ -118,40 +125,43 @@
 * **********************************************************************
 
 * import the daily CPC TP data file
-	use "`root'/ihs5_cpct_daily.dta", clear
+	use "`root'/ihs5_cpctp_daily.dta", clear
 		
 	* define locals to govern file naming	
 		loc dat = substr("`file'", 1, length("`file'") - 4) 
 		
 	* run the user written weather command - this takes a while
-		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(1) ini_month(7) day_month(1) keep(household_id)
+		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(1) fin_month(7) day_month(1) keep(case_id)
 		
 	* save file
-		save			"`export'/ihs5_cpct.dta", replace
+		compress
+		save			"`export'/ihs5_cpctp.dta", replace
 
 * import the daily ERA5 TP data file
-	use "`root'/ihs5_erat_daily.dta", clear
+	use "`root'/ihs5_eratp_daily.dta", clear
 		
 	* define locals to govern file naming	
 		loc dat = substr("`file'", 1, length("`file'") - 4) 
 		
 	* run the user written weather command - this takes a while
-		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(1) ini_month(7) day_month(1) keep(household_id)
+		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(1) fin_month(7) day_month(1) keep(case_id)
 		
 	* save file
-		save			"`export'/ihs5_erat.dta", replace
+		compress
+		save			"`export'/ihs5_eratp.dta", replace
 
 * import the daily MERRA-2 TP data file
-	use "`root'/ihs5_merrat_daily.dta", clear
+	use "`root'/ihs5_merratp_daily.dta", clear
 		
 	* define locals to govern file naming	
 		loc dat = substr("`file'", 1, length("`file'") - 4) 
 		
 	* run the user written weather command - this takes a while
-		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(1) ini_month(7) day_month(1) keep(household_id)
+		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(1) fin_month(7) day_month(1) keep(case_id)
 		
 	* save file
-		save			"`export'/ihs5_merrat.dta", replace
+		compress
+		save			"`export'/ihs5_merratp.dta", replace
 
 
 * close the log
