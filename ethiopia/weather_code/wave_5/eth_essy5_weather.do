@@ -2,7 +2,7 @@
 * Created by: jdm
 * Created on: May 2024
 * edited by: jdm
-* edited on: 16 May 2024
+* edited on: 20 May 2024
 * Stata v.18
 
 * does
@@ -14,7 +14,6 @@
 			http://www.fao.org/giews/countrybrief/country.jsp?code=ETH
 		-we measure rainfall during the months that the FAO defines as sowing and growing
 		-we define the relevant months as May 1 - September 30 */
-	* start run at 11:50
 		
 * assumes
 	* daily data converted to .dta
@@ -42,119 +41,56 @@
 * 1 - run command for rainfall
 * **********************************************************************
 
-* import the daily ARC2 data file
-		use "`root'/essy5_arc2_daily.dta", clear
+* define local with all files in each sub-folder
+	loc fileList : dir "`root'" files "*rf_daily.dta"
+	
+* loop through each file in the above local
+	foreach file in `fileList' {
+		
+	* import the daily data file
+		use "`root'/`file'", clear
+		
+	* drop weather variables beyond 2011
+		keep household_id rf_19830101-rf_20211231
 		
 	* define locals to govern file naming	
-		loc dat = substr("`file'", 1, length("`file'") - 4) 
+		loc dat = substr("`file'", 1, length("`file'") - 10) 
 		
 	* run the user written weather command - this takes a while
 		weather rf_ , rain_data ini_month(5) fin_month(10) day_month(1) keep(household_id)
 		
 	* save file
-		save			"`export'/essy5_arc2.dta", replace
-
-* import the daily CHIRPS data file
-		use "`root'/essy5_chirps_daily.dta", clear
-		
-	* define locals to govern file naming	
-		loc dat = substr("`file'", 1, length("`file'") - 4) 
-		
-	* run the user written weather command - this takes a while
-		weather rf_ , rain_data ini_month(5) fin_month(10) day_month(1) keep(household_id)
-		
-	* save file
-		save			"`export'/essy5_chirps.dta", replace
-
-* import the daily CPC RF data file
-		use "`root'/essy5_cpcrf_daily.dta", clear
-		
-	* define locals to govern file naming	
-		loc dat = substr("`file'", 1, length("`file'") - 4) 
-		
-	* run the user written weather command - this takes a while
-		weather rf_ , rain_data ini_month(5) fin_month(10) day_month(1) keep(household_id)
-		
-	* save file
-		save			"`export'/essy5_cpcrf.dta", replace
-
-* import the daily ERA5 RF data file
-		use "`root'/essy5_erarf_daily.dta", clear
-		
-	* define locals to govern file naming	
-		loc dat = substr("`file'", 1, length("`file'") - 4) 
-		
-	* run the user written weather command - this takes a while
-		weather rf_ , rain_data ini_month(5) fin_month(10) day_month(1) keep(household_id)
-		
-	* save file
-		save			"`export'/essy5_erarf.dta", replace
-
-* import the daily TAMSAT data file
-		use "`root'/essy5_tamsat_daily.dta", clear
-		
-	* define locals to govern file naming	
-		loc dat = substr("`file'", 1, length("`file'") - 4) 
-		
-	* run the user written weather command - this takes a while
-		weather rf_ , rain_data ini_month(5) fin_month(10) day_month(1) keep(household_id)
-		
-	* save file
-		save			"`export'/essy5_tamsat.dta", replace
-
-* import the daily MERRA-2 RF data file
-		use "`root'/essy5_merrarf_daily.dta", clear
-		
-	* define locals to govern file naming	
-		loc dat = substr("`file'", 1, length("`file'") - 4) 
-		
-	* run the user written weather command - this takes a while
-		weather rf_ , rain_data ini_month(5) fin_month(10) day_month(1) keep(household_id)
-		
-	* save file
-		save			"`export'/essy5_merrarf.dta", replace
+		compress
+		save			"`export'/`dat'.dta", replace
+}
 
 		
 * **********************************************************************
 * 2 - run command for temperature
 * **********************************************************************
 
-* import the daily CPC TP data file
-		use "`root'/essy5_cpct_daily.dta", clear
+* define local with all files in each sub-folder
+	loc fileList : dir "`root'" files "*tp_daily.dta"
+	
+* loop through each file in the above local
+	foreach file in `fileList' {
+		
+	* import the daily data file
+		use "`root'/`file'", clear
+		
+	* drop weather variables beyond 2011
+		keep household_id tmp_19830101-tmp_20211231
 		
 	* define locals to govern file naming	
-		loc dat = substr("`file'", 1, length("`file'") - 4) 
+		loc dat = substr("`file'", 1, length("`file'") - 10) 
 		
 	* run the user written weather command - this takes a while
 		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(5) fin_month(10) day_month(1) keep(household_id)
 		
 	* save file
-		save			"`export'/essy5_cpct.dta", replace
-
-* import the daily ERA5 TP data file
-		use "`root'/essy5_erat_daily.dta", clear
-		
-	* define locals to govern file naming	
-		loc dat = substr("`file'", 1, length("`file'") - 4) 
-		
-	* run the user written weather command - this takes a while
-		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(5) fin_month(10) day_month(1) keep(household_id)
-		
-	* save file
-		save			"`export'/essy5_erat.dta", replace
-
-* import the daily MERRA-2 TP data file
-		use "`root'/essy5_merrat_daily.dta", clear
-		
-	* define locals to govern file naming	
-		loc dat = substr("`file'", 1, length("`file'") - 4) 
-		
-	* run the user written weather command - this takes a while
-		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(5) fin_month(10) day_month(1) keep(household_id)
-		
-	* save file
-		save			"`export'/essy5_merrat.dta", replace
-
+		compress
+		save			"`export'/`dat'.dta", replace
+}
 
 * close the log
 	log	close

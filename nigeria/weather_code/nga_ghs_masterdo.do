@@ -9,7 +9,7 @@
 	* Executes all wave specific Nigeria weather .do files
     * runs weather_command .ado file
 	* outputs .dta rainfall data ready to merge with LSMS household data
-	* take (9:42-) minutes to convert and process weather data
+	* take 100 minutes to convert and process weather data
 * assumes
 	* weather_command.ado
 	* subsidiary, wave-specific .do files
