@@ -45,7 +45,7 @@ clear
 
 
 * do each of the weather commands
-	do "`root'/wave_1/ETH_ESSY1_weather.do"		//	generate wave 1 weather variables
+	do "`root'/wave_1/ETH_ESSY1_weather.do"		//	generate wave 1 weather variables 
 	do "`root'/wave_2/ETH_ESSY2_weather.do"		//	generate wave 2 weather variables
 	do "`root'/wave_3/ETH_ESSY3_weather.do"		//	generate wave 3 weather variables
 	do "`root'/wave_4/ETH_ESSY4_weather.do"		//	generate wave 4 weather variables

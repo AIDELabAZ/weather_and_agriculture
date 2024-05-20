@@ -1,5 +1,5 @@
 * Project: WB Weather
-* Created on: April 2020
+* Created on: May 2024
 * Created by: jdm
 * edited on: 20 May 2024
 * edited by: jdm
@@ -49,7 +49,7 @@
 		import delimited "`root'/`file'", varnames(1)   ///
 			encoding(Big5) stringcols(1) clear
 
-		* drop early and late observations
+		* drop early and late observations (2019)
 		keep 	ssd_hhid rf_19831101-rf_20190531
 
 		* drop unnecessary months, this will make renaming variables easier
@@ -143,7 +143,7 @@
 		import delimited "`root'/`file'", varnames(1)   ///
 			encoding(Big5) stringcols(1) clear
 
-		* drop early and late observations
+		* drop early and late observations (2019)
 		keep 	ssd_hhid tmp_19831101-tmp_20190531
 
 		* drop unnecessary months, this will make renaming variables easier (June-Oct)

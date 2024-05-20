@@ -49,7 +49,7 @@
 		import delimited "`root'/`file'", varnames (1)  ///
 			encoding(Big5) stringcols(1) clear
 
-		* drop early and late observations
+		* drop early and late observations (2011)
 		keep 	y2_hhid rf_19831101-rf_20110531
 
 		* drop unnecessary months, this will make renaming variables easier
@@ -143,7 +143,7 @@
 		import delimited "`root'/`file'", varnames(1)  ///
 			encoding(Big5) stringcols(1) clear
 
-		* drop early and late observations
+		* drop early and late observations (2011)
 		keep 	y2_hhid tmp_19831101-tmp_20110531
 
 		* drop unnecessary months, this will make renaming variables easier (June-Oct)
