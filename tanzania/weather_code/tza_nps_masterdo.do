@@ -9,7 +9,7 @@
 	* Executes all wave specific Tanzania weather .do files
     * runs weather_command .ado file
 	* outputs .dta rainfall data ready to merge with LSMS household data
-	* take XXX minutes to convert and process weather data
+	* takes 80 minutes to convert and process weather data
 
 * assumes
 	* weather_command.ado

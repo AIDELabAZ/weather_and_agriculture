@@ -56,7 +56,7 @@
 		loc dat = substr("`file'", 1, length("`file'") - 10) 
 		
 	* run the user written weather command - this takes a while
-		weather rf_ , rain_data ini_month(1) fin_month(7) day_month(1) keep(ssd_hhid)
+		weather rf_ , rain_data ini_month(1) fin_month(7) day_month(1) keep(sdd_hhid)
 		
 	* save file
 		compress
@@ -81,7 +81,7 @@
 		loc dat = substr("`file'", 1, length("`file'") - 10) 
 		
 	* run the user written weather command - this takes a while		
-		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(1) fin_month(7) day_month(1) keep(ssd_hhid)
+		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(1) fin_month(7) day_month(1) keep(sdd_hhid)
 		
 	* save file
 		compress

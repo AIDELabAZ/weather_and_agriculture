@@ -50,7 +50,7 @@
 			encoding(Big5) stringcols(1) clear
 
 		* drop early and late observations (2019)
-		keep 	ssd_hhid rf_19831101-rf_20190531
+		keep 	sdd_hhid rf_19831101-rf_20190531
 
 		* drop unnecessary months, this will make renaming variables easier
 		foreach var of varlist rf_* {
@@ -144,7 +144,7 @@
 			encoding(Big5) stringcols(1) clear
 
 		* drop early and late observations (2019)
-		keep 	ssd_hhid tmp_19831101-tmp_20190531
+		keep 	sdd_hhid tmp_19831101-tmp_20190531
 
 		* drop unnecessary months, this will make renaming variables easier (June-Oct)
 		foreach var of varlist tmp_* {
