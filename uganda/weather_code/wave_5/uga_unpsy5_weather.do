@@ -53,13 +53,13 @@
 		use "`root'/`folder'/`file'", clear
 		
 	* drop weather variables beyond 2015
-		keep hhid rf_19830101-rf_20151231
+		keep hh rf_19830101-rf_20151231
 		
 	* define locals to govern file naming	
 		loc dat = substr("`file'", 1, length("`file'") - 10) 
 		
 	* run the user written weather command - this takes a while
-		weather rf_ , rain_data ini_month(4) fin_month(10) day_month(1) keep(hhid)
+		weather rf_ , rain_data ini_month(4) fin_month(10) day_month(1) keep(hh)
 		
 	* save file
 		compress
@@ -81,13 +81,13 @@
 		use "`root'/`folder'/`file'", clear
 		
 	* drop weather variables beyond 2015
-		keep hhid rf_19830101-rf_20151231
+		keep hh rf_19830101-rf_20151231
 		
 	* define locals to govern file naming	
 		loc dat = substr("`file'", 1, length("`file'") - 10) 
 		
 	* run the user written weather command - this takes a while
-		weather rf_ , rain_data ini_month(2) fin_month(6) day_month(1) keep(hhid)
+		weather rf_ , rain_data ini_month(2) fin_month(6) day_month(1) keep(hh)
 		
 	* save file
 		compress
@@ -109,13 +109,13 @@
 		use "`root'/`folder'/`file'", clear
 		
 	* drop weather variables beyond 2015
-		keep hhid tmp_19830101-tmp_20151231
+		keep hh tmp_19830101-tmp_20151231
 		
 	* define locals to govern file naming	
 		loc dat = substr("`file'", 1, length("`file'") - 10) 
 		
 	* run the user written weather command - this takes a while
-		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(4) fin_month(10) day_month(1) keep(hhid)
+		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(4) fin_month(10) day_month(1) keep(hh)
 		
 	* save file
 		compress
@@ -137,13 +137,13 @@
 		use "`root'/`folder'/`file'", clear
 		
 	* drop weather variables beyond 2015
-		keep hhid tmp_19830101-tmp_20151231
+		keep hh tmp_19830101-tmp_20151231
 		
 	* define locals to govern file naming	
 		loc dat = substr("`file'", 1, length("`file'") - 10) 
 		
 	* run the user written weather command - this takes a while
-		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(2) fin_month(6) day_month(1) keep(hhid)
+		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(2) fin_month(6) day_month(1) keep(hh)
 		
 	* save file
 		compress

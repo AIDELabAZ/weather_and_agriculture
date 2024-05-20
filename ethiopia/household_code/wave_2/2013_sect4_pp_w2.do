@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: July 2020
 * Created by: McG
-* Stata v.16
+* Edited on: 20 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* cleans Ethiopia household variables, wave 3 PP sec4
@@ -10,12 +12,10 @@
 	* hierarchy: holder > parcel > field > crop
 	
 * assumes
-	* customsave.ado
+	* raw lsms-isa data
 
 * TO DO:
-	* missing obs for damaged, damaged_pct, field_prop; <200 missing each
-	* i dont believe we end up using any of these variables anyway
-	* otherwise, done
+	* done
 	
 	
 * **********************************************************************
@@ -147,8 +147,6 @@
 	describe
 	summarize 
 	sort 		holder_id parcel field crop_code
-	customsave , idvar(crop_id) filename(PP_SEC4.dta) path("`export'") ///
-		dofile(PP_SEC4) user($user)
-
+	save		"`export'.PP_SEC4.dta", replace
 * close the log
 	log	close

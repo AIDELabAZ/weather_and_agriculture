@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: July 2020
 * Created by: McG
-* Stata v.16
+* Edited on: 20 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* cleans Ethiopia household variables, wave 2 PH sec9
@@ -10,7 +12,7 @@
 	* hierarchy: holder > parcel > field > crop
 
 * assumes
-	* customsave.ado
+	* raw lsms-isa data
 	* distinct.ado
 	
 * TO DO:
@@ -402,8 +404,7 @@
 	describe
 	summarize 
 	sort 		holder_id ea_id parcel field crop_code
-	customsave , idvar(crop_id) filename(PH_SEC9.dta) path("`export'") ///
-		dofile(PP_SEC9) user($user)
+	save		"`export'/PH_SEC9.dta", replace
 
 * close the log
 	log	close
