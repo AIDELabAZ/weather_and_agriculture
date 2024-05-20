@@ -2,7 +2,7 @@
 
 This README describes the directory structure & should enable users to replicate all cleaning code used in the populated pre-analysis plan "[Estimating the Impact of Weather on Agriculture][3]." The main project site is on [OSF][1]. Because the weather data contains confidential information, it is not publically available. This means the weather code will not function, as that data is held by the World Bank. Without the weather data, the results cannot be replicated from raw data to final analysis. Contact Drs. Jeffrey D. Michler or Anna Josephson and they can share an intermediate - de-identified - version of the weather data for use in replicating the results. 
 
-This README was last updated on 25 May 2022. 
+This README was last updated on 20 May 2024. 
 
  ## Index
 
