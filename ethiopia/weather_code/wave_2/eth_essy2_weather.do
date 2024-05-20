@@ -50,7 +50,7 @@
 	* import the daily data file
 		use "`root'/`file'", clear
 		
-	* drop weather variables beyond 2011
+	* drop weather variables beyond 2013
 		keep household_id rf_19830101-rf_20131231
 		
 	* define locals to govern file naming	
@@ -78,7 +78,7 @@
 	* import the daily data file
 		use "`root'/`file'", clear
 		
-	* drop weather variables beyond 2011
+	* drop weather variables beyond 2013
 		keep household_id tmp_19830101-tmp_20131231
 		
 	* define locals to govern file naming	

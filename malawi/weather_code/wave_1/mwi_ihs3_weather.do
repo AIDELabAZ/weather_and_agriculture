@@ -2,7 +2,7 @@
 * Created on: April 2020
 * Created by: jdm
 * edited by: jdm
-* edited on: 18 May 2024
+* edited on: 20 May 2024
 * Stata v.18
 
 * does
@@ -42,127 +42,49 @@
 * 1 - run command for rainfall
 * **********************************************************************
 
-* import the daily ARC2 data file
-	use "`root'/ihs3_arc2rf_daily.dta", clear
+* define local with all files in each sub-folder
+	loc fileList : dir "`root'" files "*rf_daily.dta"
+	
+* loop through each file in the above local
+	foreach file in `fileList' {
+		
+	* import the daily data file
+		use "`root'/`file'", clear
 		
 	* define locals to govern file naming	
-		loc dat = substr("`file'", 1, length("`file'") - 4) 
+		loc dat = substr("`file'", 1, length("`file'") - 10) 
 		
 	* run the user written weather command - this takes a while
 		weather rf_ , rain_data ini_month(1) fin_month(7) day_month(1) keep(case_id)
 		
 	* save file
 		compress
-		save			"`export'/ihs3_arc2rf.dta", replace
-
-* import the daily CHIRPS data file
-	use "`root'/ihs3_chirpsrf_daily.dta", clear
-		
-	* define locals to govern file naming	
-		loc dat = substr("`file'", 1, length("`file'") - 4) 
-		
-	* run the user written weather command - this takes a while
-		weather rf_ , rain_data ini_month(1) fin_month(7) day_month(1) keep(case_id)
-		
-	* save file
-		compress
-		save			"`export'/ihs3_chirpsrf.dta", replace
-
-* import the daily CPC RF data file
-	use "`root'/ihs3_cpcrf_daily.dta", clear
-		
-	* define locals to govern file naming	
-		loc dat = substr("`file'", 1, length("`file'") - 4) 
-		
-	* run the user written weather command - this takes a while
-		weather rf_ , rain_data ini_month(1) fin_month(7) day_month(1) keep(case_id)
-		
-	* save file
-		compress
-		save			"`export'/ihs3_cpcrf.dta", replace
-
-* import the daily ERA5 RF data file
-	use "`root'/ihs3_erarf_daily.dta", clear
-		
-	* define locals to govern file naming	
-		loc dat = substr("`file'", 1, length("`file'") - 4) 
-		
-	* run the user written weather command - this takes a while
-		weather rf_ , rain_data ini_month(1) fin_month(7) day_month(1) keep(case_id)
-		
-	* save file
-		compress
-		save			"`export'/ihs3_erarf.dta", replace
-
-* import the daily TAMSAT data file
-	use "`root'/ihs3_tamsatrf_daily.dta", clear
-		
-	* define locals to govern file naming	
-		loc dat = substr("`file'", 1, length("`file'") - 4) 
-		
-	* run the user written weather command - this takes a while
-		weather rf_ , rain_data ini_month(1) fin_month(7) day_month(1) keep(case_id)
-		
-	* save file
-		compress
-		save			"`export'/ihs3_tamsatrf.dta", replace
-
-* import the daily MERRA-2 RF data file
-	use "`root'/ihs3_merrarf_daily.dta", clear
-		
-	* define locals to govern file naming	
-		loc dat = substr("`file'", 1, length("`file'") - 4) 
-		
-	* run the user written weather command - this takes a while
-		weather rf_ , rain_data ini_month(1) fin_month(7) day_month(1) keep(case_id)
-		
-	* save file
-		compress
-		save			"`export'/ihs3_merrarf.dta", replace
+		save			"`export'/`dat'.dta", replace
+}
 
 * **********************************************************************
 * 2 - run command for temperature
 * **********************************************************************
 
-* import the daily CPC TP data file
-	use "`root'/ihs3_cpctp_daily.dta", clear
+* define local with all files in each sub-folder
+	loc fileList : dir "`root'" files "*tp_daily.dta"
+	
+* loop through each file in the above local
+	foreach file in `fileList' {
+		
+	* import the daily data file
+		use "`root'/`file'", clear
 		
 	* define locals to govern file naming	
-		loc dat = substr("`file'", 1, length("`file'") - 4) 
+		loc dat = substr("`file'", 1, length("`file'") - 10) 
 		
 	* run the user written weather command - this takes a while
 		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(1) fin_month(7) day_month(1) keep(case_id)
 		
 	* save file
 		compress
-		save			"`export'/ihs3_cpctp.dta", replace
-
-* import the daily ERA5 TP data file
-	use "`root'/ihs3_eratp_daily.dta", clear
-		
-	* define locals to govern file naming	
-		loc dat = substr("`file'", 1, length("`file'") - 4) 
-		
-	* run the user written weather command - this takes a while
-		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(1) fin_month(7) day_month(1) keep(case_id)
-		
-	* save file
-		compress
-		save			"`export'/ihs3_eratp.dta", replace
-
-* import the daily MERRA-2 TP data file
-	use "`root'/ihs3_merratp_daily.dta", clear
-		
-	* define locals to govern file naming	
-		loc dat = substr("`file'", 1, length("`file'") - 4) 
-		
-	* run the user written weather command - this takes a while
-		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(1) fin_month(7) day_month(1) keep(case_id)
-		
-	* save file
-		compress
-		save			"`export'/ihs3_merratp.dta", replace
-
+		save			"`export'/`dat'.dta", replace
+}
 
 * close the log
 	log	close

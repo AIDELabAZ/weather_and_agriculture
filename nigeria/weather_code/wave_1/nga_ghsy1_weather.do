@@ -52,6 +52,9 @@
 	* import the daily data file
 		use "`root'/`file'", clear
 		
+	* drop weather variables beyond 2010
+		keep hhid rf_19830101-rf_20101231
+		
 	* define locals to govern file naming	
 		loc dat = substr("`file'", 1, length("`file'") - 10) 
 		
@@ -76,6 +79,9 @@
 		
 	* import the daily data file
 		use "`root'/`file'", clear
+		
+	* drop weather variables beyond 2010
+		keep hhid rf_19830101-rf_20101231
 		
 	* define locals to govern file naming	
 		loc dat = substr("`file'", 1, length("`file'") - 10) 
@@ -102,6 +108,9 @@
 	* import the daily data file
 		use "`root'/`file'", clear
 		
+	* drop weather variables beyond 2010
+		keep hhid tmp_19830101-tmp_20101231
+		
 	* define locals to govern file naming	
 		loc dat = substr("`file'", 1, length("`file'") - 10) 
 		
@@ -127,6 +136,9 @@
 		
 	* import the daily data file
 		use "`root'/`file'", clear
+		
+	* drop weather variables beyond 2010
+		keep hhid tmp_19830101-tmp_20101231
 		
 	* define locals to govern file naming	
 		loc dat = substr("`file'", 1, length("`file'") - 10) 
