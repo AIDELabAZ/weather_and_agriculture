@@ -1,8 +1,6 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: jdm
-* Edited on: 12 Feb 2024
-* Edited by: reece
 * Stata v.18.0
 
 * does
@@ -37,7 +35,7 @@
 * Define root folder globals
     if `"`c(username)'"' == "jdmichler" {
         global 		code  	"C:/Users/jdmichler/git/AIDELabAZ/weather_and_agriculture"
-		global 		data	"C:/Users/jdmichler/OneDrive - University of Arizona/weather_project"
+		global 		data	"C:/Users/jdmichler/OneDrive - University of Arizona/weather_and_agriculture"
     }
 
 * Define root folder globals
@@ -54,12 +52,8 @@
 if $pack == 1 {
 	
 	* for packages/commands, make a local containing any required packages
-    * temporarily set delimiter to ; so can break the line
-    #delimit ;		
-	loc userpack = "blindschemes mdesc estout distinct winsor2 unique 
-                    palettes catplot colrspace carryforward missings 
-                    coefplot" ;
-    #delimit cr
+		loc userpack "blindschemes mdesc estout distinct winsor2" 
+
 	
 	* install packages that are on ssc	
 		foreach package in `userpack' {
@@ -78,9 +72,14 @@ if $pack == 1 {
 			}
 		}
 
-	* install -xfill and dm89_1 - packages
-		net install xfill, 	replace from(https://www.sealedenvelope.com/)
-		
+	* install -xfill- package
+		net install xfill, replace from(https://www.sealedenvelope.com/)
+
+	* install -weather- package
+		net install WeatherConfig, ///
+		from(https://jdavidm.github.io/) replace
+	
+
 	* update all ado files
 		ado update, update
 

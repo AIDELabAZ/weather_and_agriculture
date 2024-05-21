@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: mcg
-* Stata v.16
+* Edited on: 20 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* reads in merged data sets
@@ -11,7 +13,6 @@
 
 * assumes
 	* all ethiopia data has been cleaned and merged with rainfall
-	* customsave.ado
 	* xfill.ado
 
 * TO DO:
@@ -23,13 +24,13 @@
 * **********************************************************************
 
 * define paths
-	loc		root 	= 	"$data/merged_data/ethiopia"
-	loc		export 	= 	"$data/regression_data/ethiopia"
-	loc		logout 	= 	"$data/merged_data/ethiopia/logs"
+	global		root 	= 	"$data/merged_data/ethiopia"
+	global		export 	= 	"$data/regression_data/ethiopia"
+	global		logout 	= 	"$data/merged_data/ethiopia/logs"
 
 * open log	
-	cap log close
-	log 	using 		"`logout'/eth_append_build", append
+	cap log 	close
+	log 		using 		"$logout/eth_append_build", append
 	
 	
 * **********************************************************************
@@ -37,19 +38,19 @@
 * **********************************************************************
 
 * import wave 1 dataset
-	use 		"`root'/wave_1/essy1_merged.dta", clear
+	use 		"$root/wave_1/essy1_merged.dta", clear
 
 * append wave 2 dataset
-	append		using "`root'/wave_2/essy2_merged.dta", force
+	append		using "$root/wave_2/essy2_merged.dta", force
 	
 * append wave 3 dataset
-	append		using "`root'/wave_3/essy3_merged", force	
+	append		using "$root/wave_3/essy3_merged", force	
 	
 * check the number of observations again
 	count
-	*** 7312 observations 
+	*** 7307 observations 
 	count if 		year == 2011
-	*** wave 1 has 1694
+	*** wave 1 has 1689
 	count if 		year == 2013
 	*** wave 2 has 2900
 	count if 		year == 2015
@@ -57,9 +58,7 @@
 	
 * drop observations missing year 1 household id
 	drop if			household_id == ""
-	
-* dropping 2017 weather data
-	drop			*2017
+	* 35 observations deleted
 
 * generate ethiopia panel id
 	egen			eth_id = group(household_id)
@@ -108,7 +107,7 @@
 	
 * save file
 	qui: compress
-	save 				"`export'/eth_complete.dta", replace
+	save 				"$export/eth_complete.dta", replace
 	
 * close the log
 	log	close

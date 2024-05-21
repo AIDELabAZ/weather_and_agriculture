@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: July 2020
 * Created by: mcg
-* Stata v.16
+* Edited on: 20 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* merges individual cleaned plot datasets together
@@ -10,7 +12,6 @@
 
 * assumes
 	* previously cleaned household datasets
-	* customsave.ado
 
 * TO DO:
 	* done
@@ -662,9 +663,7 @@
 	summarize 
 	
 * saving production dataset
-	customsave , idvar(household_id) filename(hhfinal_ess1.dta) path("`export'") ///
-			dofile(ess1_merge) user($user) 
-
+	save 			"`export'/hhfinal_ess1.dta", replace
 * close the log
 	log	close
 
