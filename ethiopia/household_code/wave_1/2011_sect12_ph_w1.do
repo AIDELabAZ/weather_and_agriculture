@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: July 2020
 * Created by: McG
-* Stata v.16
+* Edited on: 20 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* cleans Ethiopia household variables, wave 1 PH sec12
@@ -11,7 +13,7 @@
 	* generates price data
 
 * assumes
-	* customsave.ado
+	* raw lsms-isa data
 	
 * TO DO:
 	* done
