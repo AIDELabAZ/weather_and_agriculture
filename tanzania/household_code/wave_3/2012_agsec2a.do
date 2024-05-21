@@ -1,9 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: McG
-* Edited on April 26, 2024
-* Edited by: reece
-* Stata v.16
+* Edited on: 21 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* cleans Tanzania household variables, wave 3 Ag sec2a
@@ -11,7 +11,7 @@
 	* generates imputed plot sizes
 	
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* distinct.ado
 
 * TO DO:

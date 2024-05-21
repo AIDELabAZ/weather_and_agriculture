@@ -1,9 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: McG
-* Edited on: April 26, 2024
-* Edited by: reece
-* Stata v.16
+* Edited on: 21 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* merges individual cleaned plot datasets together
@@ -12,7 +12,6 @@
 
 * assumes
 	* previously cleaned household datasets
-	* customsave.ado
 
 * TO DO:
 	* complete

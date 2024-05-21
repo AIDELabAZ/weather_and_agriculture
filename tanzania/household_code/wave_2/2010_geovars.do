@@ -1,14 +1,15 @@
 * Project: WB Weather
 * Created on: Oct 2020
 * Created by: jdm
+* Edited on: 21 May 2024
 * Edited by: jdm
-* Stata v.16
+* Stata v.18
 
 * does
 	* cleans geovars
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 
 * TO DO:
 	* done
@@ -52,8 +53,7 @@
 	summarize
 
 * save file
-		customsave , idvar(y2_hhid) filename("2010_geovars.dta") ///
-			path("`export'") dofile(2010_geovars) user($user)
+	save 			"`export'/2010_geovars.dta", replace
 
 * close the log
 	log	close

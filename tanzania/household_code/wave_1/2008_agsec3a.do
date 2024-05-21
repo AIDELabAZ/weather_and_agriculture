@@ -1,9 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: McG
-* Edited on: Aprl 26, 2024
-* Edited by: reece
-* Stata v.15
+* Edited on: 21 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* cleans Tanzania household variables, wave 1 Ag sec3a
@@ -11,7 +11,7 @@
 	* generates irrigation and pesticide dummies, fertilizer variables, and labor variables 
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* distinct.ado
 
 * TO DO:
