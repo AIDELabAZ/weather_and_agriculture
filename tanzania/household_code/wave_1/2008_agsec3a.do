@@ -1,6 +1,8 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: McG
+* Edited on: Aprl 26, 2024
+* Edited by: reece
 * Stata v.15
 
 * does
@@ -21,13 +23,13 @@
 * **********************************************************************
 
 * define paths
-	loc root = "$data/household_data/tanzania/wave_1/raw"
-	loc export = "$data/household_data/tanzania/wave_1/refined"
-	loc logout = "$data/household_data/tanzania/logs"
+	global root 	"$data/household_data/tanzania/wave_1/raw"
+	global export 	"$data/household_data/tanzania/wave_1/refined"
+	global logout 	"$data/household_data/tanzania/logs"
 
-* open log
-	cap	log close
-	log using "`logout'/wv1_AGSEC3A", append
+* open log 
+	cap log close 
+	log using "$logout/wv1_AGSEC3A", append
 
 
 * **********************************************************************
@@ -35,7 +37,7 @@
 * **********************************************************************
 
 * load data
-	use 		"`root'/SEC_3A", clear
+	use 		"$root/SEC_3A", clear
 	
 * dropping duplicates
 	duplicates 		drop
@@ -52,7 +54,7 @@
 	isid			plot_id	
 
 * must merge in regional identifiers from 2008_HHSECA to impute
-	merge			m:1 hhid using "`export'/HH_SECA"
+	merge			m:1 hhid using "$export/HH_SECA"
 	tab				_merge
 	*** 982 not matched, from using
 	
@@ -443,7 +445,7 @@
 	lab var			y1_rural "Cluster Type"
 	lab var			hhweight "Household Weights (Trimmed & Post-Stratified)"
 	lab var			plotnum "Plot ID Within household"
-	lab var			plot_id "Unquie Plot Identifier"
+	lab var			plot_id "Unique Plot Identifier"
 	lab var			clusterid "Unique Cluster Identification"
 	lab var			strataid "Design Strata"
 	lab var			region "Region Code"
@@ -456,14 +458,14 @@
 	lab var			herbicide_any "Was Herbicide Used?"	
 	lab var			kilo_fert "Fertilizer Use (kg), Imputed"
 	
+		
 * prepare for export
-	isid			hhid plotnum	
+	isid			hhid plotnum
 	compress
 	describe
 	summarize 
-	sort plot_id
-	customsave , idvar(plot_id) filename(AG_SEC3A.dta) path("`export'") ///
-		dofile(2008_AGSEC3A) user($user)
+	sort 			plot_id
+	save 			"$export/AG_SEC3A.dta", replace
 
 * close the log
 	log	close

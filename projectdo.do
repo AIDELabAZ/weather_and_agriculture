@@ -38,7 +38,12 @@
 		global 		data	"C:/Users/jdmichler/OneDrive - University of Arizona/weather_and_agriculture"
     }
 
-	
+* Define root folder globals
+    if `"`c(username)'"' == "rbrnhm" {
+        global 		code  	"C:/Users/rbrnhm/Documents/GitHub/weather_and_agriculture"
+		global 		data	"C:/Users/rbrnhm/OneDrive - University of Arizona/weather_project"
+    }
+
 * **********************************************************************
 * 0 (b) - Check if any required packages are installed:
 * **********************************************************************
@@ -48,6 +53,7 @@ if $pack == 1 {
 	
 	* for packages/commands, make a local containing any required packages
 		loc userpack "blindschemes mdesc estout distinct winsor2" 
+
 	
 	* install packages that are on ssc	
 		foreach package in `userpack' {
@@ -73,6 +79,7 @@ if $pack == 1 {
 		net install WeatherConfig, ///
 		from(https://jdavidm.github.io/) replace
 	
+
 	* update all ado files
 		ado update, update
 
@@ -104,7 +111,7 @@ if $pack == 1 {
 /*	this code requires a user to have downloaded the publically available 
 	household data sets and placed them into the folder structure detailed
 	in the readme file accompanying this repo.
-	
+
 	do 			"$code/ethiopia/household_code/eth_hh_masterdo.do"
 	do 			"$code/malawi/household_code/mwi_hh_masterdo.do"
 	do 			"$code/niger/household_code/ngr_hh_masterdo.do"
