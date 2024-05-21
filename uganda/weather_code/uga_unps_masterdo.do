@@ -36,7 +36,7 @@ clear
 * **********************************************************************
 * 1 - run .do files
 * **********************************************************************
-/*
+
 * do each of the file converters
 	do "`root'/wave_1/UGA_UNPSY1_converter.do"	//	convert wave 1 .csv to .dta
 	do "`root'/wave_2/UGA_UNPSY2_converter.do"	//	convert wave 2 .csv to .dta
@@ -49,7 +49,7 @@ clear
 * do each of the weather commands
 	do "`root'/wave_1/UGA_UNPSY1_weather.do"	//	generate wave 1 weather variables
 	do "`root'/wave_2/UGA_UNPSY2_weather.do"	//	generate wave 2 weather variables
-	do "`root'/wave_3/UGA_UNPSY3_weather.do"	//	generate wave 3 weather variables */
+	do "`root'/wave_3/UGA_UNPSY3_weather.do"	//	generate wave 3 weather variables
 	do "`root'/wave_4/UGA_UNPSY4_weather.do"	//	generate wave 4 weather variables
 	do "`root'/wave_5/UGA_UNPSY5_weather.do"	//	generate wave 5 weather variables
 	do "`root'/wave_7/UGA_UNPSY7_weather.do"	//	generate wave 7 weather variables
