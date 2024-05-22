@@ -40,7 +40,7 @@
 describe
 sort hhid plotid indiv
 isid hhid plotid indiv
-collapse hhid plotid
+collapse (sum) sa2aq1b, by(zone state lga sector ea hhid plotid)
 
 * per Palacios-Lopez et al. (2017) in Food Policy, we cap labor per activity
 * 7 days * 13 weeks = 91 days for land prep and planting
@@ -52,7 +52,7 @@ collapse hhid plotid
 	*cannot follow, not given day for each activity
 
 * create household member labor 
-		gen			hrv_labor = sa2aq1b if indiv < 5
+
 	
 	*** this calculation is for up to 4 members of the household that were laborers although this wave has 8 household members we only use the first 4
 	*** per the survey, these are laborers from the last rainy/harvest season
