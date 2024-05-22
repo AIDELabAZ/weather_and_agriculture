@@ -1,11 +1,12 @@
 * Project: WB Weather
-* Created on: May 2020
-* Created by: alj
-* Edited by: ek
-* Stata v.16
+* Created on: Feb 2024
+* Created by: jet
+* Edited on: May 17, 2024
+* Edited by: reece
+* Stata v.18
 
 * does
-	* reads in Nigeria, WAVE 3 (2015-2016), POST HARVEST, NIGERIA AG SECT11D - Fertilizer
+	* reads in Nigeria, WAVE 4 (2018-2019), POST HARVEST, NIGERIA AG SECT11D - Fertilizer
 	* determines fertilizer use / measurement
 	* outputs clean data file ready for combination with wave 2 plot data
 
@@ -14,45 +15,41 @@
 	* mdesc.ado
 	
 * TO DO:
-	* done
+	* everything
+	* i think this file should be combined with 2018_ph_sect11c2, going to clean fertilizer variables there
+	* variables of interest not in sect11d_harvestwv4 but in sect11c2
 
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
 
 * define paths	
-	loc root = "$data/household_data/nigeria/wave_3/raw"
-	loc export = "$data/household_data/nigeria/wave_3/refined"
-	loc logout = "$data/household_data/nigeria/logs"
+	global root = "$data/household_data/nigeria/wave_4/raw"
+	global export = "$data/household_data/nigeria/wave_4/refined"
+	global logout = "$data/household_data/nigeria/logs"
 
 * open log	
 	cap log close
-	*log using "`logout'/ph_sect11d", append
+	log using "$logout/ph_sect11d", append
 
 * **********************************************************************
 * 1 - determine fertilizer and conversion to kgs
 * **********************************************************************
 		
 * import the first relevant data file
-		use "`root'/secta11d_harvestw3", clear 
+		use "$root/secta11c2_harvestw4", clear 
 
 describe
 sort hhid plotid 
 isid hhid plotid
 
 *binary for fert use
-rename s11dq1 fert_any
+gen fert_any = 1 if ((s11dq1a == 1) | (s11dq36 == 1))
 	lab var			fert_any "=1 if any fertilizer was used"
 
 *drop manure/compost observations
-	tab sect11dq7
-	tab s11dq15 
-	tab s11dq27
-	tab s11dq3
-	drop if s11dq15==3
-	***1 observation deleted
-	drop if s11dq15_os=="COMPOST"
-	***1 observation deleted
+	drop if s11c2q36_os=="COMPOST"
+	***0 observations deleted
 	
 * quantity of fertilizer from different sources
 

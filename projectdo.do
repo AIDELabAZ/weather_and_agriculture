@@ -37,12 +37,18 @@
         global 		code  	"C:/Users/jdmichler/git/AIDELabAZ/weather_and_agriculture"
 		global 		data	"C:/Users/jdmichler/OneDrive - University of Arizona/weather_and_agriculture"
     }
-
-* Define root folder globals
-    if `"`c(username)'"' == "rbrnhm" {
-        global 		code  	"C:/Users/rbrnhm/Documents/GitHub/weather_and_agriculture"
-		global 		data	"C:/Users/rbrnhm/OneDrive - University of Arizona/weather_and_agriculture"
+	if `"`c(username)'"' == "yetfl" {
+        global 		code  	"C:/Users/yetfl/OneDrive/Desktop/GitHub/weather_and_agriculture"
+		global 		data	"C:/Users/yetfl/OneDrive - University of Arizona/weather_and_agriculture"
     }
+    if `"`c(username)'"' == "annal" {
+        global 		code  	"C:/Users/aljosephson/git/weather_and_agriculture"
+		global 		data	"C:/Users/aljosephson/OneDrive - University of Arizona/weather_and_agriculture"
+    }	
+	if `"`c(username)'"' == "rbrnhm" {
+        global 		code  	"C:/Users/rbrnhm/GitHub/weather_and_agriculture"
+		global 		data	"C:/Users/rbrnhm/OneDrive - University of Arizona/weather_and_agriculture"
+    }	
 
 * **********************************************************************
 * 0 (b) - Check if any required packages are installed:
@@ -53,7 +59,6 @@ if $pack == 1 {
 	
 	* for packages/commands, make a local containing any required packages
 		loc userpack "blindschemes mdesc estout distinct winsor2" 
-
 	
 	* install packages that are on ssc	
 		foreach package in `userpack' {
@@ -78,7 +83,6 @@ if $pack == 1 {
 	* install -weather- package
 		net install WeatherConfig, ///
 		from(https://jdavidm.github.io/) replace
-	
 
 	* update all ado files
 		ado update, update

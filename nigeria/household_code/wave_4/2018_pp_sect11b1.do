@@ -5,17 +5,13 @@
 * Stata v.16
 
 * does
-	* reads in Nigeria, WAVE 3 (2015-2016), POST HARVEST, AG SECT11C2
-	* creates binaries for pesticide and herbicide use
-	* outputs clean data file ready for combination with wave 2 plot data
+	* reads in Nigeria, WAVE 3 (2015-2016) POST PLANTING, NIGERIA AG SECT11B1
+	* determines irrigation and plot use
+	* outputs clean data file ready for combination with wave 3 hh data
 
 * assumes
 	* customsave.ado
-	* mdesc.ado
 	
-* TO DO:
-	* complete
-
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
@@ -30,55 +26,52 @@
 	
 * open log	
 	cap log close
-	*log using "`logout'/ph_sect11c2", append
+	log using "`logout'/pp_sect11b1", append
 
 * **********************************************************************
-* 1 - determine pesticide, herbicide, etc.
+* 1 - determine irrigation and plot use
 * **********************************************************************
 		
 * import the first relevant data file
-		use "`root'/secta11c2_harvestw3", clear 	
+		use "`root'/sect11b1_plantingw3", clear 	
 
 describe
-sort hhid plotid 
+sort hhid plotid
 isid hhid plotid
 
-*binary for pesticide use since the new year
-	rename s11c2q1 pest_any
-	lab var			pest_any "=1 if any pesticide was used"
+*is this plot irrigated?
+rename s11b1q39 irr_any
+	lab var			irr_any "=1 if any irrigation was used"
 
-	*binary for herbicide use since the new year
-	rename s11c2q10 herb_any
-	lab var			herb_any "=1 if any herbicide was used"
-
-* check if any missing values
-	mdesc			pest_any herb_any
-	*** 16 pest and 16 herb missing, change these to "no"
+* check to see if values are missing
+	mdesc			irr_any
+	***99 missing
+	
 	
 * convert missing values to "no"
-	replace			pest_any = 2 if pest_any == .
-	replace			herb_any = 2 if herb_any == .
-
+	replace			irr_any = 2 if irr_any == .
+	
 * **********************************************************************
 * 2 - end matter, clean up to save
 * **********************************************************************
 
 	keep 			hhid zone state lga sector hhid ea plotid ///
-					pest_any herb_any 
-	
+					irr_any
+
 * create unique household-plot identifier
 	isid			hhid plotid
 	sort			hhid plotid
 	egen			plot_id = group(hhid plotid)
 	lab var			plot_id "unique plot identifier"
+	
+	compress
+	describe
+	summarize 
 
-compress
-describe
-summarize 
 
 * save file
-		customsave , idvar(hhid) filename("ph_sect11c2.dta") ///
-			path("`export'/`folder'") dofile(ph_sect11c2) user($user)
+		customsave , idvar(hhid) filename("pp_sect11b1.dta") ///
+			path("`export'/`folder'") dofile(pp_sect11b1) user($user)
 
 * close the log
 	log	close
