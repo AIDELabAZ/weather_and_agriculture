@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: April 2020
 * Created by: McG
-* Stata v.15
+* Edited on: 21 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* cleans Tanzania household variables, wave 2 Ag sec2a
@@ -9,7 +11,7 @@
 	* generates imputed plot sizes
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* distinct.ado
 
 * TO DO:
@@ -20,14 +22,16 @@
 * 0 - setup
 * **********************************************************************
 
-* define paths
-	loc root = "$data/household_data/tanzania/wave_2/raw"
-	loc export = "$data/household_data/tanzania/wave_2/refined"
-	loc logout = "$data/household_data/tanzania/logs"
 
-* open log
+* define paths
+	global root 	"$data/household_data/tanzania/wave_2/raw"
+	global export 	"$data/household_data/tanzania/wave_2/refined"
+	global logout 	"$data/household_data/tanzania/logs"
+
+* open log 
 	cap log close 
-	log using "`logout'/wv2_AGSEC2A", append
+	log using "$logout/wv2_AGSEC2A", append
+
 
 
 * ***********************************************************************
@@ -35,7 +39,7 @@
 * ***********************************************************************
 
 * load data
-	use				"`root'/AG_SEC2A", clear
+	use				"$root/AG_SEC2A", clear
 	
 * dropping duplicates
 	duplicates 		drop
@@ -67,7 +71,7 @@
 * ***********************************************************************	
 
 * must merge in regional identifiers from 2012_HHSECA to impute
-	merge			m:1 y2_hhid using "`export'/HH_SECA"
+	merge			m:1 y2_hhid using "$export/HH_SECA"
 	tab				_merge
 	*** 1,294 not matched
 	
@@ -81,7 +85,7 @@
 	*** 129 distinct ditricts
 	
 * must merge in regional identifiers from 2012_AG_SEC_3A to impute
-	merge			1:1 y2_hhid plotnum using "`root'/AG_SEC3A"
+	merge			1:1 y2_hhid plotnum using "$root/AG_SEC3A"
 	*** everything matches - no drops from using
 	
 	drop if			_merge == 2
@@ -252,16 +256,15 @@
 	lab var		district "District Code"
 	lab var		ward "Ward Code"
 	lab var		ea "Village / Enumeration Area Code"
-	
+
 * prepare for export
 	isid			y2_hhid plotnum
 	compress
 	describe
 	summarize 
-	sort plot_id
-	customsave , idvar(plot_id) filename(AG_SEC2A.dta) path("`export'") ///
-		dofile(2010_AGSEC2A) user($user)
-
+	sort 			plot_id
+	save 			"$export/AG_SEC2A.dta", replace
+	
 * close the log
 	log	close
 

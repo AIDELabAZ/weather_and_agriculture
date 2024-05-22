@@ -1,14 +1,15 @@
 * Project: WB Weather
 * Created on: Oct 2020
 * Created by: jdm
+* Edited on: 20 May 2024
 * Edited by: jdm
-* Stata v.16
+* Stata v.18
 
 * does
 	* cleans geovars
 
 * assumes
-	* customsave.ado
+	* raw lsms-isa data
 
 * TO DO:
 	* done
@@ -52,8 +53,7 @@
 	summarize
 
 * save file
-		customsave , idvar(household_id) filename("ess1_geovars.dta") ///
-			path("`export'") dofile(wave_1_geovars) user($user)
+	save			"`export'/ess1_geovars.dta", replace
 
 * close the log
 	log	close

@@ -1,14 +1,15 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: McG
-* Stata v.16
+* Edited on: 20 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* Executes all wave specific Tanzania hh .do files
 	* outputs finished houshold data set ready to merge with weather
 
 * assumes
-	* customsave.ado 
 	* subsidiary, wave-specific .do files
 
 * TO DO:

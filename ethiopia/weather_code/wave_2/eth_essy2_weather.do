@@ -1,7 +1,9 @@
 * Project: WB Weather
-* Created on: April 2020
 * Created by: jdm
-* Stata v.16
+* Created on: April 2020
+* edited by: jdm
+* edited on: 20 May 2024
+* Stata v.18
 
 * does
 	* reads in Ethiopia, wave 2 .dta files with daily values
@@ -11,12 +13,11 @@
 	/* 	-the growing season that we care about is defined on the FAO website:
 			http://www.fao.org/giews/countrybrief/country.jsp?code=ETH
 		-we measure rainfall during the months that the FAO defines as sowing and growing
-		-we define the relevant months as March 1 - November 30 */
-
+		-we define the relevant months as May 1 - September 30 */
+		
 * assumes
-	* ETH_ESSY2_converter.do
+	* daily data converted to .dta
 	* weather_command.ado
-	* customsave.ado
 
 * TO DO:
 	* completed
@@ -26,15 +27,12 @@
 * 0 - setup
 * **********************************************************************
 
-* set global user
-*	global user "jdmichler"
-
 * define paths	
-	loc root = "$data/weather_data/ethiopia/wave_2/daily"
-	loc export = "$data/weather_data/ethiopia/wave_2/refined"
+	loc root = "$data/weather_data/ethiopia/wave_2/daily/essy2_up"
+	loc export = "$data/weather_data/ethiopia/wave_2/refined/essy2_up"
 	loc logout = "$data/weather_data/ethiopia/logs"
 
-* open log
+* open log	
 	cap log		close
 	log using "`logout'/eth_essy2_weather", replace
 
@@ -43,73 +41,55 @@
 * 1 - run command for rainfall
 * **********************************************************************
 
-* define local with all sub-folders in it
-	loc folderList : dir "`root'" dirs "ESSY2_rf*"
-
-* loop through each of the sub-folders in the above local
-foreach folder of local folderList {
+* define local with all files in each sub-folder
+	loc fileList : dir "`root'" files "*rf_daily.dta"
 	
-	* create directories to write output to
-		qui: capture mkdir "`export'/`folder'/"
-	
-	* define local with all files in each sub-folder
-		loc fileList : dir "`root'/`folder'" files "*.dta"
-	
-	* loop through each file in the above local
-		foreach file in `fileList' {
+* loop through each file in the above local
+	foreach file in `fileList' {
 		
-		* import the daily data file
-			use "`root'/`folder'/`file'", clear
-			
-		* define locals to govern file naming
-			loc dat = substr("`file'", 1, 5)
-			loc ext = substr("`file'", 7, 2)
-			loc sat = substr("`file'", 10, 3)
+	* import the daily data file
+		use "`root'/`file'", clear
 		
-		* run the user written weather command - this takes a while
-		weather rf_ , rain_data ini_month(3) fin_month(12) day_month(1) keep(household_id2)
+	* drop weather variables beyond 2013
+		keep household_id rf_19830101-rf_20131231
 		
-		* save file
-		customsave , idvar(household_id2) filename("`dat'_`ext'_`sat'.dta") ///
-			path("`export'/`folder'") dofile(ETH_ESSY2_weather) user($user)
-	}
+	* define locals to govern file naming	
+		loc dat = substr("`file'", 1, length("`file'") - 10) 
+		
+	* run the user written weather command - this takes a while
+		weather rf_ , rain_data ini_month(5) fin_month(10) day_month(1) keep(household_id)
+		
+	* save file
+		compress
+		save			"`export'/`dat'.dta", replace
 }
 
-
+		
 * **********************************************************************
 * 2 - run command for temperature
 * **********************************************************************
 
-* define local with all sub-folders in it
-	loc folderList : dir "`root'" dirs "ESSY2_t*"
-
-* loop through each of the sub-folders in the above local
-foreach folder of local folderList {
+* define local with all files in each sub-folder
+	loc fileList : dir "`root'" files "*tp_daily.dta"
 	
-	* create directories to write output to
-	qui: capture mkdir "`export'/`folder'/"
-
-	* define local with all files in each sub-folder	
-	loc fileList : dir "`root'/`folder'" files "*.dta"
-	
-	* loop through each file in the above local
+* loop through each file in the above local
 	foreach file in `fileList' {
 		
-		* import the daily data file		
-		use "`root'/`folder'/`file'", clear
+	* import the daily data file
+		use "`root'/`file'", clear
 		
-		* define locals to govern file naming
-			loc dat = substr("`file'", 1, 5)
-			loc ext = substr("`file'", 7, 2)
-			loc sat = substr("`file'", 10, 2)
+	* drop weather variables beyond 2013
+		keep household_id tmp_19830101-tmp_20131231
 		
-		* run the user written weather command - this takes a while		
-		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(3) fin_month(12) day_month(1) keep(household_id2)
+	* define locals to govern file naming	
+		loc dat = substr("`file'", 1, length("`file'") - 10) 
 		
-		* save file
-		customsave , idvar(household_id2) filename("`dat'_`ext'_`sat'.dta") ///
-			path("`export'/`folder'") dofile(ETH_ESSY2_weather) user($user)
-		}
+	* run the user written weather command - this takes a while
+		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(5) fin_month(10) day_month(1) keep(household_id)
+		
+	* save file
+		compress
+		save			"`export'/`dat'.dta", replace
 }
 
 * close the log

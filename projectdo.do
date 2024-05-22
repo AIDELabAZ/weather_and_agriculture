@@ -1,8 +1,6 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: jdm
-* Edited on: 15 Feb 24
-* Edited by: jdm
 * Stata v.18.0
 
 * does
@@ -43,16 +41,15 @@
         global 		code  	"C:/Users/yetfl/OneDrive/Desktop/GitHub/weather_and_agriculture"
 		global 		data	"C:/Users/yetfl/OneDrive - University of Arizona/weather_and_agriculture"
     }
-
     if `"`c(username)'"' == "annal" {
         global 		code  	"C:/Users/aljosephson/git/weather_and_agriculture"
 		global 		data	"C:/Users/aljosephson/OneDrive - University of Arizona/weather_and_agriculture"
     }	
-
 	if `"`c(username)'"' == "rbrnhm" {
         global 		code  	"C:/Users/rbrnhm/GitHub/weather_and_agriculture"
 		global 		data	"C:/Users/rbrnhm/OneDrive - University of Arizona/weather_and_agriculture"
     }	
+
 * **********************************************************************
 * 0 (b) - Check if any required packages are installed:
 * **********************************************************************
@@ -61,10 +58,7 @@
 if $pack == 1 {
 	
 	* for packages/commands, make a local containing any required packages
-    * temporarily set delimiter to ; so can break the line
-    #delimit ;		
-	loc userpack = "blindschemes mdesc estout distinct winsor2" ;
-    #delimit cr
+		loc userpack "blindschemes mdesc estout distinct winsor2" 
 	
 	* install packages that are on ssc	
 		foreach package in `userpack' {
@@ -83,9 +77,13 @@ if $pack == 1 {
 			}
 		}
 
-	* install -xfill and dm89_1 - packages
-		net install xfill, 	replace from(https://www.sealedenvelope.com/)
-		
+	* install -xfill- package
+		net install xfill, replace from(https://www.sealedenvelope.com/)
+
+	* install -weather- package
+		net install WeatherConfig, ///
+		from(https://jdavidm.github.io/) replace
+
 	* update all ado files
 		ado update, update
 
@@ -117,7 +115,7 @@ if $pack == 1 {
 /*	this code requires a user to have downloaded the publically available 
 	household data sets and placed them into the folder structure detailed
 	in the readme file accompanying this repo.
-	
+
 	do 			"$code/ethiopia/household_code/eth_hh_masterdo.do"
 	do 			"$code/malawi/household_code/mwi_hh_masterdo.do"
 	do 			"$code/niger/household_code/ngr_hh_masterdo.do"
