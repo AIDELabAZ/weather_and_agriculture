@@ -1,11 +1,12 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: alj
-* Edited by: ek
-* Stata v.16
+* Edited by: reece
+* Edited on: May 22 2024
+* Stata v.18
 
 * does
-	* reads in Nigeria, WAVE 3 (2015-2016) POST HARVEST, NIGERIA AG SECTA2
+	* reads in Nigeria, WAVE 4 (2018-2019) POST HARVEST, NIGERIA AG SECTA2
 	* determines harvest labor (only) for preceeding rainy season
 	* outputs clean data file ready for combination with wave 1 plot data
 
@@ -21,24 +22,25 @@
 * **********************************************************************
 	
 * define paths	
-	loc root = "$data/household_data/nigeria/wave_3/raw"
-	loc export = "$data/household_data/nigeria/wave_3/refined"
-	loc logout = "$data/household_data/nigeria/logs"
-	
+	global root			"$data/household_data/nigeria/wave_4/raw"
+	global export		"$data/household_data/nigeria/wave_4/refined"
+	global logout		"$data/household_data/nigeria/logs"
+
 * open log	
 	cap log close
-	log using "`logout'/ph_secta2", append
+	log using "$logout/ph_secta2", append
 
 * **********************************************************************
 * 1 - determine labor use
 * **********************************************************************
 		
 * import the first relevant data file
-		use "`root'/secta2_harvestw3", clear 	
+		use "$root/secta2a_harvestw4", clear 	
 
 describe
-sort hhid plotid
-isid hhid plotid
+sort hhid plotid indiv
+isid hhid plotid indiv
+collapse hhid plotid
 
 * per Palacios-Lopez et al. (2017) in Food Policy, we cap labor per activity
 * 7 days * 13 weeks = 91 days for land prep and planting
@@ -47,42 +49,18 @@ isid hhid plotid
 * we will also exclude child labor_days
 * in this survey we can't tell gender or age of household members
 * since we can't match household members we deal with each activity seperately
+	*cannot follow, not given day for each activity
 
-* create household member labor (weeks x days per week)
-		gen	hh_1	=	(sa2q1a2 * sa2q1a3)
-		replace	hh_1	=	0	if	hh_1	==	.
-
-		gen	hh_2	=	(sa2q1b2 * sa2q1b3)
-		replace	hh_2	=	0	if	hh_2	==	. 
-
-		gen	hh_3 	= 	(sa2q1c2 * sa2q1c3)
-		replace	hh_3	=	0	if	hh_3 	== 	.
-
-		gen	hh_4 	= 	(sa2q1d2 * sa2q1d3)
-		replace	hh_4 	= 	0 	if 	hh_4 	== 	. 
+* create household member labor 
+		gen			hrv_labor = sa2aq1b if indiv < 5
 	
 	*** this calculation is for up to 4 members of the household that were laborers although this wave has 8 household members we only use the first 4
 	*** per the survey, these are laborers from the last rainy/harvest season
 	*** NOT the dry season harvest
 	*** does not include planting or cultivation labor (see NGA_pp_sect11c1)
+		
 
-
-* hired labor days, (# of people days hired to work) HARVEST & THRESH
-		gen men_days = (sa2q3)
-		replace men_day = 0 if men_days == . 
-
-		gen women_days = (sa2q6)
-		replace women_days = 0 if women_days == .
-		*** we do not include child labor days
-
-* free labor days, from other households, HARVEST & THRESH
-		replace sa2q12a = 0 if sa2q12a == .
-		replace sa2q12b = 0 if sa2q12b == .
-
-		gen free_days = (sa2q12a + sa2q12b)
-		replace free_days = 0 if free_days == . 
-
-* **********************************************************************
+	**********************************************************************
 * 2 - impute labor outliers
 * **********************************************************************
 	

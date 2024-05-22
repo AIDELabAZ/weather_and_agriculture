@@ -37,21 +37,21 @@
 * Define root folder globals
     if `"`c(username)'"' == "jdmichler" {
         global 		code  	"C:/Users/jdmichler/git/AIDELabAZ/weather_and_agriculture"
-		global 		data	"C:/Users/jdmichler/OneDrive - University of Arizona/weather_project"
+		global 		data	"C:/Users/jdmichler/OneDrive - University of Arizona/weather_and_agriculture"
     }
 	if `"`c(username)'"' == "yetfl" {
         global 		code  	"C:/Users/yetfl/OneDrive/Desktop/GitHub/weather_and_agriculture"
-		global 		data	"C:/Users/yetfl/OneDrive - University of Arizona/weather_project"
+		global 		data	"C:/Users/yetfl/OneDrive - University of Arizona/weather_and_agriculture"
     }
 
     if `"`c(username)'"' == "annal" {
         global 		code  	"C:/Users/aljosephson/git/weather_and_agriculture"
-		global 		data	"C:/Users/aljosephson/OneDrive - University of Arizona/weather_project"
+		global 		data	"C:/Users/aljosephson/OneDrive - University of Arizona/weather_and_agriculture"
     }	
 
 	if `"`c(username)'"' == "rbrnhm" {
         global 		code  	"C:/Users/rbrnhm/GitHub/weather_and_agriculture"
-		global 		data	"C:/Users/rbrnhm/OneDrive - University of Arizona/weather_project"
+		global 		data	"C:/Users/rbrnhm/OneDrive - University of Arizona/weather_and_agriculture"
     }	
 * **********************************************************************
 * 0 (b) - Check if any required packages are installed:
