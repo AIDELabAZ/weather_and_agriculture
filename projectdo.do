@@ -35,7 +35,7 @@
 
     if `"`c(username)'"' == "rodrigoguerra" {
         global 		code  	"/Users/rodrigoguerra/Library/CloudStorage/OneDrive-UniversityofArizona/Documents/GitHub/weather_and_agriculture"
-		global 		data	"/Users/rodrigoguerra/Library/CloudStorage/OneDrive-UniversityofArizona/weather_and_agriculture"
+		global 		data	"/Users/rodrigoguerra/Library/CloudStorage/OneDrive-UniversityofArizona/weather_and_agriculture" 
     }
 	 if `"`c(username)'"' == "fvkrysbackpackpc" {
         global 		code  	"/Users/fvkrysbackpackpc/Documents/GitHub/weather_and_agriculture"

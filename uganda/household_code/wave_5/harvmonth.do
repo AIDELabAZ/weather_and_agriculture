@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: May 2024
 * Created by: rg
-* Edited on: 15 May 24
+* Edited on: 22 May 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -12,7 +12,7 @@
 	* cleaned 2015_agsec5a.dta and 2015_gsec1
 
 * TO DO:
-	* check south\north dummies, harvest month > 12
+	* done
 
 
 ************************************************************************
