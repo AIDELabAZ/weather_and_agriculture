@@ -42,6 +42,8 @@
 	gen 		data = "npsy5"
 	lab var 	data "Data Source"	
 	
+	rename		mover2020 mover
+	
 * define each file in the above local
 	loc 		fileList : dir "$rootw" files "*rf.dta"
 	
@@ -182,6 +184,7 @@
 }
 
 * prepare for export
+	rename				mover mover2020
 	qui: compress
 	sort y5_hhid
 	

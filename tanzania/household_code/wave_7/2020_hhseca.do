@@ -44,13 +44,14 @@
 	rename		hh_a01_1 region
 	rename		hh_a02_1 district
 	rename		y5_panelweight hhweight
+	rename		hh_a10 mover2020
 
 * keep variables of interest
 	keep 		y5_hhid region district y5_rural ///
-					clusterid strataid hhweight y4_hhid
+					clusterid strataid hhweight y4_hhid mover2020
 
 	order		y4_hhid y5_hhid region district y5_rural ///
-					clusterid strataid hhweight
+					clusterid strataid hhweight mover2020
 	
 * relabel variables
 	lab var		y5_hhid "Unique Household Identification NPS Y5"
@@ -60,6 +61,7 @@
 	lab var		clusterid "Unique Cluster Identification"
 	lab var		strataid "Design Strata"
 	lab var		hhweight "Household Weights (Trimmed & Post-Stratified)"
+	lab var		mover2020 "Original or split household"
 					
 * prepare for export
 	compress

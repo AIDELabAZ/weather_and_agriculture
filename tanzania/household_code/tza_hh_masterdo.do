@@ -73,7 +73,7 @@
 * **********************************************************************
 
 * run panel key cleaning file
-*	do			"`dofile'/tza_panel_key.do"				// panel key
+	do			"`dofile'/tza_sdd_panel_key.do"				// panel key
 
 	
 * **********************************************************************

@@ -99,7 +99,9 @@
 	drop if		status != 1
 	*** dropped 2722 not cultivated during long rainy
 	
-	order plot_id plotsize_self plotsize_gps region district y5_rural clusterid strataid hhweight uq_dist, after(plotnum)
+	order 		y4_hhid, after(y5_hhid)
+	order 		plot_id plotsize_self plotsize_gps region district y5_rural ///
+					clusterid strataid hhweight mover2020 uq_dist, after(plotnum)
 	
 	drop 		ag3a_02_1- status
 	
@@ -226,10 +228,10 @@
 * **********************************************************************
 	
 * keep what we want, get rid of the rest
-	keep		y5_hhid plot_id plotnum plotsize clusterid strataid ///
-					hhweight region district y5_rural
-	order		y5_hhid plot_id plotnum clusterid strataid hhweight ///
-					region district plotsize
+	keep		y5_hhid y4_hhid plot_id plotnum plotsize clusterid strataid ///
+					hhweight region district y5_rural mover2020
+	order		y5_hhid y4_hhid plot_id plotnum clusterid strataid hhweight ///
+					region district y5_rural mover2020 plotsize
 					
 * renaming and relabeling variables
 	lab var		y5_hhid "Unique Household Identification NPS Y4"

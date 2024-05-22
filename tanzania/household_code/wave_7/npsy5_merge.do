@@ -101,8 +101,8 @@
 						mz_hrv mz_lnd mz_lab mz_frt ///
 			 (max)	pest_any herb_any irr_any  ///
 						mz_pst mz_hrb mz_irr mz_damaged, ///
-						by(y5_hhid plotnum plot_id clusterid strataid ///
-						hhweight region district)
+						by(y5_hhid y4_hhid plotnum plot_id clusterid strataid ///
+						hhweight region district mover2020)
 						
 * replace non-maize harvest values as missing
 	tab				mz_damaged, missing
@@ -456,8 +456,8 @@
 	    replace		`v' = 0 if `v' == .
 	}		
 	
-	collapse (max)	tf_* cp_*, by(y5_hhid clusterid strataid ///
-						hhweight region district)
+	collapse (max)	tf_* cp_*, by(y5_hhid y4_hhid clusterid strataid ///
+						hhweight region district mover2020)
 	*** we went frm 3567 to 2159 observations 
 	
 * return non-maize production to missing
@@ -511,8 +511,8 @@
 	gen				year = 2020
 	lab var			year "Year"
 	
-	order 			y5_hhid region district clusterid strataid ///
-						hhweight year tf_hrv tf_lnd tf_yld tf_lab tf_frt ///
+	order 			y5_hhid y4_hhid region district clusterid strataid ///
+						hhweight mover2020 year tf_hrv tf_lnd tf_yld tf_lab tf_frt ///
 						tf_pst tf_hrb tf_irr cp_hrv cp_lnd cp_yld ///
 						cp_lab cp_frt cp_pst cp_hrb cp_irr
 	compress

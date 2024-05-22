@@ -49,13 +49,14 @@
 	rename		hh_a04_1 ea
 	rename		y4_weights y4_weight
 	rename		clustertype y4_rural
+	rename		hh_a10 mover2014
 
 * keep variables of interest
 	keep 		y4_hhid region district ward ea y4_rural ///
-					clusterid strataid y4_weight 
+					clusterid strataid y4_weight mover2014
 
 	order		y4_hhid region district ward ea y4_rural ///
-					clusterid strataid y4_weight 
+					clusterid strataid y4_weight mover2014
 	
 	rename		y4_weight hhweight
 	
@@ -69,6 +70,7 @@
 	lab var		clusterid "Unique Cluster Identification"
 	lab var		strataid "Design Strata"
 	lab var		hhweight "Household Weights (Trimmed & Post-Stratified)"
+	lab var		mover2014 "Original or split household"
 					
 * prepare for export
 	compress

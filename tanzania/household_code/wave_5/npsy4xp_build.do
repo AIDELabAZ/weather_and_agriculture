@@ -42,6 +42,8 @@
 	gen 		data = "npsy4xp"
 	lab var 	data "Data Source"	
 	
+	rename		mover2014 mover
+	
 * define each file in the above local
 	loc 		fileList : dir "$rootw" files "*rf.dta"
 	

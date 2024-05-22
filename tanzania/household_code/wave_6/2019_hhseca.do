@@ -45,19 +45,20 @@
 	rename		t0_ward_code ward
 	rename		t0_ea_codee ea
 	rename		sdd_weights sdd_weight
+	rename		hh_a10 mover2019
 	
 * fill in region, district, ward, ea for split households
-	replace		region = hh_a01_1 if hh_a10 == 2
-	replace		district = hh_a02_1 if hh_a10 == 2
-	replace		ward = hh_a03_1 if hh_a10 == 2
-	replace		ea = hh_a04_1 if hh_a10 == 2
+	replace		region = hh_a01_1 if mover2019 == 2
+	replace		district = hh_a02_1 if mover2019 == 2
+	replace		ward = hh_a03_1 if mover2019 == 2
+	replace		ea = hh_a04_1 if mover2019 == 2
 	
 * keep variables of interest
 	keep 		sdd_hhid region district ward ea sdd_rural ///
-					clusterid strataid sdd_weight y4_hhid
+					clusterid strataid sdd_weight y4_hhid mover2019
 
 	order		y4_hhid sdd_hhid region district ward ea sdd_rural ///
-					clusterid strataid sdd_weight 
+					clusterid strataid sdd_weight mover2019
 	
 	rename		sdd_weight hhweight
 	
@@ -71,6 +72,7 @@
 	lab var		clusterid "Unique Cluster Identification"
 	lab var		strataid "Design Strata"
 	lab var		hhweight "Household Weights (Trimmed & Post-Stratified)"
+	lab var		mover2019 "Original or split household"
 					
 * prepare for export
 	compress

@@ -230,9 +230,9 @@
 	
 * keep what we want, get rid of the rest
 	keep		sdd_hhid plotnum plot_id plotsize clusterid strataid ///
-					hhweight region district ward ea sdd_rural
+					hhweight region district ward ea sdd_rural mover2019
 	order		sdd_hhid plotnum plot_id clusterid strataid hhweight ///
-					region district ward ea plotsize
+					region district ward ea sdd_rural mover2019 plotsize
 					
 * renaming and relabelling variables
 	lab var		sdd_hhid "Unique Household Identification NPS-SDD"

@@ -33,6 +33,7 @@
 	cap log close 
 	log using "$logout/wv5_AGSEC2A", append
 	
+	
 * ***********************************************************************
 * 1 - prepare TZA 2014 (Wave 4) - Agriculture Section 2A 
 * ***********************************************************************
@@ -228,9 +229,9 @@
 	
 * keep what we want, get rid of the rest
 	keep		y4_hhid plotnum plot_id plotsize clusterid strataid ///
-					hhweight region district ward ea y4_rural
+					hhweight region district ward ea y4_rural mover2014
 	order		y4_hhid plotnum plot_id clusterid strataid hhweight ///
-					region district ward ea plotsize
+					region district ward ea y4_rural mover2014 plotsize
 					
 * renaming and relabelling variables
 	lab var		y4_hhid "Unique Household Identification NPS Y4"

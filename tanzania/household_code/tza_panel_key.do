@@ -6,6 +6,7 @@
 * Stata v.18
 
 * does
+	* SUPERSCEDED BY tza_sdd_panel_key. DO NOT USE THIS FILE
 	* reads in panel key
 	* generates new id
 	* outputs new panel key

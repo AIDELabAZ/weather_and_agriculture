@@ -42,6 +42,8 @@
 	gen 		data = "npsy5sdd"
 	lab var 	data "Data Source"
 	
+	rename		mover2019 mover
+	
 	replace		year = 2018
 	
 * define each file in the above local
