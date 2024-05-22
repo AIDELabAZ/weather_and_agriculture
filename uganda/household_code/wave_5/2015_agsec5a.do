@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 16 May 24
+* Edited on: 22 May 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -16,8 +16,7 @@
 	* access to raw data
 
 * TO DO:
-	* check harvmonth before collapsing data and imputation (end section 4)
-	* section 5 and beyond
+	* done
 
 	
 ***********************************************************************
@@ -292,6 +291,35 @@
 * replace missing values to 0
 	replace 		cropvl = 0 if cropvl == .
 	replace 		harvkgsold = 0 if harvkgsold == .
+	
+* before collapsing data, we have to fix harvmonth labels, 1-12 refers to the months in 2014 and 13-24 refers to the months in 2015
+
+	tabulate 		harvmonth 
+	tabulate 		a5bq6e_1
+	tabulate 		harvmonth if a5bq6e_1 == 2015
+
+	replace 		a5bq6e_1 = 2014 if harvmonth < 13
+	replace 		a5bq6e_1 = 2015 if harvmonth > 12 & a5bq6e_1 == 2014
+	
+	drop if			harvmonth == 26 
+	mdesc 			harvmonth 
+	mdesc 			harvmonth if harvmonth ==. & a5bq6e_1 == 2015
+	*** there are 115 missing values in 2015
+	
+	mdesc 			a5bq6e_1 
+	*** one observation missing (a5bq6e_1 = year)
+	
+	drop if missing(a5bq6e_1) | missing(harvmont) | a5bq6e_1 != 2015
+	*** 347 observations deleted
+	*** keeping observations in 2015
+	
+	tabulate 		a5bq6e_1
+	tabulate 		harvmonth 
+	
+* subtract 12 to harvmonth 
+	replace 		harvmonth = harvmonth - 12
+	tabulate 		harvmonth	
+	*** harvest months range from 1 to 12
 
 * collapse the data to the crop level so that our imputations are reproducable and consistent
 	collapse 		(sum) harvqtykg cropvl harvkgsold (mean) harvmonth, ///
@@ -310,7 +338,7 @@
 	
 * merge the location identification
 	merge m:1 		hhid using "$export/2015_gsec1"
-	*** 179 unmatched from master
+	*** 41 unmatched from master
 	
 	drop 			if _merge == 2
 	drop			_merge
@@ -322,17 +350,17 @@
 
 * look at crop value in USD
 	sum 			cropvl, detail
-	*** max 2,582, mean 66.03, min 0.016
+	*** max 2,582, mean 85, min 0.00016
 	
 * condensed crop codes
 	inspect 		cropid
-	*** generally things look all right - only 40 unique values 
+	*** generally things look all right - only 37 unique values 
 
 * gen price per kg
 	sort 			cropid
 	by 				cropid: gen cropprice = cropvl / harvkgsold 
 	sum 			cropprice, detail
-	*** mean = 0.41, max = 154.29, min = 0.0000494
+	*** mean = 0.377, max = 57.95, min = 1.34e-06
 	*** will do some imputations later
 	
 * make datasets with crop price information
@@ -389,37 +417,37 @@
 * check to see if we have prices for all crops
 	tabstat 		p_parish n_parish p_subcounty n_subcounty p_dist n_district p_reg n_reg p_crop n_crop, ///
 						by(cropid) longstub statistics(n min p50 max) columns(statistics) format(%9.3g) 
-	*** no prices for jackfruit, pineapples.
+	*** no prices for jackfruit
 	
 * drop if we are missing prices
 	drop			if p_crop == .
-	*** dropped 5 observations
+	*** dropped 12 observations
 	
 * make imputed price, using median price where we have at least 10 observations
 * this code generlaly files parts of malawi ag_i
 * but this differs from Malawi - seems like their code ignores prices 
 	gene	 		croppricei = .
-	*** 8,114 missing values generated
+	*** 6,974 missing values generated
 	
 	bys 			cropid (region districtdstrng subcountydstrng parishdstrng hhid prcid pltid): ///
 						replace croppricei = p_parish if n_parish>=10 & missing(croppricei)
-	*** 448 replaced
+	*** 190 replaced
 	
 	bys 			cropid (region districtdstrng subcountydstrng parishdstrng hhid prcid pltid): ///
 						replace croppricei = p_subcounty if p_subcounty>=10 & missing(croppricei)
-	*** 7 replaced
+	*** 2 replaced
 		
 	bys 			cropid (region districtdstrng subcountydstrng parishdstrng hhid prcid pltid): ///
 						replace croppricei = p_dist if n_district>=10 & missing(croppricei)
-	*** 2,649 replaced
+	*** 2,388 replaced
 	
 	bys 			cropid (region districtdstrng subcountydstrng parishdstrng hhid prcid pltid): ///
 						replace croppricei = p_reg if n_reg>=10 & missing(croppricei)
-	*** 4,544 replaced 
+	*** 3,936 replaced 
 	
 	bys 			cropid (region districtdstrng subcountydstrng parishdstrng hhid prcid pltid): ///
 						replace croppricei = p_crop if missing(croppricei)
-	*** 466 changes
+	*** 458 changes
 	
 	lab	var			croppricei	"implied unit value of crop"
 
@@ -428,7 +456,7 @@
 	*** no missing
 	
 	sum 			cropprice croppricei
-	*** mean = 0.259, max = 154.29
+	*** mean = 0.248, max = 57.95
 
 	
 ***********************************************************************
@@ -437,13 +465,13 @@
 
 * summarize harvest quantity prior to imputations
 	sum				harvqtykg
-	*** mean 461.13, max 40,000
+	*** mean 431.9, max 90,000
 
 * replace observations 3 std deviation from the mean and impute missing
 	*** 3 std dev from mean is 
 	sum 			harvqtykg, detail
 	replace			harvqtykg = . if harvqtykg > `r(p50)'+ (3*`r(sd)')
-	*** 138 changed to missing
+	*** 62 changed to missing
 
 * impute missing harvqtykg
 	mi set 			wide 	// declare the data to be wide.
@@ -458,11 +486,11 @@
 	
 * inspect imputation 
 	sum 				harvqtykg_1_, detail
-	*** mean 375, min 1, max 3,360
+	*** mean 364.9, min 1, max 4,250
 
 * replace the imputated variable
 	replace 			harvqtykg = harvqtykg_1_ 
-	*** 135 changes
+	*** 61 changes
 	
 	drop 				harvqtykg_1_ mi_miss
 	
@@ -473,12 +501,12 @@
 
 * summarize value of sales prior to imputations
 	sum				cropvl
-	*** mean 66.03, max 2,582.8
+	*** mean 85, max 16,046
 	
 * replace cropvl with missing if over 3 std dev from the mean
 	sum 			cropvl, detail
 	replace			cropvl = . if cropvl > `r(p50)'+ (3*`r(sd)')
-	*** 67 changes
+	*** 14 changes
 	
 * impute cropvl if missing and harvest was sold
 	mi set 			wide 	// declare the data to be wide.
@@ -493,10 +521,10 @@
 	
 * how did impute go?
 	sum 			cropvl_1_, detail
-	*** mean 39.47, max 444.35
+	*** mean 49.94, max 1,049
 
 	replace 		cropvl = cropvl_1_
-	*** 4,896 changes
+	*** 4,212 changes
 	
 	drop 			cropvl_1_ mi_miss
 	
@@ -515,16 +543,15 @@
 	
 * replace cropvalue with cropvl if cropvl is not missing and crop value is missing
 	replace 		cropvalue = cropvl if cropvalue == . & cropvl != .
-	*** 2 changes
+	*** 1 change
 	
 * verify that we have crop value for all observations
 	mdesc 			cropvalue
-	*** 1 missing
-	drop 			if cropvalue ==.
+	*** 0 missing
 
 * summarize value of harvest prior to imputations	
 	sum 			cropvalue
-	*** mean 61.58, max 24,069
+	*** mean 64.8, max 41,730
 
 * replace any +3 s.d. away from median as missing, by crop	
 	sum				cropvalue, detail
@@ -542,11 +569,11 @@
 
 * how did impute go?
 	sum 			cropvalue_1_, detail
-	*** mean 48.6, max 1,110
+	*** mean 57.69, max 1,388
 	
 	replace			cropvalue = cropvalue_1_
 	lab var			cropvalue "value of harvest, imputed"
-	*** 10 changes
+	*** 3 changes
 	
 	drop 			cropvalue_1_ mi_miss
 
@@ -557,11 +584,12 @@
 
 * summarize crop value, imputed crop value, and maize harvest
 	sum				cropvl
-	*** mean 39.47 max 444
+	*** mean 49.9 max 1,049
 	sum				cropvalue
-	*** mean 48.6  max 1,110
+	*** mean 57.69  max 1,388
 	sum				harvqtykg if cropid == 130
-	*** mean 321.68, max 3,180
+	*** mean 326.47, max 3,936
+	
 * following method used in other waves which differs from other countries
 * we will use implied crop value as opposed to crop value based on prices
 * so we will got with crop value based on the imputation in sec 7
