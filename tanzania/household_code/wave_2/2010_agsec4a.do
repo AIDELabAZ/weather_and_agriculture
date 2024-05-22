@@ -1,9 +1,9 @@
 * Project: WB Weather
 * Created on: April 2020
 * Created by: McG
-* Edited on: April 26, 2024
-* Edited by: reece
-* Stata v.16
+* Edited on: 21 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* cleans Tanzania household variables, wave 2 Ag sec4a
@@ -11,7 +11,7 @@
 	* generates weight harvested, harvest month, percentage of plot planted with given crop, value of seed purchases
 	
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* mdesc.ado
 
 * TO DO:

@@ -1,20 +1,21 @@
 * Project: WB Weather
-* Created on: March 2024
-* Created by: reece
-* Edited on: March 19, 2024
-* Edited by: reece
+* Created on: May 2024
+* Created by: jdm
+* Edited on: 21 May 2024
+* Edited by: jdm
 * Stata v.18
 
 * does
-	* cleans Tanzania household variables, wave 5 hh secA
+	* cleans Tanzania household variables, wave 4 extended panel hh secA
 	* pulls regional identifiers
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 
 * TO DO:
-	*
+	* completed
 
+	
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
@@ -39,46 +40,46 @@
 	duplicates 	drop
 	*** 0 obs dropped
 	
+	drop y4_rural 
+	
 * renaming some variables
-	rename		t0_region region
-	rename		t0_district district
-	rename		t0_ward_code ward
-	rename		t0_ea_codee ea
-	rename		sdd_weights sdd_weight
-	
-* fill in region, district, ward, ea for split households
-	replace		region = hh_a01_1 if hh_a10 == 2
-	replace		district = hh_a02_1 if hh_a10 == 2
-	replace		ward = hh_a03_1 if hh_a10 == 2
-	replace		ea = hh_a04_1 if hh_a10 == 2
-	
-* keep variables of interest
-	keep 		sdd_hhid region district ward ea sdd_rural ///
-					clusterid strataid sdd_weight 
+	rename		hh_a01_1 region
+	rename		hh_a02_1 district
+	rename		hh_a03_1 ward
+	rename		hh_a04_1 ea
+	rename		y4_weights y4_weight
+	rename		clustertype y4_rural
+	rename		hh_a10 mover2014
 
-	order		sdd_hhid region district ward ea sdd_rural ///
-					clusterid strataid sdd_weight 
+* keep variables of interest
+	keep 		y4_hhid region district ward ea y4_rural ///
+					clusterid strataid y4_weight mover2014
+
+	order		y4_hhid region district ward ea y4_rural ///
+					clusterid strataid y4_weight mover2014
 	
-	rename		sdd_weight hhweight
+	rename		y4_weight hhweight
 	
 * relabel variables
-	lab var		sdd_hhid "Unique Household Identification NPS Y4"
+	lab var		y4_hhid "Unique Household Identification NPS Y4"
 	lab var		region "Region Code"
 	lab var		district "District Code"
 	lab var		ward "Ward Code"
 	lab var		ea "Village / Enumeration Area Code"
-	lab var		sdd_rural "Cluster Type"
+	lab var		y4_rural "Cluster Type"
 	lab var		clusterid "Unique Cluster Identification"
 	lab var		strataid "Design Strata"
 	lab var		hhweight "Household Weights (Trimmed & Post-Stratified)"
+	lab var		mover2014 "Original or split household"
 					
 * prepare for export
 	compress
 	describe
 	summarize
-	sort sdd_hhid
+	sort y4_hhid
 	
 	save 			"$export/HH_SECA.dta", replace
+
 
 * close the log
 	log	close

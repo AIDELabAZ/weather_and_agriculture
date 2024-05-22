@@ -1,12 +1,12 @@
 * Project: WB Weather
-* Created on: May 2024
-* Created by: jdm
+* Created: May 2024
+* Created: jdm
 * edited on: 20 May 2024
 * edited by: jdm
 * Stata v.18
 
 * does
-	* reads in Tanzania, wave 5 which we call wave 6 .dta files with daily values
+	* reads in Tanzania, SSD which we call wave 6 .dta files with daily values
     * runs weather_command .ado file
 	* outputs .dta file of the relevant weather variables
 	* does the above for both rainfall and temperature data
@@ -30,13 +30,13 @@
 * **********************************************************************
 
 * define paths	
-	loc 		root 	= 	"$data/weather_data/tanzania/wave_6/daily/npsy6_up"
-	loc 		export 	= 	"$data/weather_data/tanzania/wave_6/refined/npsy6_up"
+	loc 		root 	= 	"$data/weather_data/tanzania/wave_6/daily/npsy5sdd_up"
+	loc 		export 	= 	"$data/weather_data/tanzania/wave_6/refined/npsy5sdd_up"
 	loc 		logout 	= 	"$data/weather_data/tanzania/logs"
 
 * open log	
 	cap log		close
-	log using 	"`logout'/tza_npsy6_weather", append
+	log using 	"`logout'/tza_npsy5sdd_weather", append
 
 
 * **********************************************************************
@@ -56,7 +56,7 @@
 		loc dat = substr("`file'", 1, length("`file'") - 10) 
 		
 	* run the user written weather command - this takes a while
-		weather rf_ , rain_data ini_month(1) fin_month(7) day_month(1) keep(y5_hhid)
+		weather rf_ , rain_data ini_month(1) fin_month(7) day_month(1) keep(sdd_hhid)
 		
 	* save file
 		compress
@@ -81,7 +81,7 @@
 		loc dat = substr("`file'", 1, length("`file'") - 10) 
 		
 	* run the user written weather command - this takes a while		
-		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(1) fin_month(7) day_month(1) keep(y5_hhid)
+		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(1) fin_month(7) day_month(1) keep(sdd_hhid)
 		
 	* save file
 		compress

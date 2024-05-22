@@ -1,33 +1,34 @@
 * Project: WB Weather
 * Created on: April 2024
 * Created by: reece
-* Edited on: April 2, 2024
-* Edited by: reece
+* Edited on: 21 May 2024
+* Edited by: jdm
 * Stata v.18
 
 * does
-	* merges individual cleaned plot datasets together
+	* merges individual wave 6 (NPSY5-SDD) cleaned plot datasets together
 	* imputes values for continuous variables
 	* collapses wave 5 plot level data to household level for combination with other waves
 
 * assumes
 	* previously cleaned household datasets
-	* customsave.ado
 
 * TO DO:
-	*
+	* done
+	
+	
 * **********************************************************************
 **#0 - setup
 * **********************************************************************
 
 * define paths
-	global root 	"$data/household_data/tanzania/wave_5/refined"
-	global export 	"$data/household_data/tanzania/wave_5/refined"
+	global root 	"$data/household_data/tanzania/wave_6/refined"
+	global export 	"$data/household_data/tanzania/wave_6/refined"
 	global logout 	"$data/household_data/tanzania/logs"
 
 * open log 
 	cap log 		close 
-	log 			using "$logout/npsy5_merge", append
+	log 			using "$logout/npsy6_merge", append
 
 
 * **********************************************************************
@@ -103,7 +104,7 @@
 			 (max)	pest_any herb_any irr_any  ///
 						mz_pst mz_hrb mz_irr mz_damaged, ///
 						by(sdd_hhid plotnum plot_id clusterid strataid ///
-						hhweight region district ward ea)
+						hhweight region district ward ea mover2019)
 						
 * replace non-maize harvest values as missing
 	tab				mz_damaged, missing
@@ -460,7 +461,7 @@
 	}		
 	
 	collapse (max)	tf_* cp_*, by(sdd_hhid clusterid strataid ///
-						hhweight region district ward ea)
+						hhweight region district ward ea mover2019)
 	*** we went from 877 to 561 observations 
 	
 * return non-maize production to missing
@@ -515,7 +516,7 @@
 	lab var			year "Year"
 	
 	order 			sdd_hhid region district ward ea clusterid strataid ///
-						hhweight year tf_hrv tf_lnd tf_yld tf_lab tf_frt ///
+						hhweight mover2019 year tf_hrv tf_lnd tf_yld tf_lab tf_frt ///
 						tf_pst tf_hrb tf_irr cp_hrv cp_lnd cp_yld ///
 						cp_lab cp_frt cp_pst cp_hrb cp_irr
 	compress
@@ -523,7 +524,7 @@
 	summarize 
 	
 * saving production dataset
-	save 			"$export/hhfinal_npsy5.dta", replace
+	save 			"$export/hhfinal_npsy5sdd.dta", replace
 
 * close the log
 	log	close

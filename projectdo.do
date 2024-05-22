@@ -41,7 +41,7 @@
 * Define root folder globals
     if `"`c(username)'"' == "rbrnhm" {
         global 		code  	"C:/Users/rbrnhm/Documents/GitHub/weather_and_agriculture"
-		global 		data	"C:/Users/rbrnhm/OneDrive - University of Arizona/weather_project"
+		global 		data	"C:/Users/rbrnhm/OneDrive - University of Arizona/weather_and_agriculture"
     }
 
 * **********************************************************************
