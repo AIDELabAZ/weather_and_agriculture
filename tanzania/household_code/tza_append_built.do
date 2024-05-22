@@ -1,19 +1,20 @@
 * Project: WB Weather
 * Created on: June 2020
 * Created by: jdm
-* Edited by: alj
-* Stata v.16
+* Edited on: 21 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* reads in merged data sets
-	* merges panel data sets (W1-W3)
-	* creates cross sectional data set (W4)
-	* appends both to form complete data set (W1-W4)
+	* merges panel data sets (W1-W7)
+	* creates extended panel data set (W1-W3, W5, W6)
+	* creates new panel data set (W4, W7)
+	* appends both to form complete data set (W1-W7)
 	* outputs Tanzania data sets for analysis
 
 * assumes
 	* all Tanzania data has been cleaned and merged with rainfall
-	* customsave.ado
 	* xfill.ado
 
 * TO DO:
@@ -24,14 +25,14 @@
 * **********************************************************************
 
 * define paths
-	loc		root  	= 	"$data/merged_data/tanzania"
-	loc		key		=	"$data/household_data/tanzania/wave_3/refined"
-	loc		export 	= 	"$data/regression_data/tanzania"
-	loc		logout 	= 	"$data/merged_data/tanzania/logs"
+	global		root  	= 	"$data/merged_data/tanzania"
+	global		key		=	"$data/household_data/tanzania/wave_6/refined"
+	global		export 	= 	"$data/regression_data/tanzania"
+	global		logout 	= 	"$data/merged_data/tanzania/logs"
 
 * open log	
 	cap log close 
-	log 	using 	"`logout'/tza_append_built", append
+	log 	using 	"$logout/tza_append_built", append
 
 * **********************************************************************
 * 1 - merge first three waves of Tanzania data
@@ -42,37 +43,47 @@
 * need to merge households together into panel key and then reshape 
 
 * import the panel key file
-	use 			"`key'/panel_key", clear
+	use 			"$key/sdd_panel_key", clear
 	
 * merge in wave 1 
 * matching on y1_hhid - which identifies wave 1 respondents
 
-	merge 			m:1 y1_hhid using "`root'/wave_1/npsy1_merged"
-	*** 2101 matched
-	*** 2909 not matched from master - for households in w2 and w3
-	*** 104 not matched from using - only appear in w1 
-	
-	rename 			_merge _merge2008
-	
+	merge 			m:1 y1_hhid using "$root/wave_1/npsy1_merged", gen(_merge2008)
+	*** 2,141 matched
+	*** 2,756 not matched from master - for households in later waves
+	*** 68 not matched from using - only appear in w1 
+
 * merge in wave 2
 * matching on y2_hhid which identifies wave 2 respondents 
 
-	merge 			m:1 y2_hhid using "`root'/wave_2/npsy2_merged"
-	*** 2341 matched
-	*** 2773 not matched from master - for households in w1 or w3
-	*** 59 not matched from using - only appear in w2 
+	merge 			m:1 y2_hhid using "$root/wave_2/npsy2_merged", gen(_merge2010)
+	*** 2,533 matched
+	*** 2,432 not matched from master - for households in other waves
+	*** 31 not matched from using - only appear in w2 
 	
-	rename 			_merge _merge2010 
-		
 * merge in wave 3
-* matching on y3_hhid which identifies wave 2 respondents 
+* matching on y3_hhid which identifies wave 3 respondents 
 
-	merge 			m:1 y3_hhid using "`root'/wave_3/npsy3_merged"
-	*** 2658 matched
-	*** 2515 not matched from master - for households in w1 or w2
-	*** 0 not matched from using - no households only in w3
+	merge 			m:1 y3_hhid using "$root/wave_3/npsy3_merged", gen(_merge2012)
+	*** 2,411 matched
+	*** 2,585 not matched from master - for households in other waves
+	*** 370 not matched from using - no households only in w3
 	
-	rename 			_merge _merge2012 
+* merge in wave 4xp
+* matching on y4_hhid which identifies wave 4xp respondents 
+
+	merge 			m:1 y4_hhid using "$root/wave_5/npsy4xp_merged", gen(_merge2014xp)
+	*** 597 matched
+	*** 4,769 not matched from master - for households in other waves
+	*** 12 not matched from using - no households only in w4xp
+	
+* merge in wave 5-sdd
+* matching on sdd_hhid which identifies wave 5-sdd respondents 
+
+	merge 			m:1 sdd_hhid using "$root/wave_6/npsy5sdd_merged", gen(_merge2019)
+	*** 483 matched
+	*** 4,895 not matched from master - for households in other waves
+	*** 78 not matched from using - no households only in w4xp
 	
 	
 * **********************************************************************
@@ -85,48 +96,49 @@
 	local			stubs: subinstr local vars "2008" "", all
 	
 	reshape 		long `stubs', ///
-						i(y1_hhid y2_hhid y3_hhid region ///
-						district ward ea) j(year)
-	*** takes about 90 seconds to run
+						i(y1_hhid y2_hhid y3_hhid y4_hhid sdd_hhid ///
+							region district ward ea) j(year)
 	*** some issues with weight variable
 	*** this is because no observations for weight 2008 - clean up at end 
 
 * count how many observations we have
 	count 
-	*** starting with way too many observations - 15519
+	*** starting with way too many observations - 32,736
 
 	duplicates 		drop
 	*** 0 dropped 
 
 * drop empty obsevations (empty because of the reshape)
 	drop 			if tf_hrv == .
-	* 8256 dropped 
+	* 24,012 dropped 
 
 * drop movers
 	drop 			if mover2010 == 1
-	*** 713 observations dropped
+	*** 847 observations dropped
 	drop 			if mover2012 == 1
-	*** 760 observations 
+	*** 882 observations 
 
 * check the number of observations again
 	count
-	*** 5790 observations 
-	*** wave 1 has 1875 observations 
-	*** wave 2 has 2116, but 315 movers = 1801 total
-	*** wave 3 has 2658 but 565 movers = 2093 total
-	*** should be a total of 5769 - 21 too many
-	*** no good way to figure out what these 21 observations are
-	*** so going to include for now 
+	*** 6,995 observations 
+	*** wave 1 has 2,035 > 1,875 observations in WB working paper
+	*** wave 2 has 2,051 > 1,801 observations in WB working paper
+	*** wave 3 has 1,943 < 2,093 observations in WB working paper
+	*** wave 4xp has 494 observations
+	*** wave 5-sdd has 472 observations
 
 * create household, country, and data identifiers
 * need to first replace empty places - otherwise will create hhid = . 
 	replace 		y1_hhid = "0" if y1_hhid == ""
 	replace 		y2_hhid = "0" if y2_hhid == ""
 	replace 		y3_hhid = "0" if y3_hhid == ""
+	replace 		y4_hhid = "0" if y4_hhid == ""
+	replace 		sdd_hhid = "0" if sdd_hhid == ""
 	
-	egen			tza_id = group(y1_hhid y2_hhid y3_hhid)
-	lab var			tza_id "Tanzania panel household id"
-
+	egen			tza_id = group(y1_hhid y2_hhid y3_hhid y4_hhid sdd_hhid)
+	lab var			tza_id "Tanzania long panel household id"
+	*** 6,995 observations from 3,014 households	
+	
 	gen				country = "tanzania"
 	lab var			country "Country"
 
@@ -141,7 +153,7 @@
 * order variables
 	order			country dtype region district ward ea strataid clusterid ///
 						tza_id hhweight year
-				
+	gfgf			
 * label household variables	
 	lab var			strataid  "Design Strata"
 	lab var			clusterid "Unique Cluster Identification"	

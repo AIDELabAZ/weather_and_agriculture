@@ -1,22 +1,23 @@
 * Project: WB Weather
 * Created on: March 13, 2024
 * Created by: reece
-* Edited on: March 24, 2024
-* Edited by: reece
+* Edited on: 21 May 2024
+* Edited by: jdm
 * Stata v.18
 
 * does
-	* cleans Tanzania household variables, wave 6 Ag sec2a
+	* cleans Tanzania household variables, wave 6 (NPSY5-SDD) Ag sec2a
 	* looks like a parcel roster, long rainy season
 	* generates imputed plot sizes
 	
 * assumes
 	* access to all raw data
 	* distinct.ado
-	* cleaned HH_SECA data
+	* cleaned hh_seca.dta
+	* cleaned ag_sec_3a.dta
 
 * TO DO:
-	
+	* completed	
 
 	
 ************************************************************************
@@ -24,17 +25,17 @@
 ************************************************************************
 
 * define paths
-	global root 	"$data/household_data/tanzania/wave_5/raw"
-	global export 	"$data/household_data/tanzania/wave_5/refined"
+	global root 	"$data/household_data/tanzania/wave_6/raw"
+	global export 	"$data/household_data/tanzania/wave_6/refined"
 	global logout 	"$data/household_data/tanzania/logs"
 
 * open log 
 	cap log close 
-	log using "$logout/wv5_AGSEC2A", append
+	log using "$logout/wv6_AGSEC2A", append
 
 	
 *************************************************************************
-**# 1 - prepare TZA 2020 (Wave 6) - Agriculture Section 2 
+**# 1 - prepare TZA 2019 (Wave 6) - Agriculture Section 2 
 *************************************************************************
 
 * load data

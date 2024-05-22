@@ -1,18 +1,19 @@
 * Project: WB Weather
-* Created on: May 2020
-* Created by: McG
+* Created on: May 2024
+* Created by: jdm
 * Edited on: 21 May 2024
 * Edited by: jdm
 * Stata v.18
 
 * does
-	* cleans Tanzania household variables, wave 4 Ag sec4a
+	* cleans Tanzania household variables, wave 4 extended panel Ag sec4a
 	* kind of a crop roster, with harvest weights, long rainy season
 	* generates weight harvested, harvest month, percentage of plot planted with given crop, value of seed purchases
 	
 * assumes
 	* access to all raw data
 	* mdesc.ado
+	* cleaned hh_seca.dta
 
 * TO DO:
 	* completed
@@ -23,13 +24,13 @@
 * **********************************************************************
 
 * define paths
-	global root 	"$data/household_data/tanzania/wave_4/raw"
-	global export 	"$data/household_data/tanzania/wave_4/refined"
+	global root 	"$data/household_data/tanzania/wave_5/raw"
+	global export 	"$data/household_data/tanzania/wave_5/refined"
 	global logout 	"$data/household_data/tanzania/logs"
 
 * open log 
 	cap log close 
-	log using "$logout/wv4_AGSEC4A", append
+	log using "$logout/wv5_AGSEC4A", append
 
 
 * ***********************************************************************

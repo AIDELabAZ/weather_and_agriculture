@@ -6,7 +6,7 @@
 * Stata v.18
 
 * does
-	* reads in Tanzania, wave 5 which we call wave 6 .dta files with daily values
+	* reads in Tanzania, wave 5 which we call wave 7 .dta files with daily values
     * runs weather_command .ado file
 	* outputs .dta file of the relevant weather variables
 	* does the above for both rainfall and temperature data
@@ -30,13 +30,13 @@
 * **********************************************************************
 
 * define paths	
-	loc 		root 	= 	"$data/weather_data/tanzania/wave_6/daily/npsy6_up"
-	loc 		export 	= 	"$data/weather_data/tanzania/wave_6/refined/npsy6_up"
+	loc 		root 	= 	"$data/weather_data/tanzania/wave_7/daily/npsy5_up"
+	loc 		export 	= 	"$data/weather_data/tanzania/wave_7/refined/npsy5_up"
 	loc 		logout 	= 	"$data/weather_data/tanzania/logs"
 
 * open log	
 	cap log		close
-	log using 	"`logout'/tza_npsy6_weather", append
+	log using 	"`logout'/tza_npsy7_weather", append
 
 
 * **********************************************************************

@@ -6,31 +6,34 @@
 * Stata v.18
 
 * does
-	* cleans Tanzania household variables, wave 4 Ag sec3a
+	* cleans Tanzania household variables, wave 6 (NPSY5-SDD) Ag sec3a
 	* plot details, inputs, 2018 long rainy season
 	* generates irrigation and pesticide dummies, fertilizer variables, and labor variables 
 	
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* distinct.ado
+	* cleaned hh_seca.dta
 
 * TO DO:
-	*
+	* done
+	
 	
 * **********************************************************************
 **#0 - setup
 * **********************************************************************
 
 * define paths
-	global root 	"$data/household_data/tanzania/wave_5/raw"
-	global export 	"$data/household_data/tanzania/wave_5/refined"
+	global root 	"$data/household_data/tanzania/wave_6/raw"
+	global export 	"$data/household_data/tanzania/wave_6/refined"
 	global logout 	"$data/household_data/tanzania/logs"
 
 * open log 
 	cap log close 
-	log using "$logout/wv5_AGSEC3A", append
+	log using "$logout/wv6_AGSEC3A", append
+	
 * ***********************************************************************
-**#1 - prepare TZA 2019 (Wave 5) - Agriculture Section 3A 
+**#1 - prepare TZA 2019 (Wave 6) - Agriculture Section 3A 
 * ***********************************************************************
 
 * load data

@@ -6,7 +6,7 @@
 * Stata v.18
 
 * does
-	* reads in Tanzania, SSD which we call wave 5 .csv files
+	* reads in Tanzania, SSD which we call wave 6 .csv files
     * drops unnecessary daily observations
 	* outputs .dta file ready for processing by the weather program
 	* does the above for both rainfall and temperature data
@@ -26,13 +26,13 @@
 * **********************************************************************
 
 * define paths
-	loc			root	=	"$data/weather_data/tanzania/wave_5/raw/npsy5_up"
-	loc			export	=	"$data/weather_data/tanzania/wave_5/daily/npsy5_up"
+	loc			root	=	"$data/weather_data/tanzania/wave_6/raw/npsy5sdd_up"
+	loc			export	=	"$data/weather_data/tanzania/wave_6/daily/npsy5sdd_up"
 	loc			logout	=	"$data/weather_data/tanzania/logs"
 
 * open log
 	cap log		close
-	log			using	"`logout'/tza_npsy5_converter", append
+	log			using	"`logout'/tza_npsy5sdd_converter", append
 
 
 * **********************************************************************

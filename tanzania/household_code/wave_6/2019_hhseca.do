@@ -1,35 +1,35 @@
 * Project: WB Weather
 * Created on: March 2024
 * Created by: reece
-* Edited on: March 19, 2024
-* Edited by: reece
+* Edited on: 21 May 2024
+* Edited by: jdm
 * Stata v.18
 
 * does
-	* cleans Tanzania household variables, wave 5 hh secA
+	* cleans Tanzania household variables, wave 6 (NPSY5-SDD) hh secA
 	* pulls regional identifiers
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 
 * TO DO:
-	*
+	* done
 
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
 
 * define paths
-	global	root		"$data/household_data/tanzania/wave_5/raw"
-	global export		"$data/household_data/tanzania/wave_5/refined"
+	global	root		"$data/household_data/tanzania/wave_6/raw"
+	global export		"$data/household_data/tanzania/wave_6/refined"
 	global logout		"$data/household_data/tanzania/logs"
 
 * open log
 	cap log close 
-	log	using	"$logout/wv5_HHSECA", append
+	log	using	"$logout/wv6_HHSECA", append
 
 *************************************************************************
-**#1 - TZA 2014 (Wave 4) - Household Section A
+**#1 - TZA 2019 (Wave 6) - Household Section A
 ***********************1*************************************************
 
 * load data
@@ -54,9 +54,9 @@
 	
 * keep variables of interest
 	keep 		sdd_hhid region district ward ea sdd_rural ///
-					clusterid strataid sdd_weight 
+					clusterid strataid sdd_weight y4_hhid
 
-	order		sdd_hhid region district ward ea sdd_rural ///
+	order		y4_hhid sdd_hhid region district ward ea sdd_rural ///
 					clusterid strataid sdd_weight 
 	
 	rename		sdd_weight hhweight

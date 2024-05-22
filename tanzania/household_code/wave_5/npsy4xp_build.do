@@ -1,16 +1,16 @@
 * Project: WB Weather
-* Created on: May 2020
-* Created by: mcg
+* Created on: May 2024
+* Created by: jdm
 * Edited on: 21 May 2024
 * Edited by: jdm
 * Stata v.18
 
 * does
-	* merges weather data with Tanzania NPSY4 data
+	* merges weather data with Tanzania NPSY4 extended panel data
 
 * assumes
-	* cleaned NPSY4 data
-	* processed wave 4 weather data
+	* cleaned NPSY4 extended panel data
+	* processed wave 5 weather data
 
 * TO DO:
 	* complete
@@ -21,14 +21,14 @@
 * **********************************************************************
 
 * define paths
-	global		rootw 	= 	"$data/weather_data/tanzania/wave_4/refined/npsy4_up"
-	global		rooth 	= 	"$data/household_data/tanzania/wave_4/refined"
-	global		export 	= 	"$data/merged_data/tanzania/wave_4"
+	global		rootw 	= 	"$data/weather_data/tanzania/wave_5/refined/npsy4xp_up"
+	global		rooth 	= 	"$data/household_data/tanzania/wave_5/refined"
+	global		export 	= 	"$data/merged_data/tanzania/wave_5"
 	global		logout 	= 	"$data/merged_data/tanzania/logs"
 
 * open log	
 	cap log 	close 
-	log 		using 		"$logout/npsy4_build", append
+	log 		using 		"$logout/npsy4xp_build", append
 
 	
 * **********************************************************************
@@ -36,10 +36,10 @@
 * **********************************************************************
 
 * import the .dta houeshold file
-	use 		"$rooth/hhfinal_npsy4.dta", clear
+	use 		"$rooth/hhfinal_npsy4xp.dta", clear
 	
 * generate variable to record data source
-	gen 		data = "npsy4"
+	gen 		data = "npsy4xp"
 	lab var 	data "Data Source"	
 	
 * define each file in the above local
@@ -63,7 +63,7 @@
 			drop 		mean_period_percent_raindays- dev_percent_raindays_2013	
 		
 		* define file naming criteria
-			loc 		sat = substr("`file'", 7, 5)	
+			loc 		sat = substr("`file'", 9, 5)	
 		
 		* rename variables by dropping the year suffix
 			gen 		v01_`sat' = mean_season_2014 if year == 2014
@@ -135,7 +135,7 @@
 			drop 		mean_gdd- z_gdd_2013
 			
 		* define file naming criteria
-			loc 		sat = substr("`file'", 7, 5)
+			loc 		sat = substr("`file'", 9, 5)
 		
 		* rename variables but dropping the year suffix
 			gen 		v15_`sat' = mean_season_2014 if year == 2014
@@ -181,12 +181,23 @@
 			drop 		*2014													
 }
 
+* create wide data set 	
+	rename 			* *2014
+	rename 			region2014 region
+	rename 			district2014 district
+	rename 			ward2014 ward
+	rename 			ea2014 ea
+	rename 			*hhid2014 *hhid
+	
+* drop unneeded variables
+	drop			year2014
+	
 * prepare for export
 	qui: compress
 	sort y4_hhid
 	
 * save file
-	save 				"$export/npsy4_merged.dta", replace
+	save 				"$export/npsy4xp_merged.dta", replace
 		
 * close the log
 	log	close

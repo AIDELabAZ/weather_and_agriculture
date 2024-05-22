@@ -1,18 +1,19 @@
 * Project: WB Weather
-* Created on: May 2020
-* Created by: McG
+* Created on: May 2024
+* Created by: jdm
 * Edited on: 21 May 2024
 * Edited by: jdm
 * Stata v.18
 
 * does
-	* cleans Tanzania household variables, wave 4 Ag sec3a
+	* cleans Tanzania household variables, wave 4 extended panel Ag sec3a
 	* plot details, inputs, 2014 long rainy season
 	* generates irrigation and pesticide dummies, fertilizer variables, and labor variables 
 	
 * assumes
 	* access to all raw data
 	* distinct.ado
+	* cleaned hh_seca.dta
 
 * TO DO:
 	* completed
@@ -23,13 +24,13 @@
 * **********************************************************************
 
 * define paths
-	global root 	"$data/household_data/tanzania/wave_4/raw"
-	global export 	"$data/household_data/tanzania/wave_4/refined"
+	global root 	"$data/household_data/tanzania/wave_5/raw"
+	global export 	"$data/household_data/tanzania/wave_5/refined"
 	global logout 	"$data/household_data/tanzania/logs"
 
 * open log 
 	cap log close 
-	log using "$logout/wv4_AGSEC3A", append
+	log using "$logout/wv5_AGSEC3A", append
 	
 * ***********************************************************************
 * 1 - prepare TZA 2014 (Wave 4) - Agriculture Section 3A 
