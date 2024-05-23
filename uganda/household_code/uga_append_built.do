@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: ek
-* Stata v.16
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* reads in merged data sets
@@ -10,7 +12,6 @@
 
 * assumes
 	* all Uganda data has been cleaned and merged with rainfall
-	* customsave.ado
 
 * TO DO:
 	* complete

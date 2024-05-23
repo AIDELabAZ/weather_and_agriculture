@@ -1,9 +1,9 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: ek
-* Edited on: 26 Apr 24
-* Edited by: rg
-* Stata v.18, mac
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* fertilizer use
@@ -12,7 +12,7 @@
 	* 3B - 5B are questionaires for the second planting season
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* mdesc.ado
 
 * TO DO:

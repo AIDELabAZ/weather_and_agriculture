@@ -1,14 +1,15 @@
 * Project: WB Weather
 * Created on: Oct 2020
 * Created by: jdm
-* Edited on: 8 May 24
-* Edited by: rg
-* Stata v.18, mac
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* determines if regions are in "north" or "south"
 
 * assumes
+	* access to all raw data
 	* cleaned 2010_AGSEC5A.dta, 2011_AGSEC5A.dta, and 2010_GSEC1
 
 * TO DO:
@@ -85,8 +86,7 @@
 	describe
 	summarize
 
-* save file
-			
+* save file			
 	save 			"$root/wave_1/refined/harv_month.dta", replace
 	save 			"$root/wave_2/refined/harv_month.dta", replace
 	save 			"$root/wave_3/refined/harv_month.dta", replace

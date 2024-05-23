@@ -1,9 +1,9 @@
 * Project: WB Weather
 * Created on: Aug 2020
-* Created by: jdm
-* Edited on: 26 Apr 24
-* Edited by: rg
-* Stata v.18, mac
+* Created by: ek
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* merges individual cleaned plot datasets together
@@ -12,7 +12,6 @@
 
 * assumes
 	* previously cleaned household datasets
-
 
 * TO DO:
 	* done
@@ -552,6 +551,7 @@
 	
 * saving production dataset
 	save 			"$export/hhfinal_unps2.dta", replace
+
 
 * close the log
 	log	close

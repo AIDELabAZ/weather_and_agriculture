@@ -1,9 +1,9 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: ek
-* Edited on: 26 Apr 24
-* Edited by: rg
-* Stata v.18, mac
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* Crop output
@@ -12,6 +12,7 @@
 	* 3B - 5B are questionaires for the second planting season
 
 * assumes
+	* access to all raw data
 	* mdesc.ado
 
 * TO DO:
@@ -528,6 +529,7 @@
 
 * save file
 	save 			"$export/2009_AGSEC5A.dta", replace
+
 
 * close the log
 	log	close

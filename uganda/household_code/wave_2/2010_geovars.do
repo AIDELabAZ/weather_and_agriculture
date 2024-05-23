@@ -1,15 +1,15 @@
 * Project: WB Weather
 * Created on: Oct 2020
 * Created by: jdm
-* Edited on: 26 Apr 24
-* Edited by: rg
-* Stata v.18, mac
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* cleans geovars
 
 * assumes
-	* access to raw data
+	* access to all raw data
 
 * TO DO:
 	* done

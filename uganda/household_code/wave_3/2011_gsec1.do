@@ -1,13 +1,15 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: themacfreezie
+* Edited on: 23 May 2024
 * Edited by: jdm
-* Stata v.16
+* Stata v.18
 
 * does
 	* household Location data (2011_GSEC1) for the 1st season
 
 * assumes
+	* access to all raw data
 	* mdesc.ado
 
 * TO DO:
