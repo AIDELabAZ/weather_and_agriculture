@@ -122,7 +122,7 @@
 * **********************************************************************
 
 * define each file in the above local
-	loc 		fileList : dir "$rootw/`folder'" files "*tp_n.dta"
+	loc 		fileList : dir "$rootw" files "*tp_n.dta"
 	
 * loop through each file in the above local
 	foreach 	file in `fileList' {	
@@ -205,7 +205,7 @@
 	lab var 	data "Data Source"
 
 * define each file in the above local
-	loc 		fileList : dir "$rootw/`folder'" files "*rf_s.dta"
+	loc 		fileList : dir "$rootw" files "*rf_s.dta"
 	
 * loop through each file in the above local
 	foreach 	file in `fileList' {	
@@ -357,7 +357,6 @@
 
 * append southern data
 	append			using "$export/ghsy1_merged_s.dta", force
-
 
 * check to verify that there are observations for all variables
 	sum

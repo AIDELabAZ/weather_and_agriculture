@@ -53,7 +53,7 @@
 	summarize
 
 * save file
-		save 		"`export'/NGA_geovars.dta", replace
+	save 		"`export'/NGA_geovars.dta", replace
 
 * close the log
 	log	close

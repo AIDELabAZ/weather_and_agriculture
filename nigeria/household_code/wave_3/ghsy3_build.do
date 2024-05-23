@@ -121,7 +121,7 @@
 * **********************************************************************
 
 * define each file in the above local
-	loc 		fileList : dir "$rootw/`folder'" files "*tp_n.dta"
+	loc 		fileList : dir "$rootw" files "*tp_n.dta"
 	
 * loop through each file in the above local
 	foreach 	file in `fileList' {	
@@ -182,7 +182,6 @@
 		
 		* drop year variables
 			drop 		*2015
-	}
 }
 
 * save file
@@ -195,7 +194,7 @@
 * **********************************************************************
 
 * import the .dta houeshold file
-	use 		"`rooth'/hhfinal_ghsy3.dta", clear
+	use 		"$rooth/hhfinal_ghsy3.dta", clear
 
 * drop northern regions
 	drop if		zone == 1 | zone == 2 | zone == 3
@@ -205,7 +204,7 @@
 	lab var 	data "Data Source"
 
 * define each file in the above local
-	loc 		fileList : dir "$rootw/`folder'" files "*rf_s.dta"
+	loc 		fileList : dir "$rootw" files "*rf_s.dta"
 	
 * loop through each file in the above local
 	foreach 	file in `fileList' {	

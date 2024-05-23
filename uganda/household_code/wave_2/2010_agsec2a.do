@@ -1,8 +1,9 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: themacfreezie
-* Edited by: ek
-* Stata v.16
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* reads Uganda wave 2 owned plot info (2010_AGSEC2A) for the 1st season
@@ -11,35 +12,35 @@
 	* ready to be appended to 2010_AGSEC2B
 
 * assumes
-	* customsave.ado
+* access to all raw data
 	* mdesc.ado
 
 * TO DO:
 	* done
 
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+************************************************************************
+**# 0 - setup
+************************************************************************
 
 * define paths	
-	loc 	root 		= 		"$data/household_data/uganda/wave_2/raw"  
-	loc     export 		= 		"$data/household_data/uganda/wave_2/refined"
-	loc 	logout 		= 		"$data/household_data/uganda/logs"
+	global 	root 			"$data/household_data/uganda/wave_2/raw"  
+	global  export 			"$data/household_data/uganda/wave_2/refined"
+	global 	logout 			"$data/household_data/uganda/logs"
 
 * close log 
 	*log close
 	
 * open log	
-	cap log close
-	log using "`logout'/2010_agsec2a", append
+	cap 					log close
+	log using 				"$logout/2010_agsec2a", append
 
 	
-* **********************************************************************
-* 1 - clean up the key variables
-* **********************************************************************
+************************************************************************
+**# 1 - clean up the key variables
+************************************************************************
 
 * import wave 2 season A
-	use "`root'/2010_AGSEC2A.dta", clear
+	use 			"$root/2010_AGSEC2A.dta", clear
 
 	rename 			HHID hhid
 	rename 			a2aq4 plotsizeGPS
@@ -47,8 +48,8 @@
 	rename			a2aq7 tenure
 	
 	describe
-	sort hhid prcid
-	isid hhid prcid
+	sort 			hhid prcid
+	isid 			hhid prcid
 	
 * make a variable that shows the irrigation
 	gen irr_any = 1 if a2aq20 == 1
@@ -56,12 +57,12 @@
 	lab var			irr_any "Irrigation (=1)"
 	
 	
-* **********************************************************************
-* 2 - merge location data
-* **********************************************************************	
+************************************************************************
+**# 2 - merge location data
+************************************************************************	
 	
 * merge the location identification
-	merge m:1 hhid using "`export'/2010_GSEC1"
+	merge m:1 hhid using "$export/2010_GSEC1"
 	*** 10 unmatched from master
 	*** that means 10 observations did not have location data
 	*** no option at this stage except to drop all unmatched
@@ -70,7 +71,7 @@
 	
 	
 ************************************************************************
-* 3 - keeping cultivated land
+**# 3 - keeping cultivated land
 ************************************************************************
 
 * what was the primary use of the parcel
@@ -83,9 +84,9 @@
 	*** 248 observations deleted
 	
 	
-* **********************************************************************
-* 4 - clean plotsize
-* **********************************************************************
+************************************************************************
+**# 4 - clean plotsize
+************************************************************************
 
 * summarize plot size
 	sum 			plotsizeGPS
@@ -182,9 +183,9 @@
 	*** none missing
 	
 	
-* **********************************************************************
-* 4 - end matter, clean up to save
-* **********************************************************************
+************************************************************************
+**# 4 - end matter, clean up to save
+************************************************************************
 
 	keep 			hhid prcid region district county subcounty ///
 					parish hh_status2010 spitoff09_10 spitoff10_11 wgt10 ///
@@ -195,8 +196,8 @@
 	summarize
 
 * save file
-		customsave , idvar(hhid) filename("2010_AGSEC2A.dta") ///
-			path("`export'") dofile(2010_AGSEC2A) user($user)
+	save 			"$export/2010_AGSEC2A.dta", replace
+
 
 * close the log
 	log	close
