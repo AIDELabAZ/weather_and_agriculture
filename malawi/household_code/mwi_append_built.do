@@ -1,6 +1,8 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: jdm
+* Edited by: alj
+* Edited on: 23 April 2024
 * Stata v.16
 
 * does
@@ -19,7 +21,7 @@
 
 * TO DO:
 	* complete
-
+	* update converstion rates to 2015, line 236
 	
 * **********************************************************************
 * 0 - setup
@@ -28,6 +30,7 @@
 * define paths
 	loc		root 	= 	"$data/merged_data/malawi"
 	loc		export 	= 	"$data/regression_data/malawi"
+	loc		export5	=	"$data/household_data/malawi/wave_5/refined"
 	loc		logout 	= 	"$data/merged_data/malawi/logs"
 
 * open log	
@@ -233,22 +236,23 @@
 	rename		rsmz_irrigationany cp_irr
 	lab var		cp_irr "Irrigation for maize (=1)"
 
-* convert kwacha into 2010 USD
+* convert kwacha into 2015 USD
 * exchange rates come from world_bank_exchange_rates.xlsx
-	replace		rs_harvest_valueimp = rs_harvest_valueimp/124.3845647 ///
+	replace		rs_harvest_valueimp = rs_harvest_valueimp/199.11 ///
 					if year == 2008
-	replace		rs_harvest_valueimp = rs_harvest_valueimp/134.2107246 ///
+	replace		rs_harvest_valueimp = rs_harvest_valueimp/184.65 ///
 					if year == 2009
-	replace		rs_harvest_valueimp = rs_harvest_valueimp/201.9788745 ///
+	replace		rs_harvest_valueimp = rs_harvest_valueimp/285.12 ///
 					if year == 2012
-	replace		rs_harvest_valueimp = rs_harvest_valueimp/310.8160671 ///
+	replace		rs_harvest_valueimp = rs_harvest_valueimp/436.79 ///
 					if year == 2014
-	replace		rs_harvest_valueimp = rs_harvest_valueimp/374.6410851 ///
+	replace		rs_harvest_valueimp = rs_harvest_valueimp/499.61 ///
 					if year == 2015
+	*** 2019 converted in file
 		
 * create or rename variables for total farm production (seed rate missing)
 	rename		rs_harvest_valueimp tf_hrv
-	lab var 	tf_hrv "Harvest of all crops (2010 USD)"
+	lab var 	tf_hrv "Harvest of all crops (2015 USD)"
 		
 	rename		rs_cultivatedarea tf_lnd
 	lab var 	tf_lnd "Land area planted to all crops (ha)"
@@ -270,6 +274,9 @@
 		
 	rename		rs_irrigationany tf_irr
 	lab var		tf_irr "Irrigation for all crops (=1)"
+
+* going to append to this the 2019/2020 data, which is a bit different, but let's give it a go
+	append 		using "`export5'/mwi_merge.dta", force	
 	
 * rename household weights
 	rename		hhweight pw
@@ -303,6 +310,7 @@
 	
 * save file
 	qui: compress
+	
 	save 			"`export'/mwi_complete.dta", replace
 	
 * close the log

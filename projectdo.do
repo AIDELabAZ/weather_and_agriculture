@@ -14,7 +14,8 @@
 	* access to all data and code
 
 * TO DO:
-	* complete
+	* add run time 
+
 
 * **********************************************************************
 * 0 - setup
@@ -100,7 +101,7 @@ if $pack == 1 {
 		set more off
 }
 
-
+/* 
 * **********************************************************************
 * 1 - run weather data cleaning .do file
 * **********************************************************************
@@ -140,4 +141,11 @@ if $pack == 1 {
 * 2 - run analysis .do files
 * **********************************************************************
 
-/* END */
+	do			"$code/analysis/viz_code/sum_table.do"
+	do			"$code/analysis/viz_code/sum_vis.do"
+	do			"$code/analysis/viz_code/r2_vis.do"
+	do			"$code/analysis/viz_code/pval_vis.do"
+	do			"$code/analysis/viz_code/coeff_vis.do"
+	do			"$code/analysis/viz_code/coeff_lc_vis.do"
+	do			"$code/analysis/viz_code/coeff_mc_vis.do"
+
