@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: McG
-* Stata v.16
+* Edited on: 21 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* cleans Tanzania household variables, wave 3 Ag sec3a
@@ -9,7 +11,7 @@
 	* generates irrigation and pesticide dummies, fertilizer variables, and labor variables 
 	
 * assumes
-	* customsave.ado
+	* access to all raw data
 
 * TO DO:
 	* completed
@@ -20,13 +22,13 @@
 * **********************************************************************
 
 * define paths
-	loc		root	=	"$data/household_data/tanzania/wave_3/raw"
-	loc		export	=	"$data/household_data/tanzania/wave_3/refined"
-	loc		logout	=	"$data/household_data/tanzania/logs"
+	global root 	"$data/household_data/tanzania/wave_3/raw"
+	global export 	"$data/household_data/tanzania/wave_3/refined"
+	global logout 	"$data/household_data/tanzania/logs"
 
-* open log
-	cap log close
-	log		using	"`logout'/wv3_AGSEC3A", append
+* open log 
+	cap log close 
+	log using "$logout/wv3_AGSEC3A", append
 
 	
 * ***********************************************************************
@@ -34,7 +36,7 @@
 * ***********************************************************************
 
 * load data
-	use 			"`root'/AG_SEC_3A", clear
+	use 			"$root/AG_SEC_3A", clear
 	
 * dropping duplicates
 	duplicates 		drop
@@ -50,7 +52,7 @@
 	isid			plot_id	
 
 * must merge in regional identifiers from 2008_HHSECA to impute
-	merge			m:1 y3_hhid using "`export'/HH_SECA"
+	merge			m:1 y3_hhid using "$export/HH_SECA"
 	tab				_merge
 	*** 1,710 not matched
 	
@@ -291,7 +293,7 @@
 	lab var			y3_rural "Cluster Type"
 	lab var			hhweight "Household Weights (Trimmed & Post-Stratified)"
 	lab var			plotnum "Plot ID Within household"
-	lab var			plot_id "Unquie Plot Identifier"
+	lab var			plot_id "Unique Plot Identifier"
 	lab var			clusterid "Unique Cluster Identification"
 	lab var			strataid "Design Strata"
 	lab var			region "Region Code"
@@ -309,9 +311,8 @@
 	compress
 	describe
 	summarize 
-	sort plot_id
-	customsave , idvar(plot_id) filename(AG_SEC3A.dta) path("`export'") ///
-		dofile(2012_AGSEC3A) user($user)
+	sort 			plot_id
+	save 			"$export/AG_SEC3A.dta", replace
 
 * close the log
 	log	close

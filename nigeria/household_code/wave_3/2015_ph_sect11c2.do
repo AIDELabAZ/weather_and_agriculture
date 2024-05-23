@@ -30,7 +30,7 @@
 	
 * open log	
 	cap log close
-	log using "`logout'/ph_sect11c2", append
+	*log using "`logout'/ph_sect11c2", append
 
 * **********************************************************************
 * 1 - determine pesticide, herbicide, etc.

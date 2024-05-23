@@ -27,7 +27,7 @@
 
 * open log	
 	cap log close
-	log using "`logout'/ph_sect11d", append
+	*log using "`logout'/ph_sect11d", append
 
 * **********************************************************************
 * 1 - determine fertilizer and conversion to kgs

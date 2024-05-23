@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: McG
-* Stata v.15
+* Edited on: 21 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* cleans Tanzania household variables, wave 1 Ag sec4a
@@ -9,7 +11,7 @@
 	* generates weight harvested, harvest month, percentage of plot planted with given crop, value of seed purchases
 	
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* mdesc.ado
 
 * TO DO:
@@ -21,13 +23,13 @@
 * **********************************************************************
 
 * define paths
-	loc root = "$data/household_data/tanzania/wave_1/raw"
-	loc export = "$data/household_data/tanzania/wave_1/refined"
-	loc logout = "$data/household_data/tanzania/logs"
+	global root 	"$data/household_data/tanzania/wave_1/raw"
+	global export 	"$data/household_data/tanzania/wave_1/refined"
+	global logout 	"$data/household_data/tanzania/logs"
 
-* open log
+* open log 
 	cap log close 
-	log using "`logout'/wv1_AGSEC4A", append
+	log using "$logout/wv1_AGSEC4A", append
 
 	
 * **********************************************************************
@@ -35,7 +37,7 @@
 * **********************************************************************
 
 * load data
-	use 		"`root'/SEC_4A", clear
+	use 		"$root/SEC_4A", clear
 	
 * dropping duplicates
 	duplicates 		drop
@@ -90,7 +92,7 @@
 	*** 0 duplicate crop_ids	
 	
 * must merge in regional identifiers from 2008_HHSECA to impute
-	merge			m:1 hhid using "`export'/HH_SECA"
+	merge			m:1 hhid using "$export/HH_SECA"
 	tab				_merge
 	*** 1,386 not matched
 	
@@ -147,13 +149,13 @@
 	*** missing maize ob (w/ hvst_value) will be left unchnaged
 	*** to be imputed
 
-* currency conversion
-	replace				hvst_value = hvst_value/1169.62042
+* currency conversion to 2015 usd
+	replace				hvst_value = hvst_value/1823.0731
 	*** Value comes from World Bank: world_bank_exchange_rates.xlxs
 	
 * summarize value of harvest
 	sum				hvst_value, detail
-	*** median 34.2, mean 85.83, max 4,719.48
+	*** median 21.94, mean 55.07, max 3,027.85
 
 * replace any +3 s.d. away from median as missing
 	replace			hvst_value = . if hvst_value > `r(p50)'+(3*`r(sd)')
@@ -237,22 +239,21 @@
 	lab var			ea "Village / Enumeration Area Code"	
 	lab var			mz_hrv "Quantity of Maize Harvested (kg)"
 	lab var			mz_damaged "Was Maize Harvest Damaged to the Point of No Yield"
-	lab var			hvst_value "Value of Harvest (2010 USD)"
+	lab var			hvst_value "Value of Harvest (2015 USD)"
 	lab var 		crop_code "Crop Identifier"
 	lab var			crop_id "Unique Crop ID Within Plot"
 	lab var			pure_stand "Is Crop Planted in Full Area of Plot (Purestand)?"
 	lab var			any_pure "Is Crop Planted in Full Area of Plot (Purestand)?"
 	lab var			any_mixed "Is Crop Planted in Less Than Full Area of Plot?"
 	lab var			percent_field "Percent of Field Crop Was Planted On"
-	
+		
 * prepare for export
 	isid			hhid plotnum crop_code
 	compress
 	describe
 	summarize 
-	sort plot_id
-	customsave , idvar(plot_id) filename(AG_SEC4A.dta) path("`export'") ///
-		dofile(2008_AGSEC4A) user($user)
+	sort 			plot_id
+	save 			"$export/AG_SEC4A.dta", replace
 
 * close the log
 	log	close

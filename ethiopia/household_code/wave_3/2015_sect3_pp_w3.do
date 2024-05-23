@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: June 2020
 * Created by: McG
-* Stata v.16
+* Edited on: 20 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* cleans Ethiopia household variables, wave 3 PP sec3
@@ -10,7 +12,7 @@
 	* seems to correspond to Malawi ag-modC and ag-modJ
 	
 * assumes
-	* customsave.ado
+	* raw lsms-isa data
 	* distinct.ado
 
 * TO DO:
@@ -422,8 +424,7 @@
 	describe
 	summarize
 	sort 		holder_id parcel field
-	customsave , idvar(field_id) filename(PP_SEC3.dta) path("`export'") ///
-		dofile(PP_SEC3) user($user)
+	save 		"`export'/PP_SEC3.dta", replace
 
 * close the log
 	log	close
