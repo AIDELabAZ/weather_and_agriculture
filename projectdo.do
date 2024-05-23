@@ -4,18 +4,13 @@
 * Stata v.18.0
 
 * does
-	* establishes an identical workspace between users
-	* sets globals that define absolute paths
-	* serves as the starting point to find any do-file, dataset or output
-	* runs all do-files needed for data work
-	* loads any user written packages needed for analysis
-
+	* 
+	
 * assumes
-	* access to all data and code
+	* 
 
 * TO DO:
-	* complete
-
+	* 
 
 * **********************************************************************
 * 0 - setup
@@ -33,19 +28,28 @@
 * **********************************************************************
 
 * Define root folder globals
-    if `"`c(username)'"' == "jdmichler" {
+
+if `"`c(username)'"' == "jdmichler" {
         global 		code  	"C:/Users/jdmichler/git/AIDELabAZ/weather_and_agriculture"
 		global 		data	"C:/Users/jdmichler/OneDrive - University of Arizona/weather_and_agriculture"
     }
-	if `"`c(username)'"' == "yetfl" {
-        global 		code  	"C:/Users/yetfl/OneDrive/Desktop/GitHub/weather_and_agriculture"
-		global 		data	"C:/Users/yetfl/OneDrive - University of Arizona/weather_and_agriculture"
-    }
-    if `"`c(username)'"' == "annal" {
+if `"`c(username)'"' == "annal" {
         global 		code  	"C:/Users/aljosephson/git/weather_and_agriculture"
 		global 		data	"C:/Users/aljosephson/OneDrive - University of Arizona/weather_and_agriculture"
     }	
-	if `"`c(username)'"' == "rbrnhm" {
+if `"`c(username)'"' == "rodrigoguerra" {
+        global 		code  	"/Users/rodrigoguerra/Library/CloudStorage/OneDrive-UniversityofArizona/Documents/GitHub/weather_and_agriculture"
+		global 		data	"/Users/rodrigoguerra/Library/CloudStorage/OneDrive-UniversityofArizona/weather_and_agriculture" 
+    }
+if `"`c(username)'"' == "fvkrysbackpackpc" {
+        global 		code  	"/Users/fvkrysbackpackpc/Documents/GitHub/weather_and_agriculture"
+		global 		data	"/Users/fvkrysbackpackpc/Library/CloudStorage/OneDrive-UniversityofArizona/weather_and_agriculture"	
+    }
+if `"`c(username)'"' == "yetfl" {
+        global 		code  	"C:/Users/yetfl/OneDrive/Desktop/GitHub/weather_and_agriculture"
+		global 		data	"C:/Users/yetfl/OneDrive - University of Arizona/weather_and_agriculture"
+    }
+if `"`c(username)'"' == "rbrnhm" {
         global 		code  	"C:/Users/rbrnhm/GitHub/weather_and_agriculture"
 		global 		data	"C:/Users/rbrnhm/OneDrive - University of Arizona/weather_and_agriculture"
     }	
@@ -124,31 +128,12 @@ if $pack == 1 {
 	do 			"$code/uganda/household_code/uga_hh_masterdo.do"
 
 
-
 * **********************************************************************
-* 3 - build cross-country household panel data set
-* **********************************************************************
-
-	do			"$code/analysis/reg_code/panel_build.do"
-
-
-* **********************************************************************
-* 4 - run regression .do files
+* 1 - run data cleaning .do file
 * **********************************************************************
 
-	do			"$code/analysis/reg_code/regressions.do"
-	do			"$code/analysis/reg_code/regressions-linear-combo.do"
-	do			"$code/analysis/reg_code/regressions-multi-combo.do"
-
-
 * **********************************************************************
-* 5 - run analysis .do files
+* 2 - run analysis .do files
 * **********************************************************************
 
-	do			"$code/analysis/viz_code/sum_table.do"
-	do			"$code/analysis/viz_code/sum_vis.do"
-	do			"$code/analysis/viz_code/r2_vis.do"
-	do			"$code/analysis/viz_code/pval_vis.do"
-	do			"$code/analysis/viz_code/coeff_vis.do"
-	do			"$code/analysis/viz_code/coeff_lc_vis.do"
-	do			"$code/analysis/viz_code/coeff_mc_vis.do"
+/* END */

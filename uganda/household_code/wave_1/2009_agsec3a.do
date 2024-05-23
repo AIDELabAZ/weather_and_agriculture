@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: ek
-* Stata v.16
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* fertilizer use
@@ -10,7 +12,7 @@
 	* 3B - 5B are questionaires for the second planting season
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* mdesc.ado
 
 * TO DO:
@@ -22,13 +24,13 @@
 * **********************************************************************
 
 * define paths	
-	loc root 		= "$data/household_data/uganda/wave_1/raw"  
-	loc export 		= "$data/household_data/uganda/wave_1/refined"
-	loc logout 		= "$data/household_data/uganda/logs"
+	global root 		"$data/household_data/uganda/wave_1/raw"  
+	global export 		"$data/household_data/uganda/wave_1/refined"
+	global logout 		"$data/household_data/uganda/logs"
 	
 * open log	
-	cap log 		close
-	log using 		"`logout'/2009_agsec3a", append
+	cap log 			close
+	log using 			"$logout/2009_agsec3a", append
 
 	
 * **********************************************************************
@@ -36,7 +38,7 @@
 * **********************************************************************
 
 * import wave 2 season A
-	use 			"`root'/2009_AGSEC3A.dta", clear
+	use 			"$root/2009_AGSEC3A.dta", clear
 		
 	rename 			Hhid hhid
 	rename			A3aq1 prcid 
@@ -56,7 +58,7 @@
 * **********************************************************************	
 	
 * merge the location identification
-	merge m:1 		hhid using "`export'/2009_GSEC1"
+	merge m:1 		hhid using "$export/2009_GSEC1"
 	*** 689 unmatched from master
 	
 	drop if			_merge != 3
@@ -226,9 +228,8 @@
 	describe
 	summarize
 
-* save file
-		customsave , idvar(hhid) filename("2009_AGSEC3A.dta") ///
-			path("`export'") dofile(2009_AGSEC3A) user($user)
+* save file			
+	save 			"$export/2009_AGSEC3A.dta", replace
 
 * close the log
 	log	close

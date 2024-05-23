@@ -2,13 +2,15 @@
 * Created on: Aug 2020
 * Created by: alj
 * Edited by: jdm
-* Stata v.16
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* household Location data (2009_GSEC1) for the 1st season
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* mdesc.ado
 
 * TO DO:
@@ -20,13 +22,13 @@
 * **********************************************************************
 
 * define paths	
-	loc root 		= "$data/household_data/uganda/wave_1/raw"  
-	loc export 		= "$data/household_data/uganda/wave_1/refined"
-	loc logout 		= "$data/household_data/uganda/logs"
+	global root 		"$data/household_data/uganda/wave_1/raw"  
+	global export 		"$data/household_data/uganda/wave_1/refined"
+	global logout 		"$data/household_data/uganda/logs"
 	
 * open log	
-	cap log 		close
-	log using 		"`logout'/2009_GSEC1", append
+	cap log 			close
+	log using 			"$logout/2009_GSEC1", append
 
 	
 * **********************************************************************
@@ -34,7 +36,7 @@
 * **********************************************************************
 
 * import wave 1 season 1
-	use 			"`root'/2009_GSEC1.dta", clear
+	use 			"$root/2009_GSEC1.dta", clear
 
 * rename variables
 	isid 			HHID
@@ -66,8 +68,8 @@
 	summarize
 
 * save file
-		customsave , idvar(hhid) filename("2009_GSEC1.dta") ///
-			path("`export'") dofile(2009_GSEC1) user($user)
+	save 			"$export/2009_GSEC1.dta", replace
+
 
 * close the log
 	log	close
