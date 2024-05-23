@@ -2,7 +2,7 @@
 * Created on: May 2020
 * Created by: alj
 * Edited by: reece
-* Edited on: May 22 2024
+* Edited on: May 23 2024
 * Stata v.18
 
 * does
@@ -50,14 +50,37 @@ collapse (sum) sa2aq1b, by(zone state lga sector ea hhid plotid)
 * in this survey we can't tell gender or age of household members
 * since we can't match household members we deal with each activity seperately
 	*cannot follow, not given day for each activity
+	
+
+* merge in post harvest hired labor
+	merge 1:1 hhid plotid using "$root/secta2b_harvestw4"
+	
 
 * create household member labor 
+	gen 		ph_hh_labor = sa2aq1b
+	replace 	ph_hh_labor = 0 if sa2aq1b == .
+	
+* hired labor days, (# of people days hired to work)
+	gen			men_days = sa2bq3
+	replace 	men_days = 0 if sa2bq3 == .
+	
+	gen 		women_days = sa2bq6
+	replace		women_days = 0 if sa2bq6 == .
+	*** we do not include child labor days
 
+* free labor days, from other households
+	replace 	sa2bq15a = 0 if sa2bq15a == .
+	replace 	sa2bq15b = 0 if sa2bq15b == .
+	
+	gen 		free_days = (sa2bq15a + sa2bq15b)
+	replace		free_days = 0 if free_days == .
+	
 	
 	*** this calculation is for up to 4 members of the household that were laborers although this wave has 8 household members we only use the first 4
 	*** per the survey, these are laborers from the last rainy/harvest season
 	*** NOT the dry season harvest
 	*** does not include planting or cultivation labor (see NGA_pp_sect11c1)
+		*** did not follow exactly, not able to identify hh members
 		
 
 	**********************************************************************
@@ -65,11 +88,10 @@ collapse (sum) sa2aq1b, by(zone state lga sector ea hhid plotid)
 * **********************************************************************
 	
 * summarize household individual labor for land prep to look for outliers
-	sum				hh_1 hh_2 hh_3 hh_4 men_days women_days free_days
-	*** all but one (men_days) has more harvest days than possible
+	sum				ph_hh_labor men_days women_days free_days
 	
 * generate local for variables that contain outliers
-	loc				labor hh_1 hh_2 hh_3 hh_4 men_days women_days free_days
+	loc				labor ph_hh_labor men_days women_days free_days
 
 * replace zero to missing, missing to zero, and outliers to mizzing
 	foreach var of loc labor {
@@ -77,7 +99,7 @@ collapse (sum) sa2aq1b, by(zone state lga sector ea hhid plotid)
 		mvencode		`var', mv(0)
 	    replace			`var' = . if `var' > 90
 	}
-	*** 270 outliers changed to missing
+	*** 
 
 * impute missing values (only need to do four variables)
 	mi set 			wide 	// declare the data to be wide.
@@ -94,22 +116,23 @@ collapse (sum) sa2aq1b, by(zone state lga sector ea hhid plotid)
 	mi 				unset	
 
 * sum the imputation
-	sum hh_1_1_  hh_1_2_ hh_1_3_ hh_1_4_ 
-	sum hh_2_2_ hh_2_1_ hh_2_3_ hh_2_4_ 
-	sum hh_3_1_ hh_3_2_  hh_3_3_ hh_3_4_ 
-	sum hh_4_1_ hh_4_2_ hh_4_3_  hh_4_4_ 
-	sum men_days_1_ men_days_2_ men_days_3_ men_days_4_ 
-	sum women_days_1_ women_days_2_ women_days_3_ women_days_4_ 
-	sum free_days_1_ free_days_2_ free_days_3_ free_days_4_	
+	sum ph_hh_labor_1 ph_hh_labor_2
+	sum men_days_1_ men_days_2_
+	sum women_days_1_ women_days_2_
+	sum free_days_1_ free_days_2_
 	
 * replace the imputated variables
-	replace hh_1 = hh_1_1_
-	replace hh_2 = hh_2_2_
-	replace hh_3 = hh_3_3_
-	replace hh_4 = hh_4_4_
+	replace ph_hh_labor = ph_hh_labor_1_ 
+	* 235 changes made
+	replace men_days = men_days_1_
+	* 0 changes
+	replace women_days = women_days_1_
+	* 0 changes
+	replace free_days = free_days_1_
+	* 0 changes
 	
 * total labor days for harvest
-	egen			hrv_labor = rowtotal(hh_1 hh_2 hh_3 hh_4 ///
+	egen			hrv_labor = rowtotal(ph_hh_labor ///
 							 women_days men_days free_days)
 	lab var			hrv_labor "total labor at harvest (days)"
 
@@ -138,8 +161,7 @@ collapse (sum) sa2aq1b, by(zone state lga sector ea hhid plotid)
 	* harvest labor looks reasonable more than 90% of observations are less than 91 days within the cap by Palacios-Lopez et al. (2017) in Food Policy for harvest labor.
 
 * save file
-		customsave , idvar(hhid) filename("ph_secta2.dta") ///
-			path("`export'/`folder'") dofile(ph_secta2) user($user)
+	save 			"$export/ph_secta2.dta", replace
 
 * close the log
 	log	close
