@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: McG
-* Stata v.16
+* Edited on: 21 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* Executes all wave specific Tanzania hh .do files
@@ -71,7 +73,7 @@
 * **********************************************************************
 
 * run panel key cleaning file
-	do			"`dofile'/tza_panel_key.do"				// panel key
+	do			"`dofile'/tza_sdd_panel_key.do"				// panel key
 
 	
 * **********************************************************************
@@ -83,6 +85,9 @@
 	do 			"`dofile'/wave_2/npsy2_merge.do"			//	merges wv 2 hh datasets
 	do 			"`dofile'/wave_3/npsy3_merge.do"			//	merges wv 3 hh datasets
 	do 			"`dofile'/wave_4/npsy4_merge.do"			//	merges wv 4 hh datasets
+	do 			"`dofile'/wave_5/npsy4xp_merge.do"			//	merges wv 5 hh datasets
+	do 			"`dofile'/wave_6/npsy5sdd_merge.do"			//	merges wv 6 hh datasets
+	do 			"`dofile'/wave_7/npsy5_merge.do"			//	merges wv 7 hh datasets
 
 
 * **********************************************************************
@@ -94,6 +99,9 @@
 	do 			"`dofile'/wave_2/npsy2_build.do"			//	merges NPSY2 to weather
 	do 			"`dofile'/wave_3/npsy3_build.do"			//	merges NPSY3 to weather
 	do 			"`dofile'/wave_4/npsy4_build.do"			//	merges NPSY4 to weather
+	do 			"`dofile'/wave_5/npsy4xp_build.do"			//	merges NPSY4xp to weather
+	do 			"`dofile'/wave_6/npsy5sdd_build.do"			//	merges NPSY5-SDD to weather
+	do 			"`dofile'/wave_7/npsy5_build.do"			//	merges NPSY5 to weather
 
 
 * **********************************************************************

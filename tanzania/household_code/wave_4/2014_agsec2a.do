@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: McG
-* Stata v.16
+* Edited on: 21 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* cleans Tanzania household variables, wave 4 Ag sec2a
@@ -9,7 +11,7 @@
 	* generates imputed plot sizes
 	
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* distinct.ado
 
 * TO DO:
@@ -21,21 +23,20 @@
 * **********************************************************************
 
 * define paths
-	loc root = "$data/household_data/tanzania/wave_4/raw"
-	loc export = "$data/household_data/tanzania/wave_4/refined"
-	loc logout = "$data/household_data/tanzania/logs"
+	global root 	"$data/household_data/tanzania/wave_4/raw"
+	global export 	"$data/household_data/tanzania/wave_4/refined"
+	global logout 	"$data/household_data/tanzania/logs"
 
 * open log 
 	cap log close 
-	log using "`logout'/wv4_AGSEC2A", append
-
+	log using "$logout/wv4_AGSEC2A", append
 	
 * ***********************************************************************
 * 1 - prepare TZA 2014 (Wave 4) - Agriculture Section 2A 
 * ***********************************************************************
 
 * load data
-	use 		"`root'/ag_sec_2a", clear
+	use 		"$root/ag_sec_2a", clear
 
 * dropping duplicates
 	duplicates 	drop
@@ -68,7 +69,7 @@
 * ***********************************************************************
 	
 * must merge in regional identifiers from 2008_HHSECA to impute
-	merge		m:1 y4_hhid using "`export'/HH_SECA"
+	merge		m:1 y4_hhid using "$export/HH_SECA"
 	tab			_merge
 	*** 1,262 not merged from using, (dropped obs from line 45)
 	
@@ -82,7 +83,7 @@
 	*** 159 distinct districts
 	
 * must merge in regional identifiers from 2012_AG_SEC_3A to impute
-	merge			1:1 y4_hhid plotnum using "`root'/AG_SEC_3A"
+	merge			1:1 y4_hhid plotnum using "$root/AG_SEC_3A"
 	*** 1,262 not matched from using - good
 
 	drop		if _merge == 2
@@ -191,7 +192,6 @@
 		*** I will not drop any low end values at this time
 
 * impute missing + irregular plot sizes using predictive mean matching
-* imputing 1,376 observations (out of 4,275) - 32.19% 
 * including plotsize_self as control
 	mi set 		wide 	// declare the data to be wide.
 	mi xtset	, clear 	// clear any xtset in place previously
@@ -249,9 +249,8 @@
 	compress
 	describe
 	summarize 
-	sort plot_id
-	customsave , idvar(plot_id) filename(AG_SEC2A.dta) path("`export'") ///
-		dofile(2014_AGSEC2A) user($user)
+	sort 			plot_id
+	save 			"$export/AG_SEC2A.dta", replace
 
 * close the log
 	log	close

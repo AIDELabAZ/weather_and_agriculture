@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: McG
-* Stata v.16
+* Edited on: 21 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* cleans Tanzania household variables, wave 3 Ag sec2a
@@ -9,7 +11,7 @@
 	* generates imputed plot sizes
 	
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* distinct.ado
 
 * TO DO:
@@ -21,13 +23,13 @@
 * **********************************************************************
 
 * define paths
-	loc		root	=	"$data/household_data/tanzania/wave_3/raw"
-	loc		export	=	"$data/household_data/tanzania/wave_3/refined"
-	loc		logout	=	"$data/household_data/tanzania/logs"
+	global root 	"$data/household_data/tanzania/wave_3/raw"
+	global export 	"$data/household_data/tanzania/wave_3/refined"
+	global logout 	"$data/household_data/tanzania/logs"
 
-* open log
+* open log 
 	cap log close 
-	log		using	"`logout'/wv3_AGSEC2A", append
+	log using "$logout/wv3_AGSEC2A", append
 
 	
 * ***********************************************************************
@@ -35,7 +37,7 @@
 * ***********************************************************************
 
 * load data
-	use				"`root'/AG_SEC_2A", clear
+	use				"$root/AG_SEC_2A", clear
 	
 * dropping duplicates
 	duplicates 		drop
@@ -67,7 +69,7 @@
 * ***********************************************************************	
 
 * must merge in regional identifiers from 2012_HHSECA to impute
-	merge			m:1 y3_hhid using "`export'/HH_SECA"
+	merge			m:1 y3_hhid using "$export/HH_SECA"
 	tab				_merge
 	*** 1,710 not matched, these are the ones we dropped that lacked plotnum
 	
@@ -81,7 +83,7 @@
 	*** 132 once again, good deal
 	
 * must merge in regional identifiers from 2012_AG_SEC_3A to impute
-	merge			1:1 y3_hhid plotnum using "`root'/AG_SEC_3A"
+	merge			1:1 y3_hhid plotnum using "$root/AG_SEC_3A"
 	*** 1,710 not matched
 	
 	drop if			_merge == 2
@@ -238,7 +240,7 @@
 	lab var		y3_rural "Cluster Type"
 	lab var		hhweight "Household Weights (Trimmed & Post-Stratified)"
 	lab var		plotnum "Plot ID Within household"
-	lab var		plot_id "Unquie Plot Identifier"
+	lab var		plot_id "Unique Plot Identifier"
 	lab var		plotsize "Plot size (ha), imputed"
 	lab var		clusterid "Unique Cluster Identification"
 	lab var		strataid "Design Strata"
@@ -252,9 +254,9 @@
 	compress
 	describe
 	summarize 
-	sort plot_id
-	customsave , idvar(plot_id) filename(AG_SEC2A.dta) path("`export'") ///
-		dofile(2012_AGSEC2A) user($user)
+	sort 			plot_id
+	save 			"$export/AG_SEC2A.dta", replace
+
 
 * close the log
 	log	close

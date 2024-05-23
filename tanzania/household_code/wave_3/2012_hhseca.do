@@ -1,14 +1,16 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: McG
-* Stata v.16
+* Edited on: 21 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* cleans Tanzania household variables, wave 3 hh secA
 	* pulls regional identifiers
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 
 * TO DO:
 	* completed
@@ -19,20 +21,20 @@
 * **********************************************************************
 
 * define paths
-	loc	root	=	"$data/household_data/tanzania/wave_3/raw"
-	loc	export	=	"$data/household_data/tanzania/wave_3/refined"
-	loc	logout	=	"$data/household_data/tanzania/logs"
+	global	root		"$data/household_data/tanzania/wave_3/raw"
+	global export		"$data/household_data/tanzania/wave_3/refined"
+	global logout		"$data/household_data/tanzania/logs"
 
 * open log
-	cap log close 
-	log	using	"`logout'/wv3_HHSECA", append
+	cap log 			close 
+	log					using	"$logout/wv3_HHSECA", append
 
 * ***********************************************************************
 * 1 - TZA 2012 (Wave 3) - Household Section A
 * ***********************************************************************
 
 * load data
-	use 		"`root'/HH_SEC_A", clear
+	use 		"$root/HH_SEC_A", clear
 	
 * dropping duplicates
 	duplicates 	drop
@@ -85,8 +87,7 @@
 	sort y3_hhid
 	*** missing 3 ward values, 8 ea values 
 	
-	customsave , idvar(y3_hhid) filename(HH_SECA.dta) ///
-		path("`export'") dofile(2012_HHSECA) user($user)
+	save 			"$export/HH_SECA.dta", replace
 
 * close the log
 	log	close

@@ -1,40 +1,40 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: McG
-* Stata v.16
+* Edited on: 21 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* cleans Tanzania household variables, wave 4 hh secA
 	* pulls regional identifiers
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 
 * TO DO:
 	* completed
 
-* NOTES: 
-	* panel refresh in 2014, is a cross section not connected to waves 1-3
-
+	
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
 
 * define paths
-	loc	root	=	"$data/household_data/tanzania/wave_4/raw"
-	loc export	=	"$data/household_data/tanzania/wave_4/refined"
-	loc logout	=	"$data/household_data/tanzania/logs"
+	global	root		"$data/household_data/tanzania/wave_4/raw"
+	global export		"$data/household_data/tanzania/wave_4/refined"
+	global logout		"$data/household_data/tanzania/logs"
 
 * open log
 	cap log close 
-	log	using	"`logout'/wv4_HHSECA", append
+	log	using	"$logout/wv4_HHSECA", append
 
-* ***********************************************************************
-* 1 - TZA 2014 (Wave 4) - Household Section A
-* *********************1*************************************************
+*************************************************************************
+**#1 - TZA 2014 (Wave 4) - Household Section A
+***********************1*************************************************
 
 * load data
-	use 		"`root'/hh_sec_a", clear
+	use 		"$root/hh_sec_a", clear
 	
 * dropping duplicates
 	duplicates 	drop
@@ -76,8 +76,8 @@
 	summarize
 	sort y4_hhid
 	
-	customsave , idvar(y4_hhid) filename(HH_SECA.dta) ///
-		path("`export'") dofile(2014_HHSECA) user($user)
+	save 			"$export/HH_SECA.dta", replace
+
 
 * close the log
 	log	close

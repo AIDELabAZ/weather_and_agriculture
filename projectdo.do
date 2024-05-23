@@ -1,8 +1,6 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: jdm
-* Edited on: 15 Feb 2024
-* Edited by: alj 
 * Stata v.18.0
 
 * does
@@ -16,9 +14,9 @@
 	* access to all data and code
 
 * TO DO:
-	* complete
 	* add run time 
-	
+
+
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
@@ -35,16 +33,32 @@
 * **********************************************************************
 
 * Define root folder globals
-    if `"`c(username)'"' == "jdmichler" {
-        global 		code  	"C:/Users/jdmichler/git/AIDELabAZ/weather_and_agriculture"
-		global 		data	"C:/Users/jdmichler/OneDrive - University of Arizona/weather_project"
-    }
 
-    if `"`c(username)'"' == "annal" {
+if `"`c(username)'"' == "jdmichler" {
+        global 		code  	"C:/Users/jdmichler/git/AIDELabAZ/weather_and_agriculture"
+		global 		data	"C:/Users/jdmichler/OneDrive - University of Arizona/weather_and_agriculture"
+    }
+if `"`c(username)'"' == "annal" {
         global 		code  	"C:/Users/aljosephson/git/weather_and_agriculture"
-		global 		data	"C:/Users/aljosephson/OneDrive - University of Arizona/weather_project"
+		global 		data	"C:/Users/aljosephson/OneDrive - University of Arizona/weather_and_agriculture"
     }	
-	
+if `"`c(username)'"' == "rodrigoguerra" {
+        global 		code  	"/Users/rodrigoguerra/Library/CloudStorage/OneDrive-UniversityofArizona/Documents/GitHub/weather_and_agriculture"
+		global 		data	"/Users/rodrigoguerra/Library/CloudStorage/OneDrive-UniversityofArizona/weather_and_agriculture" 
+    }
+if `"`c(username)'"' == "fvkrysbackpackpc" {
+        global 		code  	"/Users/fvkrysbackpackpc/Documents/GitHub/weather_and_agriculture"
+		global 		data	"/Users/fvkrysbackpackpc/Library/CloudStorage/OneDrive-UniversityofArizona/weather_and_agriculture"	
+    }
+if `"`c(username)'"' == "yetfl" {
+        global 		code  	"C:/Users/yetfl/OneDrive/Desktop/GitHub/weather_and_agriculture"
+		global 		data	"C:/Users/yetfl/OneDrive - University of Arizona/weather_and_agriculture"
+    }
+if `"`c(username)'"' == "rbrnhm" {
+        global 		code  	"C:/Users/rbrnhm/GitHub/weather_and_agriculture"
+		global 		data	"C:/Users/rbrnhm/OneDrive - University of Arizona/weather_and_agriculture"
+    }	
+
 * **********************************************************************
 * 0 (b) - Check if any required packages are installed:
 * **********************************************************************
@@ -52,11 +66,8 @@
 * install packages if global is set to 1
 if $pack == 1 {
 	
-	* temporarily set delimiter to ; so can break the line
-		#delimit ;
 	* for packages/commands, make a local containing any required packages
-		loc userpack "blindschemes mdesc estout distinct winsor2" ;
-		#delimit cr
+		loc userpack "blindschemes mdesc estout distinct winsor2" 
 	
 	* install packages that are on ssc	
 		foreach package in `userpack' {
@@ -77,11 +88,11 @@ if $pack == 1 {
 
 	* install -xfill- package
 		net install xfill, replace from(https://www.sealedenvelope.com/)
-		
+
 	* install -weather- package
 		net install WeatherConfig, ///
 		from(https://jdavidm.github.io/) replace
-	
+
 	* update all ado files
 		ado update, update
 
@@ -113,7 +124,7 @@ if $pack == 1 {
 /*	this code requires a user to have downloaded the publically available 
 	household data sets and placed them into the folder structure detailed
 	in the readme file accompanying this repo.
-*/	
+
 	do 			"$code/ethiopia/household_code/eth_hh_masterdo.do"
 	do 			"$code/malawi/household_code/mwi_hh_masterdo.do"
 	do 			"$code/niger/household_code/ngr_hh_masterdo.do"
@@ -122,25 +133,12 @@ if $pack == 1 {
 	do 			"$code/uganda/household_code/uga_hh_masterdo.do"
 
 
-
 * **********************************************************************
-* 3 - build cross-country household panel data set
-* **********************************************************************
-
-	do			"$code/analysis/reg_code/panel_build.do"
-
-
-* **********************************************************************
-* 4 - run regression .do files
+* 1 - run data cleaning .do file
 * **********************************************************************
 
-	do			"$code/analysis/reg_code/regressions.do"
-	do			"$code/analysis/reg_code/regressions-linear-combo.do"
-	do			"$code/analysis/reg_code/regressions-multi-combo.do"
-
-
 * **********************************************************************
-* 5 - run analysis .do files
+* 2 - run analysis .do files
 * **********************************************************************
 
 	do			"$code/analysis/viz_code/sum_table.do"
@@ -150,3 +148,4 @@ if $pack == 1 {
 	do			"$code/analysis/viz_code/coeff_vis.do"
 	do			"$code/analysis/viz_code/coeff_lc_vis.do"
 	do			"$code/analysis/viz_code/coeff_mc_vis.do"
+

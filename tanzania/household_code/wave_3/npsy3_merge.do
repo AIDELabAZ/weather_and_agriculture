@@ -2,7 +2,9 @@
 * Created on: May 2020
 * Created by: jdm
 * Edited by : alj
-* Stata v.16
+* Edited on: 21 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* merges individual cleaned plot datasets together
@@ -11,7 +13,6 @@
 
 * assumes
 	* previously cleaned household datasets
-	* customsave.ado
 
 * TO DO:
 	* complete
@@ -22,13 +23,13 @@
 * **********************************************************************
 
 * define paths
-	loc		root	=	"$data/household_data/tanzania/wave_3/refined"
-	loc		export	=	"$data/household_data/tanzania/wave_3/refined"
-	loc		logout	=	"$data/merged_data/tanzania/logs"
+	global root 	"$data/household_data/tanzania/wave_3/refined"
+	global export 	"$data/household_data/tanzania/wave_3/refined"
+	global logout 	"$data/household_data/tanzania/logs"
 
-* open 
-	cap log close
-	log		using	"`logout'/npsy3_merge", append
+* open log 
+	cap log 		close 
+	log 			using "$logout/npsy3_merge", append
 
 	
 * **********************************************************************
@@ -36,12 +37,12 @@
 * **********************************************************************
 
 * start by loading harvest quantity and value, since this is our limiting factor
-	use 			"`root'/AG_SEC4A", clear
+	use 			"$root/AG_SEC4A", clear
 
 	isid			crop_id
 
 * merge in plot size data
-	merge 			m:1 y3_hhid plotnum using "`root'/AG_SEC2A", generate(_2A)
+	merge 			m:1 y3_hhid plotnum using "$root/AG_SEC2A", generate(_2A)
 	*** 7 out of 7,451 missing in using 
 	*** 1,486 out of 7,451 missing in master
 	*** per Malawi (rs_plot) we drop all unmerged observations
@@ -52,7 +53,7 @@
 	replace			plotsize = percent_field * plotsize if percent_field != .
 
 * merging in production inputs data
-	merge			m:1 y3_hhid plotnum using "`root'/AG_SEC3A", generate(_3A)
+	merge			m:1 y3_hhid plotnum using "$root/AG_SEC3A", generate(_3A)
 	*** 0 out of 7,451 missing in master 
 	*** all unmerged obs came from using data 
 	*** meaning we lacked production data
@@ -140,7 +141,7 @@
 * construct production value per hectare
 	gen				vl_yld = vl_hrv / plotsize
 	assert 			!missing(vl_yld)
-	lab var			vl_yld "value of yield (2010USD/ha)"
+	lab var			vl_yld "value of yield (2015USD/ha)"
 
 * impute value per hectare outliers 
 	sum				vl_yld
@@ -162,12 +163,12 @@
 	*** reduces mean from 388 to 269
 						
 	drop			stddev median replacement maxrep minrep
-	lab var			vl_yldimp	"value of yield (2010USD/ha), imputed"
+	lab var			vl_yldimp	"value of yield (2015USD/ha), imputed"
 
 * inferring imputed harvest value from imputed harvest value per hectare
 	generate		vl_hrvimp = vl_yldimp * plotsize 
-	lab var			vl_hrvimp "value of harvest (2010USD), imputed"
-	lab var			vl_hrv "value of harvest (2010USD)"
+	lab var			vl_hrvimp "value of harvest (2015USD), imputed"
+	lab var			vl_hrv "value of harvest (2015USD)"
 	
 
 * **********************************************************************
@@ -490,8 +491,8 @@
 
 * label variables
 	lab var			tf_lnd	"Total farmed area (ha)"
-	lab var			tf_hrv	"Total value of harvest (2010 USD)"
-	lab var			tf_yld	"value of yield (2010 USD/ha)"
+	lab var			tf_hrv	"Total value of harvest (2015 USD)"
+	lab var			tf_yld	"value of yield (2015 USD/ha)"
 	lab var			tf_lab	"labor rate (days/ha)"
 	lab var			tf_frt	"fertilizer rate (kg/ha)"
 	lab var			tf_pst	"Any plot has pesticide"
@@ -507,7 +508,7 @@
 	lab var			cp_irr	"Any maize plot has irrigation"
 	
 * merge in panel key	
-	merge			1:1 y3_hhid using "`root'/panel_key.dta"
+	merge			1:1 y3_hhid using "$root/panel_key.dta"
 	*** matched 2,661, no unmatched in the master data set
 	
 	keep			if _merge == 3
@@ -517,7 +518,7 @@
 	isid			y3_hhid	
 
 * merge in geovars
-	merge			m:1 y3_hhid using "`root'/2012_geovars", force
+	merge			m:1 y3_hhid using "$root/2012_geovars", force
 	keep			if _merge == 3
 	drop			_merge
 	
@@ -535,8 +536,7 @@
 	summarize 
 	
 * saving production dataset
-	customsave , idvar(y3_hhid) filename(hhfinal_npsy3.dta) path("`export'") ///
-			dofile(NPSY3_merge) user($user) 
+	save 			"$export/hhfinal_npsy3.dta", replace
 
 * close the log
 	log	close

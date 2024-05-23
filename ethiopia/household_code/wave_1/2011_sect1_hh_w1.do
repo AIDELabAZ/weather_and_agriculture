@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: June 2020
 * Created by: McG
-* Stata v.16
+* Edited on: 20 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* cleans Ethiopia household variables, wave 1 HH sec1
@@ -10,11 +12,11 @@
 	* seems to very roughly correspond to Malawi ag-modI and ag-modO
 	
 * assumes
-	* customsave.ado
+	* raw lsms-isa data
 	* distinct.ado
 
 * TO DO:
-	* 
+	* done
 
 
 * **********************************************************************
@@ -79,8 +81,7 @@
 	describe
 	summarize 
 	sort hhid ea_id
-	customsave , idvar(individual_id) filename(HH_SEC1.dta) path("`export'") ///
-		dofile(HH_SEC1) user($user)
+	save		"`export'/HH_SEC1.dta", replace
 
 * close the log
 	log	close
