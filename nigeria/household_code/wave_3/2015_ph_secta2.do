@@ -1,8 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
-* Created by: alj
-* Edited by: ek
-* Stata v.16
+* Created by: ek
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* reads in Nigeria, WAVE 3 (2015-2016) POST HARVEST, NIGERIA AG SECTA2
@@ -10,11 +11,12 @@
 	* outputs clean data file ready for combination with wave 1 plot data
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* mdesc.ado
 	
 * TO DO:
 	* complete
+	
 	
 * **********************************************************************
 * 0 - setup
@@ -29,6 +31,7 @@
 	cap log close
 	log using "`logout'/ph_secta2", append
 
+	
 * **********************************************************************
 * 1 - determine labor use
 * **********************************************************************
@@ -160,8 +163,7 @@ isid hhid plotid
 	* harvest labor looks reasonable more than 90% of observations are less than 91 days within the cap by Palacios-Lopez et al. (2017) in Food Policy for harvest labor.
 
 * save file
-		customsave , idvar(hhid) filename("ph_secta2.dta") ///
-			path("`export'/`folder'") dofile(ph_secta2) user($user)
+	save 			"`export'/ph_secta2.dta", replace
 
 * close the log
 	log	close

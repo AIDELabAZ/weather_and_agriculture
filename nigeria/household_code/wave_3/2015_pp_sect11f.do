@@ -1,18 +1,20 @@
 * Project: WB Weather
 * Created on: May 2020
-* Created by: alj
-* Edited by: ek
-* Stata v.16
+* Created by: ek
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* reads in Nigeria, WAVE 3 (2015-2016) POST PLANTING, NIGERIA AG SECT11F
 	* determines planting month and year
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 	
 * TO DO:
 	* complete
+	
 	
 * **********************************************************************
 * 0 - setup
@@ -29,6 +31,7 @@
 	cap log close
 	log using "`logout'/pp_sect11f", append
 
+	
 * **********************************************************************
 * 1 - determine plot size
 * **********************************************************************
@@ -71,8 +74,7 @@ describe
 summarize 
 
 * save file
-		customsave , idvar(hhid) filename("pp_sect11f.dta") ///
-			path("`export'/`folder'") dofile(pp_sect11f) user($user)
+	save 			"`export'/pp_sect11f.dta", replace
 
 * close the log
 	log	close

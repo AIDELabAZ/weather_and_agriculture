@@ -1,8 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
-* Created by: alj
-* Edited by: ek
-* Stata v.16
+* Created by: ek
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* reads in Nigeria, WAVE 3 (2015-2016) POST PLANTING, NIGERIA AG SECTA1
@@ -11,11 +12,13 @@
 	* outputs clean data file ready for combination with wave 3 hh data
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* land-conversion.dta conversion file
 
 * TO DO:
 	* complete
+	
+	
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
@@ -27,9 +30,10 @@
 	loc 	logout  = 		"$data/household_data/nigeria/logs"
 
 * open log	
-	//cap log close
-	//log using "`logout'/ph_sect11a1", append
+	cap log close
+	log using "`logout'/ph_sect11a1", append
 
+	
 * **********************************************************************
 * 1 - determine plot size
 * **********************************************************************
@@ -202,8 +206,7 @@
 
 
 * save file
-		customsave , idvar(hhid) filename("ph_sect11a1.dta") ///
-			path("`export'/`folder'") dofile(ph_sect11a1) user($user)
+	save 			"`export'/ph_sect11a1.dta", replace
 
 * close the log
 	//log	close

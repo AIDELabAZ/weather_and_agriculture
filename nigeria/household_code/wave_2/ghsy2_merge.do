@@ -1,8 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: jdm
-* Edited by : alj
-* Stata v.16
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* merges individual cleaned plot datasets together
@@ -12,12 +13,12 @@
 
 * assumes
 	* previously cleaned household datasets
-	* customsave.ado
 	* double counting assumed in labor - only use harvest labor 
 
 * TO DO:
 	* done 
 
+	
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
@@ -691,8 +692,7 @@
 	summarize 
 	
 * saving production dataset
-	customsave , idvar(hhid) filename(hhfinal_ghsy2.dta) path("`export'") ///
-			dofile(ghsy2_merge) user($user) 
+	save 			"`export'/hhfinal_ghsy2.dta", replace
 
 * close the log
 	log	close

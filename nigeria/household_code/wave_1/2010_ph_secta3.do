@@ -1,8 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: alj
-* Edited by: ek
-* Stata v.16
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* reads in Nigeria, WAVE 1 (2010-2011), POST HARVEST, NGA SECTA3 AG 
@@ -11,12 +12,13 @@
 	* outputs clean data file ready for combination with wave 1 plot data
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* mdesc.ado
 	* harvconv.dta conversion file
 
 * TO DO:
 	* complete
+	
 	
 * **********************************************************************
 * 0 - setup
@@ -271,9 +273,8 @@
 	
 
 * save file
-		customsave , idvar(hhid) filename("ph_secta3.dta") ///
-			path("`export'/`folder'") dofile(ph_secta3) user($user)
-						
+	save 			"`export'/ph_secta3.dta", replace
+	
 * close the log
 	log	close
 
