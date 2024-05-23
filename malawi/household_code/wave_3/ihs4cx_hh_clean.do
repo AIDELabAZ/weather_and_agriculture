@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: jdm
-* Stata v.16
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* cleans WB data set for IHS4 cross section
@@ -9,7 +11,6 @@
 
 * assumes
 	* Extracted and "cleaned" World Bank Malawi data (provided by Talip Kilic)
-	* customsave.ado
 
 * TO DO:
 	* complete
@@ -123,8 +124,7 @@
 	summarize 	
 	
 * save data
-	customsave	, idvar(hhid) filename(hhfinal_ihs4cx.dta) ///
-				path("`export'") dofile(ihs4cx_hh_clean) user($user)
+	save		"`export'/hhfinal_ihs4cx.dta", replace
 
 * close the log
 	log			close

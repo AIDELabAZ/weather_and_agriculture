@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: jdm
-* Stata v.16
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* cleans WB data set for IHPS long panel
@@ -9,7 +11,6 @@
 
 * assumes
 	* Extracted and "cleaned" World Bank Malawi data (provided by Talip Kilic)
-	* customsave.ado
 
 * TO DO:
 	* complete
@@ -108,8 +109,7 @@
 	summarize 
 	
 * save data
-	customsave	, idvar(y2_hhid) filename(hhfinal_ihpslpnl.dta) ///
-				path("`export'") dofile(ihpslpnl_hh_clean) user($user)
+	save		"`export'/hhfinal_ihpslpnl.dta", replace
 
 * close the log
 	log			close

@@ -101,7 +101,7 @@ if $pack == 1 {
 		set more off
 }
 
-/* 
+
 * **********************************************************************
 * 1 - run weather data cleaning .do file
 * **********************************************************************
@@ -131,16 +131,12 @@ if $pack == 1 {
 	do 			"$code/nigeria/household_code/nga_hh_masterdo.do"
 	do 			"$code/tanzania/household_code/tza_hh_masterdo.do"
 	do 			"$code/uganda/household_code/uga_hh_masterdo.do"
-
-
-* **********************************************************************
-* 1 - run data cleaning .do file
-* **********************************************************************
+*/
 
 * **********************************************************************
 * 2 - run analysis .do files
 * **********************************************************************
-
+/*
 	do			"$code/analysis/viz_code/sum_table.do"
 	do			"$code/analysis/viz_code/sum_vis.do"
 	do			"$code/analysis/viz_code/r2_vis.do"
@@ -148,4 +144,4 @@ if $pack == 1 {
 	do			"$code/analysis/viz_code/coeff_vis.do"
 	do			"$code/analysis/viz_code/coeff_lc_vis.do"
 	do			"$code/analysis/viz_code/coeff_mc_vis.do"
-
+*/
