@@ -1,8 +1,9 @@
 * Project: WB Weather
 * Created on: Aug 2020
-* Created by: jdm
-* Edited by: ek
-* Stata v.16
+* Created by: ek
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* merges individual cleaned plot datasets together
@@ -11,45 +12,43 @@
 
 * assumes
 	* previously cleaned household datasets
-	* customsave.ado
 
 * TO DO:
 	* done
 
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+************************************************************************
+**# 0 - setup
+************************************************************************
 
 * define paths
-	loc root 		= "$data/household_data/uganda/wave_2/refined"  
-	loc export 		= "$data/household_data/uganda/wave_2/refined"
-	loc logout 		= "$data/household_data/uganda/logs"
+	global root 		 "$data/household_data/uganda/wave_2/refined"  
+	global export 		 "$data/household_data/uganda/wave_2/refined"
+	global logout 		 "$data/household_data/uganda/logs"
 	
 * open log
-	cap log 		close
-	log using 		"`logout'/unps2_merge", append
+	cap log 			close
+	log using 			"$logout/unps2_merge", append
 
 	
-* **********************************************************************
-* 1 - merge plot level data sets together
-* **********************************************************************
+************************************************************************
+**# 1 - merge plot level data sets together
+************************************************************************
 
 * start by loading harvest quantity and value, since this is our limiting factor
-	use 			"`root'/2010_AGSEC5A.dta", clear
+	use 			"$root/2010_AGSEC5A.dta", clear
 
 	isid 			hhid prcid pltid cropid
 	
 * merge in plot size data and irrigation data
-	merge			m:1 hhid prcid using "`root'/2010_AGSEC2A", generate(_sec2)
-	*** matched 9159, unmatched 2098 from master
-	*** a lot unmatched, means plots do not area data
+	merge			m:1 hhid prcid using "$root/2010_agsec2.dta", generate(_sec2)
+	*** matched 10,953, unmatched 304 from master
 	*** for now as per Malawi (rs_plot) we drop all unmerged observations
 
 	drop			if _sec2 != 3
 		
 * merging in labor, fertilizer and pest data
-	merge			m:1 hhid prcid pltid  using "`root'/2010_AGSEC3A", generate(_sec3a)
-	*** 24 unmerged from master
+	merge			m:1 hhid prcid pltid  using "$root/2010_AGSEC3A", generate(_sec3a)
+	*** 33 unmerged from master
 
 	drop			if _sec3a != 3
 	
@@ -69,9 +68,9 @@
 	drop			_sec2 _sec3a
 
 	
-* **********************************************************************
-* 1b - create total farm and maize variables
-* **********************************************************************
+************************************************************************
+**# 1b - create total farm and maize variables
+************************************************************************
 
 * rename some variables
 	rename 			cropvalue vl_hrv
@@ -119,9 +118,9 @@
 						pest_any herb_any mz_hrv mz_lnd mz_lab mz_frt ///
 						mz_irr mz_pst mz_hrb
 	
-* **********************************************************************
-* 2 - impute: total farm value, labor, fertilizer use 
-* **********************************************************************
+************************************************************************
+**# 2 - impute: total farm value, labor, fertilizer use 
+************************************************************************
 
 * ******************************************************************************
 * FOLLOWING WB: we will construct production variables on a per hectare basis,
@@ -134,9 +133,9 @@
 * ******************************************************************************
 
 
-* **********************************************************************
-* 2a - impute: total value
-* **********************************************************************
+************************************************************************
+**# 2a - impute: total value
+************************************************************************
 	
 * construct production value per hectare
 	gen				vl_yld = vl_hrv / plotsize
@@ -171,9 +170,9 @@
 	lab var			vl_hrv "value of harvest (2010USD)"
 	
 
-* **********************************************************************
-* 2b - impute: labor
-* **********************************************************************
+************************************************************************
+**# 2b - impute: labor
+************************************************************************
 
 * construct labor days per hectare
 	gen				labordays_ha = labordays / plotsize, after(labordays)
@@ -207,9 +206,9 @@
 	lab var			labordaysimp "farm labor (days), imputed"
 
 
-* **********************************************************************
-* 2c - impute: fertilizer
-* **********************************************************************
+************************************************************************
+**# 2c - impute: fertilizer
+************************************************************************
 
 * construct fertilizer use per hectare
 	gen				fert_ha = fert / plotsize, after(fert)
@@ -244,14 +243,14 @@
 	lab var			fert "fertilizer (kg)"
 
 
-* **********************************************************************
-* 3 - impute: maize yield, labor, fertilizer use 
-* **********************************************************************
+************************************************************************
+**# 3 - impute: maize yield, labor, fertilizer use 
+************************************************************************
 
 
-* **********************************************************************
-* 3a - impute: maize yield
-* **********************************************************************
+************************************************************************
+**# 3a - impute: maize yield
+************************************************************************
 
 * construct maize yield
 	gen				mz_yld = mz_hrv / mz_lnd, after(mz_hrv)
@@ -287,9 +286,9 @@
 	lab var 		mz_hrv "maize harvest quantity (kg)"
 
 
-* **********************************************************************
-* 3b - impute: maize labor
-* **********************************************************************
+************************************************************************
+**# 3b - impute: maize labor
+************************************************************************
 
 * construct labor days per hectare
 	gen				mz_lab_ha = mz_lab / mz_lnd, after(labordays)
@@ -323,9 +322,9 @@
 	lab var			mz_labimp "maize labor (days), imputed"
 
 
-* **********************************************************************
-* 3c - impute: maize fertilizer
-* **********************************************************************
+************************************************************************
+**# 3c - impute: maize fertilizer
+************************************************************************
 
 * construct fertilizer use per hectare
 	gen				mz_frt_ha = mz_frt / mz_lnd, after(mz_frt)
@@ -360,14 +359,14 @@
 	lab var			mz_frt "fertilizer (kg)"
 
 
-* **********************************************************************
-* 4 - collapse to household level
-* **********************************************************************
+************************************************************************
+**# 4 - collapse to household level
+************************************************************************
 
 
-* **********************************************************************
-* 4a - generate total farm variables
-* **********************************************************************
+************************************************************************
+**# 4a - generate total farm variables
+************************************************************************
 
 * generate plot area
 	bysort			hhid (pltid) : egen tf_lnd = sum(plotsize)
@@ -405,9 +404,9 @@
 	tab				tf_irr
 	
 	
-* **********************************************************************
-* 4b - generate maize variables 
-* **********************************************************************	
+************************************************************************
+**# 4b - generate maize variables 
+************************************************************************	
 	
 * generate plot area
 	bysort			hhid (pltid) :	egen cp_lnd = sum(mz_lnd) ///
@@ -490,9 +489,9 @@
 	sum				tf_* cp_*
 
 	
-* **********************************************************************
-* 8 - end matter, clean up to save
-* **********************************************************************
+************************************************************************
+**# 8 - end matter, clean up to save
+************************************************************************
 
 * drop splot-off and mover households
 	keep			if spitoff09_10 == 0
@@ -520,12 +519,12 @@
 	lab var			cp_irr	"Any maize plot has irrigation"
 
 * merge in harvest season
-	merge			m:1 region district using "`root'/harv_month", force
+	merge			m:1 region district using "$root/harv_month", force
 	drop			if _merge == 2
 	drop			_merge
 
 * merge in geovars
-	merge			m:1 hhid using "`root'/2010_geovars", force
+	merge			m:1 hhid using "$root/2010_geovars", force
 	keep			if _merge == 3
 	
 	replace			aez = 324 if aez == .
@@ -551,8 +550,8 @@
 	summarize 
 	
 * saving production dataset
-	customsave , idvar(hhid) filename(hhfinal_unps2.dta) path("`export'") ///
-			dofile(unps2_merge) user($user) 
+	save 			"$export/hhfinal_unps2.dta", replace
+
 
 * close the log
 	log	close

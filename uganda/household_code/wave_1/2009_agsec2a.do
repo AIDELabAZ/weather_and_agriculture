@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: ek
-* Stata v.16
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* reads Uganda wave 1 owned plot info (2009_AGSEC2A) for the 1st season
@@ -10,7 +12,7 @@
 	* ready to be appended to 2010_AGSEC2B
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* mdesc.ado
 
 * TO DO:
@@ -21,23 +23,21 @@
 * **********************************************************************
 
 * define paths	
-	loc 	root 		= 		"$data/household_data/uganda/wave_1/raw"  
-	loc     export 		= 		"$data/household_data/uganda/wave_1/refined"
-	loc 	logout 		= 		"$data/household_data/uganda/logs"
+	global 	root 		 	"$data/household_data/uganda/wave_1/raw"  
+	global  export 		 	"$data/household_data/uganda/wave_1/refined"
+	global 	logout 			"$data/household_data/uganda/logs"
 
-* close log 
-	*log close
 	
 * open log	
-	cap log close
-	log using "`logout'/2009_agsec2a", append
+	cap 					log close
+	log using 				"$logout/2009_agsec2a", append
 
 	
 **********************************************************************************
 * 1	- clean up the key variables
 **********************************************************************************
 
-	use "`root'/2009_AGSEC2A", clear
+	use 			"$root/2009_AGSEC2A", clear
 
 	rename 			Hhid hhid
 	rename 			A2aq2 prcid
@@ -60,7 +60,7 @@
 * **********************************************************************	
 	
 * merge the location identification
-	merge m:1 hhid using "`export'/2009_GSEC1"
+	merge m:1 hhid using "$export/2009_GSEC1"
 	*** 3 unmatched from master
 	*** that means 3 observations did not have location data
 	*** no option at this stage except to drop all unmatched
@@ -194,9 +194,9 @@
 	describe
 	summarize
 
-* save file
-		customsave , idvar(hhid) filename("2009_AGSEC2A.dta") ///
-			path("`export'") dofile(2009_AGSEC2A) user($user)
+* save file		
+	save 			"$export/2009_AGSEC2A.dta", replace
+
 
 * close the log
 	log	close

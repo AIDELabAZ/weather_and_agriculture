@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: ek
-* Stata v.16
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* reads Uganda wave 3 owned plot info (2011_AGSEC2A) for the 1st season
@@ -10,35 +12,35 @@
 	* ready to be appended to 2011_AGSEC2B to make 2011_AGSEC2
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* mdesc.ado
 
 * TO DO:
 	* done
 
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+************************************************************************
+**# 0 - setup
+************************************************************************
 
 * define paths	
-	loc 	root 		= 		"$data/household_data/uganda/wave_3/raw"  
-	loc     export 		= 		"$data/household_data/uganda/wave_3/refined"
-	loc 	logout 		= 		"$data/household_data/uganda/logs"
+	global 	root 		 	"$data/household_data/uganda/wave_3/raw"  
+	global  export 		 	"$data/household_data/uganda/wave_3/refined"
+	global 	logout 		 	"$data/household_data/uganda/logs"
 
 * close log 
 	*log close
 	
 * open log	
-	cap log close
-	log using "`logout'/2011_agsec2a", append
+	cap 					log close
+	log using 				"$logout/2011_agsec2a", append
 
 	
-* **********************************************************************
-* 1 - clean up the key variables
-* **********************************************************************
+************************************************************************
+**# 1 - clean up the key variables
+************************************************************************
 
 * import wave 2 season A
-	use "`root'/2011_AGSEC2A.dta", clear
+	use 			"$root/2011_AGSEC2A.dta", clear
 		
 * unlike other waves, HHID is a numeric here
 	format 			%18.0g HHID
@@ -61,12 +63,12 @@
 	*** there is an error that labels the question with soil type
 
 
-* **********************************************************************
-* 2 - merge location data
-* **********************************************************************	
+************************************************************************
+**# 2 - merge location data
+************************************************************************	
 	
 * merge the location identification
-	merge m:1 hhid using "`export'/2011_GSEC1"
+	merge m:1 hhid using "$export/2011_GSEC1"
 	*** 995 unmatched from master
 	*** that means 995 observations did not have location data
 	*** no option at this stage except to drop all unmatched
@@ -75,7 +77,7 @@
 
 	
 ************************************************************************
-* 3 - keeping cultivated land
+**# 3 - keeping cultivated land
 ************************************************************************
 
 * what was the primary use of the parcel
@@ -88,9 +90,9 @@
 	*** 431 observations deleted	
 
 	
-* **********************************************************************
-* 4 - clean plotsize
-* **********************************************************************
+************************************************************************
+**# 4 - clean plotsize
+************************************************************************
 
 * summarize plot size
 	sum 			plotsizeGPS
@@ -171,9 +173,9 @@
 	*** none missing
 
 	
-* **********************************************************************
-* 4 - end matter, clean up to save
-* **********************************************************************
+************************************************************************
+**# 4 - end matter, clean up to save
+************************************************************************
 	
 	keep 			hhid HHID prcid region district county subcounty ///
 					parish hh_status2011 wgt11 ///
@@ -184,9 +186,8 @@
 	summarize
 
 * save file
-		customsave , idvar(hhid) filename("2011_AGSEC2A.dta") ///
-			path("`export'") dofile(2011_AGSEC2A) user($user)
-
+	save 			"$export/2011_AGSEC2A.dta", replace
+	
 * close the log
 	log	close
 

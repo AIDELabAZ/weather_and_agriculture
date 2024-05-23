@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: ek
-* Stata v.16
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* Crop output
@@ -10,34 +12,34 @@
 	* 3B - 5B are questionaires for the second planting season
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* mdesc.ado
 
 * TO DO:
 	*done
 
 	
-* **********************************************************************
-* 0 - setup
-* **********************************************************************
+************************************************************************
+**# 0 - setup
+************************************************************************
 
 * define paths	
-	loc root 		= "$data/household_data/uganda/wave_3/raw"  
-	loc export 		= "$data/household_data/uganda/wave_3/refined"
-	loc logout 		= "$data/household_data/uganda/logs"
-	loc conv 		= "$data/household_data/uganda/conversion_files"  
+	global root 		 "$data/household_data/uganda/wave_3/raw"  
+	global export 		 "$data/household_data/uganda/wave_3/refined"
+	global logout 		 "$data/household_data/uganda/logs"
+	global conv 		 "$data/household_data/uganda/conversion_files"  
 
 * open log	
-	cap log 		close
-	log using 		"`logout'/2011_AGSEC5A", append
+	cap log 			close
+	log using 			"$logout/2011_AGSEC5A", append
 
 	
-* **********************************************************************
-* 1 - import data and rename variables
-* **********************************************************************
+************************************************************************
+**# 1 - import data and rename variables
+************************************************************************
 
 * import wave 2 season 1
-	use 			"`root'/2011_AGSEC5A.dta", clear
+	use 			"$root/2011_AGSEC5A.dta", clear
 		
 	rename 			cropID cropid
 	rename			plotID pltid
@@ -84,12 +86,12 @@
 	*** zero dropped, still not unique ID
 	
 	
-* **********************************************************************
-* 2 - merge kg conversion file and create harvested quantity
-* **********************************************************************
+************************************************************************
+**# 2 - merge kg conversion file and create harvested quantity
+************************************************************************
 	
 	merge m:1 		cropid unit condition using ///
-						"`conv'/ValidCropUnitConditionCombinations.dta" 
+						"$conv/ValidCropUnitConditionCombinations.dta" 
 	*** unmatched 413 from master 
 	
 * drop from using
@@ -173,9 +175,9 @@
 	*** 241 mean, 18000 max
 	
 	
-* **********************************************************************
-* 3 - value of harvest
-* **********************************************************************
+************************************************************************
+**# 3 - value of harvest
+************************************************************************
 
 * value of crop sold in shillings
 	rename			a5aq8 harvvlush
@@ -186,8 +188,8 @@
 	*** mean 238674 min 10, max 4.56e+07
 
 * generate crop is USD
-	gen 			cropvl = harvvlush / 2122.854348
-	lab var 		cropvl "total value of harvest in 2010 USD"
+	gen 			cropvl = harvvlush / 3000.1051
+	lab var 		cropvl "total value of harvest in 2015 USD"
 	*** value comes from World Bank: world_bank_exchange_rates.xlxs
 	
 * there are three large outliers in data, replace for imputation later
@@ -197,9 +199,9 @@
 	*** mean 100.5, min 0, max 8304
 	
 	
-* **********************************************************************
-* 4 - generate sold harvested values
-* **********************************************************************
+************************************************************************
+**# 4 - generate sold harvested values
+************************************************************************
 
 * drop converstion factor variables
 	drop			crop_code unit_code condition_code ucaconversion ///
@@ -213,7 +215,7 @@
 	
 * merge conversion file in for sold
 	merge m:1 		cropid unit condition using ///
-						"`conv'/ValidCropUnitConditionCombinations.dta" 
+						"$conv/ValidCropUnitConditionCombinations.dta" 
 	*** unmatched 429 from master
 	
 	drop			if _merge == 2
@@ -261,12 +263,12 @@
 	replace 		harvkgsold = . if harvkgsold == 0	
 	
 	
-* ********************************************************************
-* 5 - generate price data
-* ********************************************************************	
+**********************************************************************
+**# 5 - generate price data
+**********************************************************************	
 	
 * merge the location identification
-	merge m:1 		hhid using "`export'/2011_GSEC1"
+	merge m:1 		hhid using "$export/2011_GSEC1"
 	*** 533 unmatched from master
 	
 	drop 			if _merge == 2
@@ -296,60 +298,60 @@
 * make datasets with crop price information
 	preserve
 	collapse 		(p50) p_parish=cropprice (count) n_parish=cropprice, by(cropid region districtdstrng countydstrng subcountydstrng parishdstrng)
-	save 			"`export'/2011_agsec5a_p1.dta", replace 
+	save 			"$export/2011_agsec5a_p1.dta", replace 
 	restore
 	
 	preserve
 	collapse 		(p50) p_subcounty=cropprice (count) n_subcounty=cropprice, by(cropid region districtdstrng countydstrng subcountydstrng)
-	save 			"`export'/2011_agsec5a_p2.dta", replace 	
+	save 			"$export/2011_agsec5a_p2.dta", replace 	
 	restore
 	
 	preserve
 	collapse 		(p50) p_county=cropprice (count) n_county=cropprice, by(cropid region districtdstrng countydstrng)
-	save 			"`export'/2011_agsec5a_p3.dta", replace 	
+	save 			"$export/2011_agsec5a_p3.dta", replace 	
 	restore
 	
 	preserve
 	collapse 		(p50) p_dist=cropprice (count) n_district=cropprice, by(cropid region districtdstrng)
-	save 			"`export'/2011_agsec5a_p4.dta", replace 
+	save 			"$export/2011_agsec5a_p4.dta", replace 
 	restore
 	
 	preserve
 	collapse 		(p50) p_reg=cropprice (count) n_reg=cropprice, by(cropid region)
-	save 			"`export'/2011_agsec5a_p5.dta", replace 
+	save 			"$export/2011_agsec5a_p5.dta", replace 
 	restore
 	
 	preserve
 	collapse 		(p50) p_crop=cropprice (count) n_crop=cropprice, by(cropid)
-	save 			"`export'/2011_agsec5a_p6.dta", replace 	
+	save 			"$export/2011_agsec5a_p6.dta", replace 	
 	restore
 	
 * merge the price datasets back in
-	merge m:1 cropid region districtdstrng countydstrng subcountydstrng parishdstrng	        using "`export'/2011_agsec5a_p1.dta", gen(p1)
+	merge m:1 cropid region districtdstrng countydstrng subcountydstrng parishdstrng	        using "$export/2011_agsec5a_p1.dta", gen(p1)
 	*** all observations matched
 	
-	merge m:1 cropid region districtdstrng countydstrng subcountydstrng 	        using "`export'/2011_agsec5a_p2.dta", gen(p2)
+	merge m:1 cropid region districtdstrng countydstrng subcountydstrng 	        using "$export/2011_agsec5a_p2.dta", gen(p2)
 	*** all observations matched
 
-	merge m:1 cropid region districtdstrng countydstrng 			        using "`export'/2011_agsec5a_p3.dta", gen(p3)
+	merge m:1 cropid region districtdstrng countydstrng 			        using "$export/2011_agsec5a_p3.dta", gen(p3)
 	*** all observations matched
 	
-	merge m:1 cropid region districtdstrng 						using "`export'/2011_agsec5a_p4.dta", gen(p4)
+	merge m:1 cropid region districtdstrng 						using "$export/2011_agsec5a_p4.dta", gen(p4)
 	*** all observations matched
 	
-	merge m:1 cropid region						        using "`export'/2011_agsec5a_p5.dta", gen(p5)
+	merge m:1 cropid region						        using "$export/2011_agsec5a_p5.dta", gen(p5)
 	*** all observations matched
 	
-	merge m:1 cropid 						        using "`export'/2011_agsec5a_p6.dta", gen(p6)
+	merge m:1 cropid 						        using "$export/2011_agsec5a_p6.dta", gen(p6)
 	*** all observatinos matched
 
 * erase price files
-	erase			"`export'/2011_agsec5a_p1.dta"
-	erase			"`export'/2011_agsec5a_p2.dta"
-	erase			"`export'/2011_agsec5a_p3.dta"
-	erase			"`export'/2011_agsec5a_p4.dta"
-	erase			"`export'/2011_agsec5a_p5.dta"
-	erase			"`export'/2011_agsec5a_p6.dta"
+	erase			"$export/2011_agsec5a_p1.dta"
+	erase			"$export/2011_agsec5a_p2.dta"
+	erase			"$export/2011_agsec5a_p3.dta"
+	erase			"$export/2011_agsec5a_p4.dta"
+	erase			"$export/2011_agsec5a_p5.dta"
+	erase			"$export/2011_agsec5a_p6.dta"
 
 	drop p1 p2 p3 p4 p5 p6
 
@@ -402,9 +404,9 @@
 	*** mean = 0.316, max = 32.97
 
 	
-* **********************************************************************
-* 6 - impute harvqtykg
-* **********************************************************************
+************************************************************************
+**# 6 - impute harvqtykg
+************************************************************************
 
 * summarize harvest quantity prior to imputations
 	sum				harvqtykg
@@ -438,9 +440,9 @@
 	drop 				harvqtykg_1_ mi_miss
 	
 	
-* ***********************************************************************
-* 7 - impute cropvl
-* ***********************************************************************	
+*************************************************************************
+**# 7 - impute cropvl
+*************************************************************************	
 
 * summarize value of sales prior to imputations
 	sum				cropvl
@@ -476,9 +478,9 @@
 	*** 397 changes made
 	
 		
-* ********************************************************************
-* 8 - impute cropvalue from sales
-* ********************************************************************	
+**********************************************************************
+**# 8 - impute cropvalue from sales
+**********************************************************************	
 	
 * generate value of harvest 
 	gen				cropvalue = harvqtykg * croppricei
@@ -521,9 +523,9 @@
 	drop 			cropvalue_1_ mi_miss
 
 	
-* **********************************************************************
-* 9 - end matter, clean up to save
-* **********************************************************************
+************************************************************************
+**# 9 - end matter, clean up to save
+************************************************************************
 
 * summarize crop value, imputed crop value, and maize harvest
 	sum				cropvl
@@ -548,9 +550,8 @@
 	summarize
 
 * save file
-		customsave , idvar(hhid) filename("2011_AGSEC5A.dta") ///
-			path("`export'") dofile(2011_AGSEC5A) user($user)
-
+	save 			"$export/2011_AGSEC5A.dta", replace
+	
 * close the log
 	log	close
 
