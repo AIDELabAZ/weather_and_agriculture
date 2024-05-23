@@ -35,13 +35,43 @@
 	
 * **********************************************************************
 * 2 - run individual HH cleaning .do files
-* **********************************************************************
+************************************************************************
 
 * loops through three waves of nga hh code
 
 * starting with running all individual hh data files
 * define local with all sub-folders in it
-	loc folderList : dir "`dofile'" dirs "wave_*"
+	loc folderList : dir "`dofile'" dirs "wave_1"
+
+* define local with all files in each sub-folder
+	foreach folder of loc folderList {
+
+	* loop through each NGA file in the folder local
+		loc NGA : dir "`dofile'/`folder'" files "20*.do"
+	
+	* loop through each file in the above local
+		foreach file in `NGA' {
+	    
+		* run each individual file
+			do "`dofile'/`folder'/`file'"		
+	}		
+}
+	loc folderList : dir "`dofile'" dirs "wave_2"
+
+* define local with all files in each sub-folder
+	foreach folder of loc folderList {
+
+	* loop through each NGA file in the folder local
+		loc NGA : dir "`dofile'/`folder'" files "20*.do"
+	
+	* loop through each file in the above local
+		foreach file in `NGA' {
+	    
+		* run each individual file
+			do "`dofile'/`folder'/`file'"		
+	}		
+}
+	loc folderList : dir "`dofile'" dirs "wave_3"
 
 * define local with all files in each sub-folder
 	foreach folder of loc folderList {
@@ -67,7 +97,7 @@
 	do 			"`dofile'/wave_2/ghsy2_merge.do"			//	merges wv 2 hh datasets
 	do 			"`dofile'/wave_3/ghsy3_merge.do"			//	merges wv 3 hh datasets
 
-	
+
 * **********************************************************************
 * 4 - run wave specific .do files to merge with weather
 * **********************************************************************
