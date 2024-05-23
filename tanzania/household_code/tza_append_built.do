@@ -696,7 +696,9 @@ foreach var of varlist v15_merra - v27_merra {
 	rename			hhweight pw
 
 * drop variables
-	drop			region district ward ea strataid clusterid aez
+	drop			region district ward ea strataid clusterid aez ///
+						y1_hhid y2_hhid y3_hhid y4_hhid sdd_hhid _merge2014xp ///
+						y5_hhid
 	
 	rename			tza_lp_id lp_id
 	rename			tza_sp_id sp_id

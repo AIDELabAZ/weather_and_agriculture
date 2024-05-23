@@ -1,17 +1,17 @@
 * Project: WB Weather
 * Created on: September 2020
 * Created by: jdm
-* Stata v.16.1
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
-	* TAKES ABOUT 5 MINUTES TO COMBINE DATA SETS
 	* combines data from all countries
 	* drops cross sectional data in Malawi and Tanzania
 	* outputs data set for final cleaing
 
 * assumes
 	* cleaned, merged (weather), and appended (waves) data
-	* customsave.ado
 
 * TO DO:
 	* complete
@@ -22,13 +22,13 @@
 * **********************************************************************
 
 * define paths
-	loc		source	= 	"$data/regression_data"
-	loc		export  = 	"$data/regression_data"
-	loc		logout 	= 	"$data/regression_data/logs"
+	global		source	 	"$data/regression_data"
+	global		export   	"$data/regression_data"
+	global		logout 	 	"$data/regression_data/logs"
 
 * open log	
-	cap log close
-	log 	using 	"`logout'/panel_build", append
+	cap log 	close
+	log 		using 		"$logout/panel_build", append
 
 	
 * **********************************************************************
@@ -36,7 +36,7 @@
 * **********************************************************************
 
 * read in ethiopia
-	use				"`source'/ethiopia/eth_complete", clear
+	use				"$source/ethiopia/eth_complete", clear
 				
 * organize variables
 	order			eth_id
@@ -50,7 +50,7 @@
 * **********************************************************************
 
 * read in data file
-	append			using "`source'/malawi/mwi_complete.dta"
+	append			using "$source/malawi/mwi_complete.dta"
 
 * drop short panel and cross sectional
 	keep			if dtype == "lp"
@@ -62,35 +62,36 @@
 	order			mwi_id, after(eth_id)		
 	
 * drop unnecessary variables
-	drop			uid cx_id sp_id
+	drop			uid cx_id sp_id case_id
 		
 		
 * **********************************************************************
 * 3 - load in niger data
 * **********************************************************************
-
+/*
 * append niger
-	append			using "`source'/niger/ngr_complete"
+	append			using "$source/niger/ngr_complete"
 			
 * organize variables
 	order			ngr_id, after(mwi_id)		
 		
 * drop unnecessary variables
 	drop			uid
-
+*/
 	
 * **********************************************************************
 * 4 - load in nigeria data
 * **********************************************************************
 
 * append nigeria
-	append			using "`source'/nigeria/nga_complete"
+	append			using "$source/nigeria/nga_complete"
 			
 * organize variables
-	order			nga_id, after(ngr_id)		
+*	order			nga_id, after(ngr_id)	
+	order			nga_id, after(eth_id)		
 		
 * drop unnecessary variables
-	drop			uid
+	drop			uid hhid
 		
 
 * **********************************************************************
@@ -98,19 +99,16 @@
 * **********************************************************************
 
 * append tanzania
-	append			using "`source'/tanzania/tza_complete"		
+	append			using "$source/tanzania/tza_complete"		
 
 * drop short panel and cross sectional
 	keep			if dtype == "lp"
 
-* rename panel id
-	rename			lp_id tza_id
-	
 * organize variables
 	order			tza_id, after(nga_id)					
 
 * drop unnecessary variables
-	drop			uid cx_id
+	drop			uid lp_id sp_id
 	
 	
 * **********************************************************************
@@ -118,7 +116,7 @@
 * **********************************************************************
 
 * append uganda
-	append			using "`source'/uganda/uga_complete"		
+	append			using "$source/uganda/uga_complete"		
 
 * drop short panel and cross sectional
 	keep if			dtype == "lp"
@@ -127,7 +125,7 @@
 	order			uga_id, after(tza_id)			
 	
 * drop unnecessary variables
-	drop			uid
+	drop			uid uhid
 
 	
 * **********************************************************************
@@ -173,12 +171,12 @@
 	tostring		mwi_id, replace
 	replace 		mwi_id = "mwi" + mwi_id if mwi_id != "."
 	replace			mwi_id = "" if mwi_id == "."
-	
+/*	
 	sort 			country ngr_id year
 	tostring		ngr_id, replace
 	replace 		ngr_id = "ngr" + ngr_id if ngr_id != "."
 	replace			ngr_id = "" if ngr_id == "."
-	
+*/	
 	sort 			country nga_id year
 	tostring		nga_id, replace
 	replace 		nga_id = "nga" + nga_id if nga_id != "."
@@ -197,17 +195,16 @@
 * define cross country household id
 	gen				HHID = eth_id if eth_id != ""
 	replace			HHID = mwi_id if mwi_id != ""
-	replace			HHID = ngr_id if ngr_id != ""
+	*replace			HHID = ngr_id if ngr_id != ""
 	replace			HHID = nga_id if nga_id != ""
 	replace			HHID = tza_id if tza_id != ""
 	replace			HHID = uga_id if uga_id != ""
 	
-	rename			hhid nhid
-	
 	sort			country HHID year
 	egen			hhid = group(HHID)
 	
-	drop			HHID eth_id mwi_id ngr_id nga_id tza_id uga_id
+*	drop			HHID eth_id mwi_id ngr_id nga_id tza_id uga_id
+	drop			HHID eth_id mwi_id nga_id tza_id uga_id
 	order			hhid, after(country)
 	lab var			hhid "Unique household ID"
 	
@@ -252,12 +249,8 @@
 	    
 	* cycle through satellites
 	    forvalues		s = 1/6 {
-		    
-		*cycle through extractions
-			forvalues		x = 0/9 {
 			    
-				qui: replace			v0`v'_rf`s'_x`x' = 0 if v0`v'_rf`s'_x`x' == .	
-			}
+				qui: replace			v0`v'_rf`s' = 0 if v0`v'_rf`s' == .	
 		}
 	}
 	
@@ -266,29 +259,31 @@
 	    
 	* cycle through satellites
 	    forvalues		s = 1/6 {
-		    
-		*cycle through extractions
-			forvalues		x = 0/9 {
-			    
-				qui: replace			v`v'_rf`s'_x`x' = 0 if v`v'_rf`s'_x`x' == .	
-			}
+ 
+				qui: replace			v`v'_rf`s' = 0 if v`v'_rf`s' == .	
 		}
 	}
 	
 * summarize fainfall variables - make sure everything went well
 	sum				*rf*
 	
+* rename variables to have *tp* in name
+	forvalues		v = 15/22 {
+	    
+	* cycle through satellites
+	    forvalues		s = 7/9 {
+
+				qui: rename			v`v'_rf`s' v`v'_tp`s'
+		}
+	}
+	
 * replace missing values with zero - cycle through variables
 	forvalues		v = 15/22 {
 	    
 	* cycle through satellites
-	    forvalues		s = 1/3 {
-		    
-		*cycle through extractions
-			forvalues		x = 0/9 {
-			    
-				qui: replace			v`v'_tp`s'_x`x' = 0 if v`v'_tp`s'_x`x' == .	
-			}
+	    forvalues		s = 7/9 {
+
+				qui: replace			v`v'_tp`s' = 0 if v`v'_tp`s' == .	
 		}
 	}
 	
@@ -305,7 +300,7 @@
 
 * save complete results
 	qui: compress
-	save "`export'/lsms_panel.dta", replace
+	save "$export/lsms_panel.dta", replace
 
 * close the log
 	log	close
