@@ -35,7 +35,7 @@ clear
 * **********************************************************************
 * 1 - run .do files
 * **********************************************************************
-/*
+
 * do each of the file converters
 	do "`root'/wave_1/mwi_ihs3_converter.do"	//	convert wave 1 .csv to .dta
 	do "`root'/wave_2/mwi_ihps_converter.do"	//	convert wave 2 .csv to .dta
