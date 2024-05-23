@@ -14,27 +14,27 @@
 	* processed wave 3 weather data
 
 * TO DO:
-	* done
+	* complete
 
 	
-************************************************************************
-**# 0 - setup
-************************************************************************
+* **********************************************************************
+* 0 - setup
+* **********************************************************************
 
-* define pathsm
-	global	rootw 	 	"$data/weather_data/uganda/wave_3/refined"
-	global	rooth 	 	"$data/household_data/uganda/wave_3/refined"
-	global	export 	 	"$data/merged_data/uganda/wave_3"
-	global	logout 	 	"$data/merged_data/uganda/logs"
+* define paths
+	global			rootw 	= 	"$data/weather_data/uganda/wave_3/refined/unpsy3_up"
+	global			rooth 	= 	"$data/household_data/uganda/wave_3/refined"
+	global			export 	= 	"$data/merged_data/uganda/wave_3"
+	global			logout 	= 	"$data/merged_data/uganda/logs"
 
 * open log	
-	cap 				log close
+	cap log close
 	log 	using 		"$logout/unps3_build", append
-
 	
-************************************************************************
-**# 1 - merge northern household data with rainfall data
-************************************************************************
+	
+* **********************************************************************
+* 1 - merge northern household data with rainfall data
+* **********************************************************************
 
 * import the .dta houeshold file
 	use 		"$rooth/hhfinal_unps3.dta", clear
@@ -117,10 +117,9 @@
 }
 
 	
-************************************************************************
-**# 2 - merge northern temperature data with household data
-************************************************************************
-
+* **********************************************************************
+* 2 - merge northern temperature data with household data
+* **********************************************************************
 
 * define each file in the above local
 	loc 		fileList : dir "$rootw/`folder'" files "*tp_n.dta"
@@ -194,9 +193,9 @@
 	save 			"$export/unps3_merged_n.dta", replace
 
 	
-************************************************************************
-**# 3 - merge southern household data with rainfall data
-************************************************************************
+* **********************************************************************
+* 3 - merge southern household data with rainfall data
+* **********************************************************************
 
 * import the .dta houeshold file
 	use 		"$rooth/hhfinal_unps3.dta", clear
@@ -279,14 +278,13 @@
 }
 
 	
-************************************************************************
-**# 4 - merge southern temperature data with household data
-************************************************************************
-
+* **********************************************************************
+* 4 - merge southern temperature data with household data
+* **********************************************************************
 
 * define each file in the above local
 	loc 		fileList : dir "$rootw" files "*tp_s.dta"
-
+	
 * loop through each file in the above local
 	foreach 	file in `fileList' {	
 	
@@ -356,9 +354,9 @@
 	save 			"$export/unps3_merged_s.dta", replace
 
 	
-************************************************************************
-**# 5 - append northern and southern data sets
-************************************************************************
+* **********************************************************************
+* 5 - append northern and southern data sets
+* **********************************************************************
 
 * import northern data
 	use 			"$export/unps3_merged_n.dta", clear
