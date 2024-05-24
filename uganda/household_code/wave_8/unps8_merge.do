@@ -1,8 +1,9 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: jdm
-* Edited by: ek
-* Stata v.16
+* Edited on: 24 May 24
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* merges individual cleaned plot datasets together
@@ -11,7 +12,6 @@
 
 * assumes
 	* previously cleaned household datasets
-	* customsave.ado
 
 * TO DO:
 	* done
@@ -21,14 +21,14 @@
 * 0 - setup
 * **********************************************************************
 
-* define paths
-	loc root 		= "$data/household_data/uganda/wave_3/refined"  
-	loc export 		= "$data/household_data/uganda/wave_3/refined"
-	loc logout 		= "$data/household_data/uganda/logs"
+* define paths	
+	global 	root  		"$data/household_data/uganda/wave_8/refined"  
+	global  export 		"$data/household_data/uganda/wave_8/refined"
+	global 	logout 		"$data/household_data/uganda/logs"
 	
-* open log
-	cap log 		close
-	log using 		"`logout'/unps3_merge", append
+* open log	
+	cap log 			close
+	log using 			"$logout/unps8_merge", append
 
 	
 * **********************************************************************
@@ -36,20 +36,22 @@
 * **********************************************************************
 
 * start by loading harvest quantity and value, since this is our limiting factor
-	use 			"`root'/2011_AGSEC5A.dta", clear
+	use 			"$root/2019_agsec5b.dta", clear
 	isid 			hhid prcid pltid cropid
 	
 * merge in plot size data and irrigation data
-	merge			m:1 hhid prcid using "`root'/2011_AGSEC2A", generate(_sec2)
-	*** matched 7212, unmatched 2079 from master
-	*** a lot unmatched, means plots do not area data
-	*** for now as per Malawi (rs_plot) we drop all unmerged observations
+	merge			m:1 hhid prcid using "$root/2019_agsec2", generate(_sec2)
+	*** matched 5,536, unmatched 2,471 from master
+	
+	tab 			cropid if _sec2 == 1
+	*** mostly from annual crops (banana, coffee, cassava, potato)
+	*** but some are maize and beans
 
 	drop			if _sec2 != 3
 		
 * merging in labor, fertilizer and pest data
-	merge			m:1 hhid prcid pltid  using "`root'/2011_AGSEC3A", generate(_sec3a)
-	*** 10 unmerged from master
+	merge			m:1 hhid prcid pltid  using "$root/2019_agsec3b", generate(_sec3a)
+	*** 0 unmerged from master
 
 	drop			if _sec3a == 2
 	
@@ -91,9 +93,10 @@
 	collapse (sum)	vl_hrv plotsize labordays fert ///
 						mz_hrv mz_lnd mz_lab mz_frt  ///
 			 (max)	pest_any herb_any irr_any fert_any  ///
-						mz_pst mz_hrb mz_irr mz_damaged, ///
-						by(hhid prcid pltid region district county subcounty ///
-						parish hh_status2011 wgt11)
+						mz_pst mz_hrb mz_irr mz_damaged ///
+			(mean)	harvmonth, ///
+					by(hhid prcid pltid region district county subcounty ///
+						parish wgt19)
 
 * replace non-maize harvest values as missing
 	tab				mz_damaged, missing
@@ -103,7 +106,7 @@
 	}	
 	replace			mz_hrv = . if mz_damaged == . & mz_hrv == 0		
 	drop 			mz_damaged
-	*** 4607 changes made
+	*** 2,917 changes made
 	
 * encode the string location data
 	encode 			district, gen(districtdstrng)
@@ -113,7 +116,7 @@
 
 	order			hhid prcid pltid region district districtdstrng county ///
 						countydstrng subcounty subcountydstrng parish ///
-						parishdstrng hh_status2011 wgt11 vl_hrv ///
+						parishdstrng harvmonth wgt19 vl_hrv ///
 						plotsize labordays fert_any fert irr_any ///
 						pest_any herb_any mz_hrv mz_lnd mz_lab mz_frt ///
 						mz_irr mz_pst mz_hrb
@@ -141,7 +144,7 @@
 * construct production value per hectare
 	gen				vl_yld = vl_hrv / plotsize
 	assert 			!missing(vl_yld)
-	lab var			vl_yld "value of yield (2010USD/ha)"
+	lab var			vl_yld "value of yield (2015 USD/ha)"
 
 * impute value per hectare outliers 
 	sum				vl_yld
@@ -160,15 +163,15 @@
 						& !inlist(vl_yld,.,0) & !mi(maxrep)
 	tabstat			vl_yld vl_yldimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 167 to 121
+	*** reduces mean from 199 to 161
 						
 	drop			stddev median replacement maxrep minrep
-	lab var			vl_yldimp	"value of yield (2010USD/ha), imputed"
+	lab var			vl_yldimp	"value of yield (2015 USD/ha), imputed"
 
 * inferring imputed harvest value from imputed harvest value per hectare
 	generate		vl_hrvimp = vl_yldimp * plotsize 
-	lab var			vl_hrvimp "value of harvest (2010USD), imputed"
-	lab var			vl_hrv "value of harvest (2010USD)"
+	lab var			vl_hrvimp "value of harvest (2015 USD), imputed"
+	lab var			vl_hrv "value of harvest (2015 USD)"
 	
 
 * **********************************************************************
@@ -197,7 +200,7 @@
 						& !inlist(labordays_ha,.,0) & !mi(maxrep)
 	tabstat 		labordays_ha labordays_haimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 351 to 260
+	*** reduces mean from 136 to 112
 	
 	drop			stddev median replacement maxrep minrep
 	lab var			labordays_haimp	"farm labor use (days/ha), imputed"
@@ -276,7 +279,7 @@
 						& !inlist(mz_yld,.,0) & !mi(maxrep)
 	tabstat 		mz_yld mz_yldimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 167 to 109
+	*** reduces mean from 150 to 114
 					
 	drop 			stddev median replacement maxrep minrep
 	lab var 		mz_yldimp "maize yield (kg/ha), imputed"
@@ -313,7 +316,7 @@
 						& !inlist(mz_lab_ha,.,0) & !mi(maxrep)
 	tabstat 		mz_lab_ha mz_lab_haimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 385 to 303
+	*** reduces mean from 157 to 132
 	
 	drop			stddev median replacement maxrep minrep
 	lab var			mz_lab_haimp	"maize labor use (days/ha), imputed"
@@ -349,7 +352,7 @@
 						& !inlist(mz_frt_ha,.,0) & !mi(maxrep)
 	tabstat 		mz_frt_ha mz_frt_haimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 2 to 1
+	*** reduces mean from 3 to 2
 	
 	drop			stddev median replacement maxrep minrep
 	lab var			mz_frt_haimp	"fertilizer use (kg/ha), imputed"
@@ -462,15 +465,15 @@
 	
 * count before collapse
 	count
-	*** 4938 obs
+	*** 4,185 obs
 	
 	collapse 		(max) tf_* cp_*, by(region district districtdstrng county ///
 						countydstrng subcounty subcountydstrng parish ///
-						parishdstrng hh_status2011 wgt11 hhid)
+						parishdstrng wgt19 hhid)
 
 * count after collapse 
 	count 
-	*** 4938 to 1818 observations 
+	*** 4,185 to 1,854 observations 
 	
 * return non-maize production to missing
 	replace			cp_yld = . if cp_yld == 0
@@ -493,9 +496,6 @@
 * 8 - end matter, clean up to save
 * **********************************************************************
 
-* drop splot-off and mover households
-	keep			if hh_status2011 == 0
-	
 * verify unique household id
 	isid			hhid
 
@@ -517,39 +517,18 @@
 	lab var			cp_hrb	"Any maize plot has herbicide"
 	lab var			cp_irr	"Any maize plot has irrigation"
 
-* merge in harvest season
-	merge			m:1 region district using "`root'/harv_month", force
-	drop			if _merge == 2
-	drop			_merge
-
-* merge in geovars
-	merge			m:1 hhid using "`root'/2011_geovars", force
-	keep			if _merge == 3
-	
 * replace missing values
-	replace			aez = 314 if aez == . & parish == "AYEOLYEC"
-	replace			aez = 313 if aez == . & parish == "KABINGO"
-	replace			aez = 314 if aez == . & parish == "KAKOORA"
-	replace			aez = 323 if aez == . & parish == "MUKO WARD"
-	replace			aez = 314 if aez == . & parish == "NTIBA"
-	replace			aez = 313 if aez == . & county == "BWAMBA"
-	replace			aez = 324 if aez == . & county == "BUWEKULA"
-	replace			aez = 314 if aez == . & county == "NAKIFUMA"
-	replace			aez = 324 if aez == . & district == "Gomba"
-	replace			aez = 314 if aez == . & district == "bushenyi"
-	
-* replace missing values
-	replace			season = 1 if region == 3
+	gen				season = 1 if region == 3
 	replace			season = 0 if season == .	
 	
 	drop			districtdstrng countydstrng subcountydstrng ///
-						parishdstrng hh_status2011 harv _merge
+						parishdstrng
 
 * generate year identifier
-	gen				year = 2011
+	gen				year = 2019
 	lab var			year "Year"
 			
-	order 			region district county subcounty parish aez hhid wgt11 /// 	
+	order 			region district county subcounty parish hhid wgt19 /// 	
 					year season tf_hrv tf_lnd tf_yld tf_lab tf_frt ///
 					tf_pst tf_hrb tf_irr cp_hrv cp_lnd cp_yld cp_lab ///
 					cp_frt cp_pst cp_hrb cp_irr 
@@ -559,8 +538,7 @@
 	summarize 
 	
 * saving production dataset
-	customsave , idvar(hhid) filename(hhfinal_unps3.dta) ///
-		path("`export'") dofile(unps3_merge) user($user) 
+	save		"$export/hhfinal_unps8.dta", replace
 
 * close the log
 	log	close

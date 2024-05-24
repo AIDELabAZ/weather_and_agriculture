@@ -31,6 +31,7 @@
 	do 			"`dofile'/wave_1/2009_gsec1.do"			//	clean location information wv1 
 	do 			"`dofile'/wave_2/2010_gsec1.do"			//	clean location information wv2 
 	do 			"`dofile'/wave_3/2011_gsec1.do"			//	clean location information wv3 
+	do 			"`dofile'/wave_8/2019_gsec1.do"			//	clean location information wv8 
 
 
 * do each GSEC1 household cleaning files
@@ -104,6 +105,7 @@
 	do 			"`dofile'/wave_1/unps1_merge.do"			//	merges wv 1 hh datasets
 	do 			"`dofile'/wave_2/unps2_merge.do"			//	merges wv 2 hh datasets
 	do 			"`dofile'/wave_3/unps3_merge.do"			//	merges wv 3 hh datasets
+	do 			"`dofile'/wave_8/unps8_merge.do"			//	merges wv 8 hh datasets
 
 	
 * **********************************************************************
@@ -114,6 +116,7 @@
 	do 			"`dofile'/wave_1/unps1_build.do"			//	merges unps1 to weather
 	do 			"`dofile'/wave_2/unps2_build.do"			//	merges unps2 to weather
 	do 			"`dofile'/wave_3/unps3_build.do"			//	merges unps3 to weather
+	do 			"`dofile'/wave_8/unps8_build.do"			//	merges unps3 to weather
 
 	
 * **********************************************************************
