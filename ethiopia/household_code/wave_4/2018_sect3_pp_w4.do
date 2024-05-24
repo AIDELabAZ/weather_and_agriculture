@@ -1,16 +1,18 @@
 * Project: WB Weather
-* Created on: June 2020
-* Created by: McG
-* Stata v.16
+* Created on: May 2024
+* Created by: jdm
+* Edited on 24 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
-	* cleans Ethiopia household variables, wave 3 PP sec3
+	* cleans Ethiopia household variables, wave 4 PP sec3
 	* provides plot size, labor, fertilizer, irrigated
 	* hierarchy: holder > parcel > field > crop
 	* seems to correspond to Malawi ag-modC and ag-modJ
 	
 * assumes
-	* customsave.ado
+	* access to raw data
 	* distinct.ado
 
 * TO DO:
@@ -21,14 +23,14 @@
 * 0 - setup
 * **********************************************************************
 
-* define paths
-	loc root = "$data/household_data/ethiopia/wave_3/raw"
-	loc export = "$data/household_data/ethiopia/wave_3/refined"
-	loc logout = "$data/household_data/ethiopia/logs"
-
-* open log
-	cap log close
-	log using "`logout'/wv3_PPSEC3", append
+* define paths	
+	global		root 		 	"$data/household_data/ethiopia/wave_4/raw"  
+	global		export 		 	"$data/household_data/ethiopia/wave_4/refined"
+	global		logout 		 	"$data/household_data/ethiopia/logs"
+	
+* open log	
+	cap log 	close
+	log 		using			"$logout/wv4_PPSEC3", append
 
 
 * **********************************************************************
@@ -36,7 +38,7 @@
 * **********************************************************************
 
 * load pp section 3 data
-	use 		"`root'/sect3_pp_w3.dta", clear
+	use 		"$root/sect3_pp_w4.dta", clear
 
 * dropping duplicates
 	duplicates 	drop
@@ -47,24 +49,17 @@
 	isid 		holder_id parcel_id field_id
 
 * creating district identifier
-	egen 		district_id = group( saq01 saq02)
-	lab var 	district_id "Unique district identifier"
-	distinct	saq01 saq02, joint
-	*** 69 distinct districts
+	distinct	ea_id
+	*** 264 distinct eas
 
 * field status check
-	rename 		pp_s3q03 status, missing
+	rename 		s3q03 status, missing
 	tab			status, missing
-	*** none missing status
+	*** 1 missing status
 
 * dropping all plot obs that weren't cultivated	
 	drop 		if status != 1
-	* 10,061 dropped
-
-* drop observations with a missing field_id
-	summarize 	if missing(parcel_id,field_id)
-	drop 		if missing(parcel_id,field_id)
-	isid 		holder_id parcel_id field_id
+	* 5,962 dropped
 	
 * creating parcel identifier
 	rename		parcel_id parcel
@@ -82,32 +77,42 @@
 	rename		saq02 zone
 	rename 		saq03 woreda
 	rename		saq05 ea
-	rename		pp_s3q02_c local_unit
-	merge 		m:1 region zone woreda local_unit using "`root'/ET_local_area_unit_conversion.dta"
-	*** 13,748 obs not matched from master data
-	*** why is this...
-	*** conversion facotrs only given for timad, boy, senga, and kert
-	*** but measurements are also given in tilm, medeb, rope, ermija, and other
-	*** will set self-reported value = . if no conversion factor is given
+	rename		saq14 sector
+	rename		saq04 city
+	rename		saq06 kebele
+	rename		s3q02b local_unit
 	
+* destring zone and woreda
+	destring	zone, replace
+	destring	woreda, replace
+	destring	ea, replace
+
+* merge in land conversion factors	
+	merge 		m:1 region zone woreda local_unit using "$root/ET_local_area_unit_conversion"
+	*** 11,512 obs not matched from master data
+	*** conversion facotrs only given for timad, boy, senga, and kert and not for all woredas 
 	drop		if _merge == 2
-	
+
+* create zone and region conversion factors by taking average	
+	egen 		zone_mean = mean( conversion), by(region zone local_unit)
+	egen 		region_mean = mean( conversion), by(region local_unit)
+
+	replace		conversion = 1 if local_unit == 1
+	replace		conversion = 0.0001 if local_unit == 2
+	replace		conversion = zone_mean if conversion == .
+	replace		conversion = region_mean if conversion == .
+	* now only missing 6,422
 
 ************************************************************************
 **	2 - constructing conversion factors
 ************************************************************************	
 
 * replace self-reported equal to missing if there is no conversion factor
-* will not replace sef-reported if given in hectares, meters squared
-	replace		conversion = 10000 if local_unit == 1 & conversion == .
-	*** 465 changes
-	
-	replace		conversion = 1 if local_unit == 2 & conversion == .	
-	*** 329 changes 
-	
-	replace		pp_s3q02_a = . if conversion == .
-	*** 12,948 changes
+	replace		s3q02a = . if conversion == .
+	*** 6,422 changes
 
+	fdfd 
+	*this is where I stopped 
 
 ************************************************************************
 **	3 - constructing area measurements

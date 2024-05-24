@@ -1,14 +1,15 @@
 * Project: WB Weather
-* Created on: Oct 2020
+* Created on: May 2024
 * Created by: jdm
+* Edited on 24 May 2024
 * Edited by: jdm
-* Stata v.16
+* Stata v.18
 
 * does
 	* cleans geovars
 
 * assumes
-	* customsave.ado
+	* access to raw data
 
 * TO DO:
 	* done
@@ -19,13 +20,13 @@
 * **********************************************************************
 
 * define paths	
-	loc root 		= "$data/household_data/ethiopia/wave_3/raw"  
-	loc export 		= "$data/household_data/ethiopia/wave_3/refined"
-	loc logout 		= "$data/household_data/ethiopia/logs"
+	global		root 		 	"$data/household_data/ethiopia/wave_4/raw"  
+	global		export 		 	"$data/household_data/ethiopia/wave_4/refined"
+	global		logout 		 	"$data/household_data/ethiopia/logs"
 	
 * open log	
-	cap log 		close
-	log using 		"`logout'/wave_3_geovars", append
+	cap log 	close
+	log 		using			"$logout/wave_4_geovars", append
 
 	
 * **********************************************************************
@@ -33,10 +34,10 @@
 * **********************************************************************
 
 * import wave 3 geovars
-	use 			"`root'/ETH_HouseholdGeovars_y3.dta", clear
+	use 			"$root/ETH_HouseholdGeovariables_Y4.dta", clear
 
 * rename variables
-	isid 			household_id2
+	isid 			household_id
 
 	rename 			ssa_aez09 aez
 	
@@ -45,15 +46,14 @@
 * 2 - end matter, clean up to save
 * **********************************************************************
 
-	keep 			household_id2 aez
+	keep 			household_id aez
 
 	compress
 	describe
 	summarize
 
 * save file
-		customsave , idvar(household_id2) filename("ess3_geovars.dta") ///
-			path("`export'") dofile(wave_3_geovars) user($user)
+	save			"$export/ess3_geovars.dta", replace
 
 * close the log
 	log	close
