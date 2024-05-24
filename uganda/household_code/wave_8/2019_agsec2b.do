@@ -1,15 +1,14 @@
 * Project: WB Weather
-* Created on: Feb 2024
-* Created by: rg
+* Created on: Apr 2024
+* Created by: jdm
 * Edited on: 24 May 24
 * Edited by: jdm
 * Stata v.18
 
 * does
-	* reads Uganda wave 8 owned plot info (2019_AGSEC2A)
-	* ready to append to rented plot info (2019_AGSEC2B)
-	* owned plots are in A and rented plots are in B
-	* ready to be appended to 2019_AGSEC2B to make 2019_AGSEC2 
+	* reads Uganda wave 8 rented plot info (2019_AGSEC2B)
+	* appends to owned plot info (2019_AGSEC2A)
+	* outputs appended data to 2019_AGSEC2
 
 * assumes
 	* access to the raw data
@@ -17,8 +16,8 @@
 
 * TO DO:
 	* done
-	
 
+	
 ***********************************************************************
 **# 0 - setup
 ***********************************************************************
@@ -30,26 +29,26 @@
 	
 * open log	
 	cap log 			close
-	log using 			"$logout/2019_agsec2a", append
+	log using 			"$logout/2019_agsec2b", append
 
 	
 ***********************************************************************
 **# 1 - clean up the key variables
 ***********************************************************************
 
-* import wave 8 season A
-	use 			"$root/agric/agsec2a.dta", clear
-			
+* import wave 8 season B
+	use 			"$root/agric/agsec2b.dta", clear
+
 * Rename ID variables
 	rename			parcelID prcid
-	rename 			s2aq4 plotsizeGPS
-	rename 			s2aq5 plotsizeSR
-	rename			s2aq7 tenure
+	rename 			s2aq04 plotsizeGPS
+	rename 			s2aq05 plotsizeSR
+	rename			s2aq07 tenure
 	recast 			str32 hhid
 	
 	describe
-	sort hhid prcid
-	isid hhid prcid
+	sort 			hhid prcid
+	isid 			hhid prcid
 
 * make a variable that shows the irrigation
 	gen				irr_any = 1 if a2aq18 == 1
@@ -59,17 +58,17 @@
 
 
 ***********************************************************************
-**#2 - merge location data
- **********************************************************************	
-
- * merge the location identification
+**# 2 - merge location data
+***********************************************************************	
+	
+* merge the location identification
 	merge m:1 hhid using "$export/2019_gsec1"	
-	*** 4,087 matched including all from master
-	*** 875 unmatched from using
-	*** that means 875 households did not grow crops
+	*** 1,276 matched only 2 not merged from master
+	*** 2,187 unmatched from using
+	*** that means 2,187 households did not rent plots
 	
 	drop 		if _merge != 3	
-	*** 875 observations deleted
+	*** 2,189 observations deleted
 	
 	
 ************************************************************************
@@ -78,36 +77,29 @@
 
 * what was the primary use of the parcel
 	*** activity in the first season is recorded seperately from activity in the second season
-	tab 		 	s2aq11a 
-	tab				s2aq11b
-	*** activities include renting out, pasture, forest. cultivation, and other
+	tab 		 	a2bq12a 
+	tab				a2bq12b
+	*** activities includepasture, forest. cultivation, and other
 	*** we will only include plots used for annual or perennial crops
 	
-	keep			if s2aq11a == 1 | s2aq11b == 1
-	*** 1,253 observations deleted
+	keep			if a2bq12a == 1 | a2bq12b == 1
+	*** 218 observations deleted	
 
-* verify that only parcels that did not have some annual crop on it are dropped
-	tab 			s2aq11a s2aq11b
-	*** zeros in every row and column other than first row/column
-	
 	
 ***********************************************************************
-**#4 - clean plotsize
+**# 4 - clean plotsize
 ***********************************************************************
 
 * summarize plot size
 	sum 			plotsizeGPS
-	***	mean 1.57, max 21.6, min .01
-	*** no plotsizes that are zero
+	***	mean .90, max 4.17, min .06
 	
 	sum				plotsizeSR
-	*** mean 1.61, max 50, min .01
+	*** mean .96, max 10, min .01
 
 * how many missing values are there?
 	mdesc 			plotsizeGPS
-	*** 1,567 missing, 56.61% of observations
-	mdesc 			plotsizeSR
-	*** 10 missing, 0.38% of observations
+	*** 980 missing, 93% of observations
 
 * convert acres to hectares
 	gen				plotsize = plotsizeGPS*0.404686
@@ -119,7 +111,7 @@
 * check correlation between the two
 	corr 			plotsize selfreport
 * twoway (scatter plotsize selfreport)
-	*** 0.97 correlation, high correlation between GPS and self reported
+	*** 0.972correlation, high correlation between GPS and self reported
 	
 * Look for outliers in GPS 
 	sum				plotsize, detail
@@ -128,26 +120,11 @@
 * look at GPS and self-reported observations that are > ±3 Std. Dev's from the median 
 	list			plotsize selfreport if !inrange(plotsize,`r(p50)'-(3*`r(sd)'),`r(p50)'+(3*`r(sd)')) ///
 						& !missing(plotsize)
-	*** these all look good, largest size is 8.037 ha
-	
-* correlation for larger plots	
-	corr			plotsize selfreport if plotsize > 3 & !missing(plotsize)
-* twoway (scatter plotsize selfreport if plotsize > 3 & !missing(plotsize))
-	*** this is very high, 0.98, so these look good
-
-* correlation for smaller plots	
-	corr			plotsize selfreport if plotsize < .1 & !missing(plotsize)
-* twoway (scatter plotsize selfreport if plotsize < .1 & !missing(plotsize))
-	*** this is sort of in the middle, positive but less strong correlation at 0.52 
-		
-* correlation for extremely small plots	
-	corr			plotsize selfreport if plotsize < .01 & !missing(plotsize)
-* twoway (scatter plotsize selfreport if plotsize < .01 & !missing(plotsize))
-	*** only 2 plots this small
+	*** these all look good, largest size is 1.68 ha
 	
 * summarize before imputation
 	sum				plotsize
-	*** mean 0.64, max 8.74, min 0.004
+	*** mean 0.367, max 1.68, min 0.024
 	
 * encode district to be used in imputation
 	encode district, gen (districtdstrng) 	
@@ -163,17 +140,17 @@
 		
 * how did imputing go?
 	sum 			plotsize_1_
-	*** mean 0.65, max 8.74, min 0.004
+	*** mean 0.36, max 1.68, min 0.024
 	
 	corr 			plotsize_1_ selfreport if plotsize == .
-	*** strong correlation 0.89
+	*** strong correlation 0.83
 	
 	replace 		plotsize = plotsize_1_ if plotsize == .
 	
 	drop			mi_miss plotsize_1_
 	
 	mdesc 			plotsize
-	*** 10 missing, 0.38%
+	*** 5 missing, 0.47%
 
 	drop if			plotsize == .
 	
@@ -189,8 +166,18 @@
 	summarize
 
 * save file
-	save 			"$export/2019_agsec2a.dta", replace
+	save 			"$export/2019_agsec2b.dta", replace
 
+* append 2a to build complete plot data setup
+	append			using "$export/2019_agsec2a.dta", force
+
+	compress
+	describe
+	summarize
+
+* save file
+	save 			"$export/2019_agsec2.dta", replace
+	
 * close the log
 	log	close
 

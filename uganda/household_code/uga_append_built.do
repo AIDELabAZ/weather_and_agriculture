@@ -14,7 +14,7 @@
 	* all Uganda data has been cleaned and merged with rainfall
 
 * TO DO:
-	* complete
+	* NEED TO SORT OUT HOUSEHOLD ID
 	
 	
 * **********************************************************************
@@ -44,17 +44,22 @@
 	append			using "$root/wave_2/unps2_merged", force	
 	
 * append wave 3 file 
-	append			using "$root/wave_3/unps3_merged", force	
+	append			using "$root/wave_3/unps3_merged", force
+	
+* append wave 8 file 
+	append			using "$root/wave_8/unps8_merged", force	
 	
 * check the number of observations again
 	count
-	*** 5252 observations 
+	*** 7636 observations 
 	count if 		year == 2009
-	*** wave 1 has 1704
+	*** wave 1 has 1883
 	count if 		year == 2010
-	*** wave 2 has 1741
+	*** wave 2 has 1886
 	count if 		year == 2011
-	*** wave 3 has 1807
+	*** wave 3 has 2022
+	count if 		year == 2019
+	*** wave 3 has 1845
 
 * generate uganda panel id	
 	egen			uga_id = group(hhid)

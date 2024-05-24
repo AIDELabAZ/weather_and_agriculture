@@ -1,22 +1,22 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: ek
-* Edited on: 19 Apr 24
-* Edited by: KCD
-* Stata v.18, Mac
+* Edited on: 24 May 24
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* Crop output
-	* reads Uganda wave 3 crop output (2019_agsec5a) for the 1st season
-	* 3A - 5A are questionaires for the first planting season
-	* 3B - 5B are questionaires for the second planting season
+	* reads Uganda wave 8 crop output (2019_agsec5a) for the 2nd season
+	* 3B - 5B are questionaires for the first planting season of 2019 (main)
+	* 3A - 5A are questionaires for the second planting season of 2018 (secondary)
 
 * assumes
 	* access to raw data 
 	* mdesc.ado
 
 * TO DO:
-	*done
+	* note we want 5b not 5a
 
 	
 * **********************************************************************
@@ -24,20 +24,21 @@
 * **********************************************************************
 
 * define paths	
-	global root 		= "$data/household_data/uganda/wave_8/raw"  
-	global export 		= "$data/household_data/uganda/wave_8/refined"
-	global logout 		= "$data/household_data/uganda/logs"
-	global conv 		= "$data/household_data/uganda/conversion_files"  
+	global 	root  		"$data/household_data/uganda/wave_8/raw"  
+	global  export 		"$data/household_data/uganda/wave_8/refined"
+	global 	logout 		"$data/household_data/uganda/logs"
+	global 	conv 		"$data/household_data/uganda/conversion_files"  
 	
 * open log	
-	cap log 		close
-	log using 		"$logout/2019_agsec5a", append
+	cap log 			close
+	log using 			"$logout/2019_agsec5a", append
+	
 	
 * **********************************************************************
 **#1 - import data and rename variables
 * **********************************************************************
 
-* import wave 8 season A
+* import wave 8 season B
 	use 			"$root/agric/agsec5a.dta", clear
 	
 * rename variables
