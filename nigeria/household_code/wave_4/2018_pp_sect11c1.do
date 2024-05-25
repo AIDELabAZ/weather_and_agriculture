@@ -1,11 +1,12 @@
 * Project: WB Weather
-* Created on: May 2020
-* Created by: alj
-* Edited by: ek
-* Stata v.16
+* Created on: May 2024
+* Created by: reece
+* Edited on: 24 May 2024
+* Edited by: reece
+* Stata v.18
 
 * does
-	* reads in Nigeria, WAVE 3 (2015-2016) POST PLANTING, NIGERIA AG SECT11C1
+	* reads in Nigeria, WAVE 4 (2018-2019) POST PLANTING, NIGERIA AG SECT11C1
 	* determines planting (not harvest) labor for rainy season
 	* outputs clean data file ready for combination with wave 3 plot data
 
@@ -14,31 +15,33 @@
 	* mdesc.ado
 	
 * TO DO:
-	* complete
+	* 
 	
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
 
 * define paths	
-	loc root 	= "$data/household_data/nigeria/wave_3/raw"
-	loc export 	= "$data/household_data/nigeria/wave_3/refined"
-	loc logout 	= "$data/household_data/nigeria/logs"
-	
+	global	root			"$data/household_data/nigeria/wave_4/raw"
+	global 	export  		"$data/household_data/nigeria/wave_4/refined"
+	global 	logout  		"$data/household_data/nigeria/logs"
+
 * open log	
-	cap log 	close
-	log 		using "`logout'/pp_sect11c1", append
+	cap log close
+	log using "$logout/2018_ph_sect11c1", append
+
 
 * **********************************************************************
 * 1 - determine labor
 * **********************************************************************
 		
 * import the first relevant data file
-	use "`root'/sect11c1_plantingw3", clear 
-
+	use "$root/sect11c1a_plantingw4", clear 
+	
 	describe
-	sort hhid plotid
-	isid hhid plotid, missok
+	sort hhid plotid indiv
+	isid hhid plotid indiv
+	collapse (sum) s11c1q1b, by(zone state lga sector ea hhid plotid)
 
 * per Palacios-Lopez et al. (2017) in Food Policy, we cap labor per activity
 * 7 days * 13 weeks = 91 days for land prep and planting
@@ -48,52 +51,56 @@
 * in this survey we can't tell gender or age of household members
 * the survey also does not distinguish between planting and other non-harvest activities
 *household labor (# of weeks * # of days/wk = days of labor) for up to 4 members of hh
+	* cannot follow, not given days for each activity
+	
+	
 
-* create household member labor (weeks x days per week)
-	gen hh_1 = (s11c1q1a2 * s11c1q1a3)
-	replace hh_1 = 0 if hh_1 == .
+* merge in post planting hired labor
+	merge 1:1 hhid plotid using "$root/sect11c1b_plantingw4"
 
-	gen hh_2 = (s11c1q1b2 * s11c1q1b3)
-	replace hh_2 = 0 if hh_2 == .
+** create household member labor 
+	gen 		pp_hh_labor = s11c1q1b
+	replace 	pp_hh_labor = 0 if s11c1q1b == .
+	
+* hired labor days, (# of people days hired to work)
+	gen			men_days = s11c1q3
+	replace 	men_days = 0 if s11c1q3 == .
+	
+	gen 		women_days = s11c1q5
+	replace		women_days = 0 if s11c1q5 == .
+	*** we do not include child labor days
 
-	gen hh_3 = (s11c1q1c2 * s11c1q1c3)
-	replace hh_3 = 0 if hh_3 == .
+* free labor days, from other households
+	replace 	s11c1q15a = 0 if s11c1q15a == .
+	replace 	s11c1q15b = 0 if s11c1q15b == .
+	
+	gen 		free_days = (s11c1q15a + s11c1q15b)
+	replace		free_days = 0 if free_days == .
 
-	gen hh_4 = (s11c1q1d2 * s11c1q1d3)
-	replace hh_4 = 0 if hh_4 == .
 	*** this calculation is for up to 4 members of the household that were laborers
 	*** per the survey, these are laborers for planting
 	*** does not include harvest labor (see NGA_ph_secta2)
-
-*hired labor (# of people days hired for planting)
-	gen men_days =  s11c1q3
-	replace men_days = 0 if men_days == .
-
-	gen women_days =  s11c1q6
-	replace women_days = 0 if women_days == .
-	*** we do not include child labor days
+		*** did not follow exactly, not able to identify hh members
 	
 * **********************************************************************
 * 2 - impute labor outliers
 * **********************************************************************
 	
 * summarize household individual labor for land prep to look for outliers
-	sum				hh_1 hh_2 hh_3 hh_4 men_days women_days
-	***none of the variables exceed the number of days possible
-
+	sum				pp_hh_labor men_days women_days free_days
 	
 * generate local for variables that contain outliers
-	loc				labor hh_1 hh_2 hh_3 hh_4 men_days women_days
+	loc				labor pp_hh_labor men_days women_days free_days
 
-* replace zero to missing, missing to zero, and outliers to missing
+* replace zero to missing, missing to zero, and outliers to mizzing
 	foreach var of loc labor {
 	    mvdecode 		`var', mv(0)
 		mvencode		`var', mv(0)
 	    replace			`var' = . if `var' > 142
 	}
-	*** 212 changes missing
+	*** 
 
-* impute missing values 
+* impute missing values (only need to do four variables)
 	mi set 			wide 	// declare the data to be wide.
 	mi xtset		, clear 	// clear any xtset that may have had in place previously
 
@@ -107,13 +114,27 @@
 	}						
 	mi 				unset	
 	
-* summarize imputed variables
-	sum				hh_1_1_  hh_2_2_ hh_3_3_ hh_4_4_ men_days_5_ 
+
+* sum the imputation
+	sum pp_hh_labor_1_ pp_hh_labor_2_
+	sum men_days_1_ men_days_2_
+	sum women_days_1_ women_days_2_
+	sum free_days_1_ free_days_2_
+	
+* replace the imputated variables
+	replace pp_hh_labor = pp_hh_labor_1_ 
+	* 413 changes made
+	replace men_days = men_days_1_
+	* 0 changes
+	replace women_days = women_days_1_
+	* 0 changes
+	replace free_days = free_days_1_
+	* 0 changes
 	
 * total labor days for harvest
-	egen			pp_labor = rowtotal(hh_1_1_  hh_2_2_ hh_3_3_ hh_4_4_ men_days_5_ women_days)
+	egen			pp_labor = rowtotal(pp_hh_labor ///
+							 women_days men_days free_days)
 	lab var			pp_labor "total labor for planting (days)"
-	*** unlike harvest labor, this did not ask for unpaid/exchange labor
 
 * check for missing values
 	mdesc			pp_labor
@@ -138,8 +159,7 @@
 	summarize 
 
 * save file
-		customsave , idvar(hhid) filename("pp_sect11c1.dta") ///
-			path("`export'/`folder'") dofile(pp_sect11c1) user($user)
+	save 			"$export/pp_sect11c1.dta", replace
 
 * close the log
 	log	close

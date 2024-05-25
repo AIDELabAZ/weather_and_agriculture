@@ -1,8 +1,8 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: jet
-* Edited on: 29 Feb 2024
-* Edited by: alj
+* Edited on: 24 May 2024
+* Edited by: reece
 * Stata v.18
 
 * does
@@ -30,7 +30,7 @@
 
 * open log	
 	cap log close
-*	log using "$logout/2018_ph_sect11a1"
+	log using "$logout/2018_ph_sect11a1", append
 
 ***********************************************************************
 **# 1 - find unique identifier and determine plot size
@@ -112,7 +112,7 @@
 	sum 			plot_size_hec_GPS, detail
 	pwcorr 			plot_size_hec_SR plot_size_hec_GPS if ///
 						inrange(plot_size_hec_GPS,`r(p50)'-(3*`r(sd)'),`r(p50)'+(3*`r(sd)'))
-	*** correlation of points with +/- 3sd is higher 0.0341
+	*** correlation of points with +/- 3sd is higher 0.0313
 
 * check correlation within +/- 3sd of mean (GPS and SR)
 	sum 			plot_size_hec_GPS, detail
@@ -209,8 +209,8 @@
 
 
 * save file
-	save 			"ph_sect11a1.dta", replace 
-
+	save 			"$export/ph_sect11a1.dta", replace 
+	*** should this be "pp_sect11a1"? it is ph in wv3 as well, so i didn't change this
 * close the log
 	log	close
 

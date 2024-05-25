@@ -35,12 +35,12 @@
 * **********************************************************************
 		
 * import the first relevant data file
-		use "$root/secta2a_harvestw4", clear 	
+	use "$root/secta2a_harvestw4", clear 	
 
-describe
-sort hhid plotid indiv
-isid hhid plotid indiv
-collapse (sum) sa2aq1b, by(zone state lga sector ea hhid plotid)
+	describe
+	sort hhid plotid indiv
+	isid hhid plotid indiv
+	collapse (sum) sa2aq1b, by(zone state lga sector ea hhid plotid)
 
 * per Palacios-Lopez et al. (2017) in Food Policy, we cap labor per activity
 * 7 days * 13 weeks = 91 days for land prep and planting
