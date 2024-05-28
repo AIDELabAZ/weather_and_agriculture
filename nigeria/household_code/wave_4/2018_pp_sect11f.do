@@ -1,8 +1,8 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: jet
-* Edited on: 19 Mar 2024
-* Edited by: jet
+* Edited on: 27 May 2024
+* Edited by: reece
 * Stata v.18
 
 * does
@@ -27,8 +27,8 @@
 	*log close
 	
 * open log	
-	*cap log close
-	*log using "`logout'/pp_sect11f", append
+	cap log close
+	log using "$logout/2018_pp_sect11f", append
 
 * **********************************************************************
 * 1 - determine plot size
@@ -38,8 +38,8 @@
 		use "$root/sect11f_plantingw4", clear 
 
 describe
-sort hhid plotid cropid
-isid hhid plotid cropid, missok
+sort hhid plotid cropcode
+isid hhid plotid cropcode, missok
 
 
 * **********************************************************************
@@ -47,10 +47,10 @@ isid hhid plotid cropid, missok
 * **********************************************************************
 
 *rename month and year
-rename 			s11fq3a month 
+rename 			s11fq3_1 month 
 lab var			month "planting month"
 
-rename 			s11fq3b year
+rename 			s11fq3_2 year
 lab var			year "planting year"
 
 
@@ -58,10 +58,9 @@ lab var			year "planting year"
 	tab				month
 	*** vast majority are in March-June
 	*** this aligns with FAO planting season
-	*** roughly 7% are not in the FAO planting season
 	tab year
-	*** 97% are in 2015, we will drop those from years before 2014
-	drop if year<=2013
+	*** 95.52% are in 2018, we will drop those from years before 2017
+	drop if year<=2016
 * **********************************************************************
 * 3 - end matter, clean up to save
 * **********************************************************************
@@ -72,8 +71,7 @@ describe
 summarize 
 
 * save file
-		customsave , idvar(hhid) filename("pp_sect11f.dta") ///
-			path("`export'/`folder'") dofile(pp_sect11f) user($user)
+	save 			"$export/pp_sect11f.dta", replace
 
 * close the log
 	log	close
