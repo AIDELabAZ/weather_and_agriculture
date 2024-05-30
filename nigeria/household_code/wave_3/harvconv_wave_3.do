@@ -36,7 +36,7 @@
 * **********************************************************************
 
 * import the relevant conversion file
-	use 			"`cnvrt'\ag_conv_w3" , clear
+	use 			"`cnvrt'/ag_conv_w3" , clear
 	
 * rename for matching with harvest files
 	rename 			crop_cd cropcode

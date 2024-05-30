@@ -9,10 +9,10 @@
 	* reads in Nigeria, WAVE 4, (2018-2019) POST HARVEST, NIGERIA SECTA3i
 	* determines harvest information (area and quantity) 
 	* maize is the second most widely cultivated crop
+	* converts to kilograms and constant 2015 USD
 	* outputs clean data file ready for combination with wave 3 hh data
 
 * assumes
-	* customsave.ado
 	* land-conversion.dta conversion file
 	
 * TO DO:
@@ -96,7 +96,7 @@
 	rename 			crop_value vl_hrv
 
 * convert 2018 Naria to constant 2015 USD
-	replace			vl_hrv = vl_hrv/839.89 
+	replace			vl_hrv = vl_hrv/302.8046 
 	lab var			vl_hrv 	"total value of harvest in 2015 USD"
 	*** value comes from World Bank: world_bank_exchange_rates.xlxs
 

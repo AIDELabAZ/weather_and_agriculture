@@ -37,7 +37,7 @@
 * **********************************************************************
 
 * import the relevant conversion file
-	use 			"`cnvrt'\w1agnsconversion" , clear
+	use 			"`cnvrt'/w1agnsconversion" , clear
 	
 * rename for matching with harvest files
 	rename 			nscode harv_unit

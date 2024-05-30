@@ -1,14 +1,14 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: alj
-* Edited on: 23 May 2024
+* Edited on: 29 May 2024
 * Edited by: jdm
 * Stata v.18
 
 * does
 	* reads in Nigeria, WAVE 2 (2012-2013), POST HARVEST, AG SECTA3
 	* determines primary and secondary crops, cleans harvest (quantity and value)
-	* converts to kilograms and constant 2010 USD
+	* converts to kilograms and constant 2015 USD
 	* outputs clean data file ready for combination with wave 2 plot data
 
 * assumes
@@ -34,6 +34,7 @@
 	cap 	log 	close
 	log 	using 	"`logout'/wave_2_ph_secta3", append
 
+	
 * **********************************************************************
 * 1 - general clean up, renaming, etc.
 * **********************************************************************
@@ -96,9 +97,9 @@
 	gen 			crop_value = sa3q18
 	rename 			crop_value vl_hrv
 
-* convert 2013 Naria to constant 2010 USD
-	replace			vl_hrv = vl_hrv/190.4143545
-	lab var			vl_hrv 	"total value of harvest in 2010 USD"
+* convert 2013 Naria to constant 2015 USD
+	replace			vl_hrv = vl_hrv/183.3461
+	lab var			vl_hrv 	"total value of harvest in 2015 USD"
 	*** value comes from World Bank: world_bank_exchange_rates.xlxs
 
 * summarize value of harvest
@@ -124,7 +125,7 @@
 						statistics(n mean min max) columns(statistics) ///
 						longstub format(%9.3g) 
 	replace			vl_hrv = vl_hrv_1_
-	lab var			vl_hrv "Value of harvest (2010 USD), imputed"
+	lab var			vl_hrv "Value of harvest (2015 USD), imputed"
 	drop			vl_hrv_1_
 	*** imputed 172 values out of 10,382 total observations
 	

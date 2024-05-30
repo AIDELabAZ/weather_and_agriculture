@@ -166,7 +166,7 @@
 * construct production value per hectare
 	gen				vl_yld = vl_hrv / plotsize
 	assert 			!missing(vl_yld)
-	lab var			vl_yld "value of yield (2010USD/ha)"
+	lab var			vl_yld "value of yield (2015 USD/ha)"
 
 * impute value per hectare outliers 
 	sum				vl_yld
@@ -185,16 +185,16 @@
 						& !inlist(vl_yld,.,0) & !mi(maxrep)
 	tabstat			vl_yld vl_yldimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 1182 to 890
-	*** reduces max from 80806 to 28744
+	*** reduces mean from 1163 to 895
+	*** reduces max from 56172 to 13250
 	
 	drop			stddev median replacement maxrep minrep
-	lab var			vl_yldimp	"value of yield (2010USD/ha), imputed"
+	lab var			vl_yldimp	"value of yield (2015 USD/ha), imputed"
 
 * inferring imputed harvest value from imputed harvest value per hectare
 	generate		vl_hrvimp = vl_yldimp * plotsize 
-	lab var			vl_hrvimp "value of harvest (2010USD), imputed"
-	lab var			vl_hrv "value of harvest (2010USD)"
+	lab var			vl_hrvimp "value of harvest (2015 USD), imputed"
+	lab var			vl_hrv "value of harvest (2015 USD)"
 	
 
 * **********************************************************************
@@ -289,6 +289,7 @@
 	
 * impute yield outliers
 	sum				mz_yld
+	replace			mz_yld = . if mz_yld > 33000
 	bysort state : egen stddev = sd(mz_yld) if !inlist(mz_yld,.,0)
 	recode 			stddev (.=0)
 	bysort state : egen median = median(mz_yld) if !inlist(mz_yld,.,0)
@@ -304,8 +305,8 @@
 					& !inlist(mz_yld,.,0) & !mi(maxrep)
 	tabstat 		mz_yld mz_yldimp, ///
 					f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 3574 to 2304
-	*** reduces max from 855365 to 83842
+	*** reduces mean from 2426 to 1973
+	*** reduces max from 32945 to 29599
 					
 	drop 			stddev median replacement maxrep minrep
 	lab var 		mz_yldimp "maize yield (kg/ha), imputed"
@@ -519,8 +520,8 @@
 
 * label variables
 	lab var			tf_lnd	"Total farmed area (ha)"
-	lab var			tf_hrv	"Total value of harvest (2010 USD)"
-	lab var			tf_yld	"value of yield (2010 USD/ha)"
+	lab var			tf_hrv	"Total value of harvest (2015 USD)"
+	lab var			tf_yld	"value of yield (2015 USD/ha)"
 	lab var			tf_lab	"labor rate (days/ha)"
 	lab var			tf_frt	"fertilizer rate (kg/ha)"
 	lab var			tf_pst	"Any plot has pesticide"
@@ -568,12 +569,14 @@
 	*** none missing
 	
 * impute tf_hrv outliers
-	*kdensity 		tf_yld if tf_yld > 9000
+	*kdensity 		tf_yld if tf_yld > 7300
 	*** max is 11000
 	sum 			tf_yld, detail
-	*** mean 835, max 17300
+	*** mean 848, max 13250
 	
-	replace 		tf_hrv =. if tf_yld > 9000
+	sum				tf_lnd tf_hrv  if tf_yld > 6300
+	
+	replace 		tf_hrv =. if tf_yld > 6300
 	
 	mi set 			wide 	// declare the data to be wide.
 	mi xtset		, clear 	// clear any xtset that may have had in place previously
@@ -587,7 +590,7 @@
 	replace    		tf_hrv = tf_hrv_1_	if 	tf_hrv == .
 	replace 		tf_yld = tf_hrv / tf_lnd
 	sum 			tf_yld, detail
-	*** mean 707.25, max 13591.4
+	*** mean 808, max 12874
 	mdesc 			tf_yld
 	*** 0 missing
 	drop 			mi_miss tf_hrv_1_ 
@@ -626,13 +629,15 @@
 	*** mean 803.43, std dev 1000.29, max 9600
 	*kdensity cp_yld if cp_yld > 20000
 	
-	sum cp_hrv if cp_lnd < 0.1 & cp_yld > 10000, detail
+	sum cp_hrv if cp_lnd < 0.5 & cp_yld > 15000, detail
 	
 	* change outliers to missing
 	replace 		cp_hrv = . if cp_yld > 15000 & cp_lnd < 0.5
 	*** 15 changes made
 	replace 		cp_hrv = . if cp_yld > 15000
 	*** 4 changes
+	replace 		cp_hrv = . if cp_lnd < .01
+	*** 7 changes
 
 * impute missing values (impute in stages to get imputation near similar land values)
 	sum 			cp_hrv

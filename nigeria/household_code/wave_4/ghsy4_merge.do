@@ -1,8 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: jdm
-* Edited by : alj, ek
-* Stata v.16
+* Edited on: 29 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* merges individual cleaned plot datasets together
@@ -12,7 +13,6 @@
 
 * assumes
 	* previously cleaned household datasets
-	* customsave.ado
 	* double counting assumed in labor - only use harvest labor 
 
 * TO DO:
@@ -92,6 +92,12 @@
 
 	drop			if _a2 == 2
 
+* merging in households data
+	merge		m:1 hhid using "$root/pp_secta", generate(_a)
+	*** 0 missing from master, 2,026 from using, 11,566 matched
+	
+	drop			if _a == 2
+	
 * drop observations missing values (not in continuous)
 	drop			if plotsize == .
 	drop			if irr_any == .
@@ -99,7 +105,7 @@
 	drop			if herb_any == .
 	*** no observations dropped
 
-	drop			_11a1 _11b1 _11c1 _11c2 _a2
+	drop			_11a1 _11b1 _11c1 _11c2 _a2 _a
 	
 	
 * **********************************************************************
@@ -129,7 +135,8 @@
 						mz_hrv mz_lnd mz_lab mz_frt ///
 			 (max)	pest_any herb_any irr_any  ///
 						mz_pst mz_hrb mz_irr mz_damaged, ///
-						by(hhid plotid plot_id zone state lga sector ea)
+						by(hhid plotid plot_id zone state lga sector ///
+						ea wgt18 wgt_pnl old_new track)
 
 * replace non-maize harvest values as missing
 	tab				mz_damaged, missing
@@ -187,12 +194,12 @@
 	*** reduces max from 26615 to 16447
 	
 	drop			stddev median replacement maxrep minrep
-	lab var			vl_yldimp	"value of yield (2015USD/ha), imputed"
+	lab var			vl_yldimp	"value of yield (2015 USD/ha), imputed"
 
 * inferring imputed harvest value from imputed harvest value per hectare
 	generate		vl_hrvimp = vl_yldimp * plotsize 
-	lab var			vl_hrvimp "value of harvest (2015USD), imputed"
-	lab var			vl_hrv "value of harvest (2015USD)"
+	lab var			vl_hrvimp "value of harvest (2015 USD), imputed"
+	lab var			vl_hrv "value of harvest (2015 USD)"
 	
 	
 * **********************************************************************
@@ -510,7 +517,8 @@
 	count
 	*** 7123 obs
 	
-	collapse (max) tf_* cp_*, by(zone state lga sector ea hhid)
+	collapse (max) 	tf_* cp_*, by(zone state lga sector ea hhid ///
+						wgt18 wgt_pnl old_new track)
 
 * count after collapse 
 	count 
@@ -736,6 +744,7 @@
 	lab var			year "Year"
 		
 	order 			zone state lga sector ea hhid aez year /// 	
+					wgt18 wgt_pnl old_new track ///
 					tf_hrv tf_lnd tf_yld tf_lab tf_frt ///
 					tf_pst tf_hrb tf_irr cp_hrv cp_lnd cp_yld cp_lab ///
 					cp_frt cp_pst cp_hrb cp_irr

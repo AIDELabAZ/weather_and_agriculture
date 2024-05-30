@@ -18,7 +18,7 @@
 	* everything
 	* i think this file should be combined with 2018_ph_sect11c2, going to clean fertilizer variables there
 	* variables of interest not in sect11d_harvestwv4 but in sect11c2
-
+/*
 * **********************************************************************
 * 0 - setup
 * **********************************************************************

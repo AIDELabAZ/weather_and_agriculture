@@ -7,12 +7,11 @@
 
 * does
 	* reads in merged data sets
-	* appends all three to form complete data set (W1-W3)
+	* appends all three to form complete data set (W1-W4)
 	* outputs Nigeria data sets for analysis
 
 * assumes
 	* all Nigeria data has been cleaned and merged with rainfall
-	* customsave.ado
 
 * TO DO:
 	* complete
@@ -41,40 +40,48 @@
 * import wave 1 nigeria
 	
 	use 			"$root/wave_1/ghsy1_merged", clear
-	*** at the moment I believe that all three waves of nigeria identify hh's the same
 	
 * append wave 2 file
 	append			using "$root/wave_2/ghsy2_merged", force	
 	
 * append wave 3 file 
-	append			using "$root/wave_3/ghsy3_merged", force	
+	append			using "$root/wave_3/ghsy3_merged", force		
+	
+* append wave 4 file 
+	append			using "$root/wave_4/ghsy4_merged", force	
+	*** at the moment I believe that all four waves of nigeria identify hh's the same
 	
 * check the number of observations again
 	count
-	*** 8384 observations 
+	*** 11,621 observations 
 	count if 		year == 2010
-	*** wave 1 has 2833
+	*** wave 1 has 2,833
 	count if 		year == 2012
-	*** wave 2 has 2768
+	*** wave 2 has 2,768
 	count if 		year == 2015
-	*** wave 3 has 2783
+	*** wave 3 has 2,783
+	count if 		year == 2018
+	*** wave 4 has 3,237
 
 * **********************************************************************
 * 2 - merge in sampling weights
 * **********************************************************************
 	
 	merge			m:1 hhid using "$weight/HHTrack"
-	*** all in master matched
+	*** all but 2,317 new households matched
 	
-	keep			if _merge == 3
+	drop			if _merge == 2
 	
 	gen				pw = wt_wave1 if year == 2010
 	replace			pw = wt_wave2 if year == 2012
+	replace			pw = wt_w2v2 if pw == . & year == 2012
 	replace			pw = wt_wave3 if year == 2015
-	replace			pw = wt_w2v2 if pw == .
+	replace			pw = wt_w2v2 if pw == . & year == 2015
+	replace			pw = wgt_pnl if year == 2018
+	replace			pw = wgt18 if pw == . & year == 2018
 	lab var			pw "Final household weight"
 	
-	drop			hhstatus_w1v1 - _merge
+	drop			hhstatus_w1v1 - _merge wgt18 wgt_pnl
 	
 * generate panel id
 	sort			hhid year
@@ -84,7 +91,8 @@
 	gen				country = "nigeria"
 	lab var			country "Country"
 
-	gen				dtype = "lp"
+	gen				dtype = "lp" if old_new != 2
+	replace			dtype = "cx" if dtype == ""
 	lab var			dtype "Data type"
 	
 	isid			nga_id year
@@ -96,8 +104,8 @@
 
 * label household variables	
 	lab var			tf_lnd	"Total farmed area (ha)"
-	lab var			tf_hrv	"Total value of harvest (2010 USD)"
-	lab var			tf_yld	"value of yield (2010 USD/ha)"
+	lab var			tf_hrv	"Total value of harvest (2015 USD)"
+	lab var			tf_yld	"value of yield (2015 USD/ha)"
 	lab var			tf_lab	"labor rate (days/ha)"
 	lab var			tf_frt	"fertilizer rate (kg/ha)"
 	lab var			tf_pst	"Any plot has pesticide"
