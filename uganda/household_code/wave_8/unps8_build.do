@@ -6,7 +6,7 @@
 * Stata v.18
 
 * does
-	* merges weather data into unps3 household data
+	* merges weather data into unps8 household data
 	* does this for north and south seperately
 
 * assumes

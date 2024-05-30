@@ -92,7 +92,7 @@
 						mz_hrv mz_lnd mz_lab mz_frt  ///
 			 (max)	pest_any herb_any irr_any fert_any  ///
 						mz_pst mz_hrb mz_irr mz_damaged, ///
-						by(hhid prcid pltid region district subcounty ///
+						by(hhid hh prcid pltid region district subcounty ///
 						parish rotate wgt15)
 
 * replace non-maize harvest values as missing
@@ -110,7 +110,7 @@
 	encode			subcounty, gen(subcountydstrng)
 	encode			parish, gen(parishdstrng)
 
-	order			hhid prcid pltid region district districtdstrng ///
+	order			hhid hh prcid pltid region district districtdstrng ///
 						subcounty subcountydstrng parish ///
 						parishdstrng rotate wgt15 vl_hrv ///
 						plotsize labordays fert_any fert irr_any ///
@@ -465,7 +465,7 @@
 	
 	collapse 		(max) tf_* cp_*, by(region district districtdstrng ///
 						subcounty subcountydstrng parish ///
-						parishdstrng rotate wgt15 hhid)
+						parishdstrng rotate wgt15 hhid hh)
 
 * count after collapse 
 	count 
@@ -530,7 +530,7 @@
 	gen				year = 2015
 	lab var			year "Year"
 			
-	order 			region district  subcounty parish  hhid wgt15 /// 	
+	order 			region district  subcounty parish  hhid hh wgt15 /// 	
 					year season tf_hrv tf_lnd tf_yld tf_lab tf_frt ///
 					tf_pst tf_hrb tf_irr cp_hrv cp_lnd cp_yld cp_lab ///
 					cp_frt cp_pst cp_hrb cp_irr 

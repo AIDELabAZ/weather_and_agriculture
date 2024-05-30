@@ -35,10 +35,8 @@
 * 1 - append first three waves of Uganda household data
 * **********************************************************************
 
-* import wave 1 Uganda
-	
+* import wave 1 Uganda	
 	use 			"$root/wave_1/unps1_merged", clear
-	*** at the moment I believe that all three waves of nigeria identify hh's the same
 	
 * append wave 2 file
 	append			using "$root/wave_2/unps2_merged", force	
@@ -46,20 +44,30 @@
 * append wave 3 file 
 	append			using "$root/wave_3/unps3_merged", force
 	
+* append wave 4 file 
+	append			using "$root/wave_4/unps4_merged", force
+	
+* append wave 5 file 
+	append			using "$root/wave_5/unps5_merged", force
+	
 * append wave 8 file 
 	append			using "$root/wave_8/unps8_merged", force	
 	
 * check the number of observations again
 	count
-	*** 7636 observations 
+	*** 11,696 observations 
 	count if 		year == 2009
-	*** wave 1 has 1883
+	*** wave 1 has 1,883
 	count if 		year == 2010
-	*** wave 2 has 1886
+	*** wave 2 has 1,886
 	count if 		year == 2011
-	*** wave 3 has 2022
+	*** wave 3 has 2,022
+	count if 		year == 2013
+	*** wave 4 has 2,190
+	count if 		year == 2015
+	*** wave 5 has 1,870
 	count if 		year == 2019
-	*** wave 3 has 1845
+	*** wave 8 has 1845
 
 * generate uganda panel id	
 	egen			uga_id = group(hhid)
