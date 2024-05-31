@@ -1,8 +1,8 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: jet
-* Edited on: 24 May 2024
-* Edited by: reece
+* Edited on: 31 May 2024
+* Edited by: jdm
 * Stata v.18
 
 * does
@@ -13,10 +13,10 @@
 
 * assumes
 	* access to the raw data
-	* land-conversion.dta conversion file
 
 * TO DO:
-	* custom save, log
+	* complete
+	
 	
 ***********************************************************************
 **# 0 - setup

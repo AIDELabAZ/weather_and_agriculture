@@ -28,9 +28,6 @@
 	loc		export	=		"$data/household_data/nigeria/wave_1/refined"
 	loc		logout	= 		"$data/household_data/nigeria/logs"
 
-* close log (in case still open)
-	*log close
-	
 * open log	
 	cap log close
 	log using "`logout'/pp_sect11a1", append
