@@ -20,13 +20,13 @@
 * **********************************************************************
 
 * define paths
-	loc		root 	= 	"$data/household_data/malawi/wave_6/raw"	
-	loc		export 	= 	"$data/household_data/malawi/wave_6/refined"
-	loc		logout 	= 	"$data/household_data/malawi/logs"
+	global		root 	= 	"$data/household_data/malawi/wave_6/raw"	
+	global		export 	= 	"$data/household_data/malawi/wave_6/refined"
+	global		logout 	= 	"$data/household_data/malawi/logs"
 
 * open log
 	cap 	log			close
-	log 	using 		"`logout'/mwi_ag_mod_g_19", append
+	log 	using 		"$logout/mwi_ag_mod_g_19", append
 
 
 * **********************************************************************
@@ -34,7 +34,7 @@
 * **********************************************************************
 
 * load data
-	use 			"`root'/ag_mod_g_19.dta", clear
+	use 			"$root/ag_mod_g_19.dta", clear
 	
 	capture 		: noisily : isid y4_hhid gardenid plotid crop_code, missok	
 	duplicates 		report y4_hhid gardenid plotid crop_code
@@ -93,12 +93,18 @@
 	
 * prepare for conversion 
 * need district variables 
-	merge m:1 case_id using "`root'/hh_mod_a_filt.dta", keepusing(region) assert (2 3) keep (3) nogenerate	
+	merge m:1 y4_hhid using "$root/hh_mod_a_filt_19.dta", keepusing(region) assert (2 3) keep (3) nogenerate	
+	**** 9984 = all matched
 	
+	gen unit_code = ag_g13b
+	tostring unit_code, replace
+	
+	replace region = region/100
+
 * bring in conversion file 
-	merge m:1 crop_code region unit condition using "`root'/ihs_seasonalcropconversion_factor_2020_up.dta", keep(1 3) generate(_conversion)
+	merge m:1 crop_code region unit_code condition using "$root/ihs_seasonalcropconversion_factor_2020.dta"
 	
-	tabulate 		crop_code unit if _conversion==1
+	tabulate 		crop_code unit if _merge==1
 	*** could drop if == 1, but we know that we have some of these, from conversion_other - so will keep
 	*** 24,274 matched, 8,403 not matched
 	
@@ -156,34 +162,34 @@ label define cropid
 		
 * make harvest quantity
 	generate 		harv = ag_g13a * conversion
-	*** 24274 observations (and another 8403 to missing)
+	*** 10598 observations (with 3258 to missing)
 	
 	*** WHY UNIT == 13? 
 	replace			harv = ag_g13a * conversion_other if unit == 13 & harv == . 
-	*** 24 changes made
-	bysort 			case_id HHID gardenid plotid unit cropid : egen harvest = sum(harv)
+	*** 85 changes made
+	bysort 			y4_hhid gardenid plotid unit cropid : egen harvest = sum(harv)
 	label 			variable harvest "Harvest quantity (kg)" 
 
 * instance of harvest area reported less than planted area
 	tabulate 		ag_g10, missing
-	bysort 			case_id unit cropid : egen harvest_losses = max(ag_g10=="YES":L01)
+	bysort 			y4_hhid unit cropid : egen harvest_losses = max(ag_g10=="YES":L01)
 	label 			variable harvest_losses	"Harvested area less than planted area"
 
 * legume intercropping at plot level 
 	label 			list cropid	
-	bysort 			case_id unit (cropid) : egen max = max(cropid)
-	*** 26 missing values generated
-	bysort 			case_id unit (cropid) : egen min = min(cropid)
-	*** 26 missing values generated 
+	bysort 			y4_hhid unit (cropid) : egen max = max(cropid)
+	*** 6 missing values generated
+	bysort 			y4_hhid unit (cropid) : egen min = min(cropid)
+	*** 6 missing values generated 
 	egen 			legume = anymatch(cropid), values(11 27 34/36)			
 	*** indicates that crop is a legume 
-	bysort 			case_id unit (cropid) : egen plot_legume = max(legume)
+	bysort 			y4_hhid unit (cropid) : egen plot_legume = max(legume)
 	generate 		intercrop_legume = (min!=max & plot_legume==1)
 	label 			variable intercrop_legume "Plot was intercropped with legumes"
 
 * restrict to one observation per plot per crop
-	bysort 			case_id plotid gardenid cropid : keep if _n==1
-	*** 9 observations deleted 
+	bysort 			y4_hhid plotid gardenid cropid : keep if _n==1
+	*** 596 observations deleted 
 	
 * **********************************************************************
 * 4 - end matter, clean up to save
