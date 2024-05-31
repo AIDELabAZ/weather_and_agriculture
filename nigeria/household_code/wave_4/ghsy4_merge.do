@@ -44,7 +44,7 @@
 	isid			cropplot_id
 	
 * merge in plot size data
-	merge 			m:1 hhid plotid using "$root/ph_sect11a1", generate(_11a1)
+	merge 			m:1 hhid plotid using "$root/pp_sect11a1", generate(_11a1)
 	*** 0 are missing in master, 10,414 matched
 	*** all unmerged (3953) are from using, meaning we lack production data
 	*** per Malawi (rs_plot) we drop all unmerged observations
@@ -171,7 +171,7 @@
 * construct production value per hectare
 	gen				vl_yld = vl_hrv / plotsize
 	assert 			!missing(vl_yld)
-	lab var			vl_yld "value of yield (2015USD/ha)"
+	lab var			vl_yld "value of yield (2015 USD/ha)"
 
 * impute value per hectare outliers 
 	sum				vl_yld
@@ -190,8 +190,8 @@
 						& !inlist(vl_yld,.,0) & !mi(maxrep)
 	tabstat			vl_yld vl_yldimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 304 to 230
-	*** reduces max from 26615 to 16447
+	*** reduces mean from 663 to 521
+	*** reduces max from 43844 to 20366
 	
 	drop			stddev median replacement maxrep minrep
 	lab var			vl_yldimp	"value of yield (2015 USD/ha), imputed"
@@ -228,8 +228,8 @@
 						& !inlist(labordays_ha,.,0) & !mi(maxrep)
 	tabstat 		labordays_ha labordays_haimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 174 to 133
-	*** reduces max from 2096 to 1355
+	*** reduces mean from 116 to 96
+	*** reduces max from 2475 to 1199
 
 	drop			stddev median replacement maxrep minrep
 	lab var			labordays_haimp	"farm labor use (days/ha), imputed"
@@ -265,8 +265,8 @@
 						& !inlist(fert_ha,.,0) & !mi(maxrep)
 	tabstat 		fert_ha fert_haimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 226 to 173
-	*** reduces max from 3294 to 2211
+	*** reduces mean from 177 to 145
+	*** reduces max from 12039 to 6087
 	
 	drop			stddev median replacement maxrep minrep
 	lab var			fert_haimp	"fertilizer use (kg/ha), imputed"
@@ -309,8 +309,8 @@
 					& !inlist(mz_yld,.,0) & !mi(maxrep)
 	tabstat 		mz_yld mz_yldimp, ///
 					f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 2075 to 1511
-	*** reduces max from 23709 to 10520
+	*** reduces mean from 1496 to 1255
+	*** reduces max from 34728 to 14632
 					
 	drop 			stddev median replacement maxrep minrep
 	lab var 		mz_yldimp "maize yield (kg/ha), imputed"
@@ -347,8 +347,8 @@
 						& !inlist(mz_lab_ha,.,0) & !mi(maxrep)
 	tabstat 		mz_lab_ha mz_lab_haimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 186 to 141
-	*** reduces max from 7628 to 3415
+	*** reduces mean from 123 to 100
+	*** reduces max from 2463 to 1156
 
 	drop			stddev median replacement maxrep minrep
 	lab var			mz_lab_haimp	"maize labor use (days/ha), imputed"
@@ -384,8 +384,8 @@
 						& !inlist(mz_frt_ha,.,0) & !mi(maxrep)
 	tabstat 		mz_frt_ha mz_frt_haimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 275 to 218
-	*** reduces max from 3452 to 2306
+	*** reduces mean from 230 to 191
+	*** reduces max from 12039 to 4360
 
 	drop			stddev median replacement maxrep minrep
 	lab var			mz_frt_haimp	"fertilizer use (kg/ha), imputed"
@@ -515,14 +515,14 @@
 	
 * count before collapse
 	count
-	*** 7123 obs
+	*** 7124 obs
 	
 	collapse (max) 	tf_* cp_*, by(zone state lga sector ea hhid ///
 						wgt18 wgt_pnl old_new track)
 
 * count after collapse 
 	count 
-	*** drops to 3237 observations 
+	*** drops to 3238 observations 
 	
 * return non-maize production to missing
 	replace			cp_yld = . if cp_yld == 0
@@ -558,175 +558,30 @@
 	lab var			cp_hrb	"Any maize plot has herbicide"
 	lab var			cp_irr	"Any maize plot has irrigation"
 	
-* clean tf yield outliers
-	*scatter 		tf_yld tf_lnd
-	*scatter 		tf_yld tf_lnd if tf_lnd < 0.5
-	tab				tf_hrv if tf_yld > 6000
-	*scatter 		tf_lab tf_lnd
-	*** yield outliers appear unreasonable above 5000 yields
-	
-	* max is determined by comparing the right end tail distribution to wave 1 maxes using a kdensity peak.
-	sum 			tf_yld tf_lab tf_hrv, detail			
-	
-	*kdensity 		tf_hrv if tf_hrv > 5000
-	*** peak is at 5,250
-	*kdensity		tf_yld if tf_yld > 9000
-	*** peak is at 10,000
-	*kdensity 		tf_lab if tf_lab > 1400
-	*** peak is around 1,900
-	*kdensity		tf_lnd if tf_yld > 10000
-	
-	*kdensity tf_yld if tf_lnd < 0.1 & tf_yld < 10000
-	*** max tf_yld when lnd is 0.1
-	
-	*kdensity tf_lab if tf_lnd < 0.1 & tf_lab > 400
-	*kdensity tf_lab if tf_lnd < 0.1 & tf_lab < 10000
-	
-	*** didn't follow ^ tf_hrv, tf_yld, tf_lab etc values much lower in wave 4
-
-	replace 		tf_lab = . if tf_lab > 500 & tf_lnd < 0.1
-	*** 84 changes
-	replace 		tf_lab = . if tf_lab > 1900
-	*** 0 changes
-	replace 		tf_hrv = . if tf_yld > 1000 & tf_lnd < 0.1
-	*** 37 changes
-
-	*scatter 		tf_yld tf_lnd 
-	
 * impute missing labor
-	sum 			tf_lab
+	sum 			tf_lab , detail			
+	*** max is 1128, reasonable
+	*** no imputation
 	
-	mi set 			wide 	// declare the data to be wide.
-	mi xtset		, clear 	// clear any xtset that may have had in place previously
-	mi register		imputed tf_lab // identify tf_lab as the variable being imputed
-	sort			hhid state zone, stable // sort to ensure reproducability of results
-	mi impute 		pmm tf_lab i.state tf_lnd, add(1) rseed(245780) ///
-						noisily dots force knn(5) bootstrap
-	mi 	unset	
-	
-	*** review imputation
-	sum				tf_lab_1_
-	replace 		tf_lab = tf_lab_1_
-	sum 			tf_lab, detail
-	*** mean 92.68, max 1877.47
-	drop			mi_miss tf_lab_1_
-	mdesc			tf_lab
-	*** none missing
-
 * impute tf_hrv outliers
-	*** impute in stages based on proximity of similar land values
-	*** first the harvests on land smaller than 0.1 then land smaller than 0.6
-	sum 			tf_hrv
-	
-	mi set 			wide 	// declare the data to be wide.
-	mi xtset		, clear 	// clear any xtset that may have had in place previously
-	mi register		imputed tf_hrv // identify tf_hrv as the variable being imputed
-	sort			hhid state zone, stable // sort to ensure reproducability of results
-	mi impute 		pmm tf_hrv i.state tf_lnd tf_lab if tf_lnd < 0.1, add(1) rseed(245780) ///
-						noisily dots force knn(5) bootstrap
-
-	sort			hhid state zone, stable // sort to ensure reproducability of results
-	mi impute 		pmm tf_hrv i.state tf_lnd tf_lab if tf_lnd < 0.6, add(1) rseed(245780) ///
-						noisily dots force knn(5) bootstrap
-	mi unset
-		
-	sort 			tf_hrv
-	replace 		tf_hrv = tf_hrv_2_	if 	tf_hrv == . & tf_hrv_1_ == .
-	replace 		tf_hrv = tf_hrv_1_	if 	tf_hrv == .
-	replace 		tf_yld = tf_hrv / tf_lnd
 	sum 			tf_yld, detail
-	*** mean 168.77, max 7020.24
-	mdesc 			tf_yld
-	*** 0 missing
-	drop 			mi_miss tf_hrv_1_ tf_hrv_2_
-	
+	*** max is 6275, also reasonable
+	*** no imputation
+					
 * impute cp_lab
 	sum 			cp_lab, detail
-	*scatter			cp_lnd cp_lab
-	*kdensity 		cp_lab if cp_lnd < 1 & cp_lab < 500
-	*** max is 50
-	
-	replace 		cp_lab = . if cp_lab > 200 & cp_lnd < 0.1
-	*** 224 changes
-	
-	mi set 			wide 	// declare the data to be wide.
-	mi xtset		, clear 	// clear any xtset that may have had in place previously
-	mi register		imputed cp_lab // identify cp_lab as the variable being imputed
-	sort			hhid state zone, stable // sort to ensure reproducability of results
-	mi impute 		pmm cp_lab i.state cp_lnd, add(1) rseed(245780) ///
-						noisily dots force knn(5) bootstrap
-	mi 	unset	
-	
-	*** review imputation
-	sum				cp_lab_1_
-	replace 		cp_lab = cp_lab_1_
-	sum 			cp_lab, detail
-	*** mean 75.72, max 836.02
-	*** seems very low compared to wave 3?
-	drop			mi_miss cp_lab_1_
-	mdesc			cp_lab if cp_lnd !=.
-	*** none missing
+	*** max is 1128, also reasonable
+	*** no imputation
 	
 * cp yield outliers
-	*scatter 		cp_yld cp_lnd
-	*scatter 		cp_yld cp_lnd if cp_lnd < 0.5
-	*** maize yield is higher on average than the total crop yield, mean is 5221.5
 	sum 			cp_yld, detail
-	*** mean 1376.69, std dev 1937.17, max is 29594.55
-	sum 			cp_hrv, detail
-	*** mean 670, std dev 993.73, max 16100
-	sum 			cp_yld if cp_lnd < 0.5, detail
-	*kdensity 		cp_yld if cp_lnd < 0.5 & cp_yld <10000
-	*** max cp_yld is 29594.55
+	*** max is 11,032, also reasonable
+	*** no imputation
 	
-	* change outliers to missing
-	replace 		cp_hrv = . if cp_yld > 12000
-	*** 6 changes made
-	replace 		cp_yld = . if cp_yld > 12000
-	*** 6 changes made
-	replace 		cp_hrv = . if cp_lnd < 0.5 & cp_yld > 1000
-	*** 501 changes made
+* unlike in other waves, at this stage variables look reasonable
+* max of each is less than max of variable in other wave - EVEN AFTER - imputation
+* so we do not impute anything at this stage
 	
-	sum 			cp_lnd if cp_yld == ., detail
-	*** mean 0.0724, std dev 0.0639, max 0.1809
-	*scatter 		cp_yld cp_lnd 
-	
-* impute missing values (impute in stages to get imputation near similar land values)
-	sum 			cp_hrv
-	
-	mi set 			wide 	// declare the data to be wide.
-	mi xtset		, clear 	// clear any xtset that may have had in place previously
-	mi register		imputed cp_hrv // identify cp_hrv as the variable being imputed
-	sort			hhid state zone, stable // sort to ensure reproducability of results
-	mi impute 		pmm cp_hrv i.state cp_lnd if cp_lnd < 0.03, add(1) rseed(245780) ///
-						noisily dots force knn(5) bootstrap
-
-	sort			hhid state zone, stable // sort to ensure reproducability of results
-	mi impute 		pmm cp_hrv i.state cp_lnd if cp_lnd < 0.1, add(1) rseed(245780) ///
-						noisily dots force knn(5) bootstrap
-					
-	sort			hhid state zone, stable // sort to ensure reproducability of results
-	mi impute 		pmm cp_hrv i.state cp_lnd if cp_lnd < 0.6, add(1) rseed(245780) ///
-						noisily dots force knn(5) bootstrap
-	mi 				unset	
-
-	sort 			cp_hrv
-	replace 		cp_hrv = cp_hrv_3_ if cp_hrv == . & cp_hrv_2_ == . & cp_hrv_1_
-	replace 		cp_hrv = cp_hrv_2_ if cp_hrv == . & cp_hrv_1_ == .
-	replace 		cp_hrv = cp_hrv_1_ if cp_hrv == . 
-
-	replace 		cp_yld = cp_hrv / cp_lnd
-	sum 			cp_yld, detail
-	*** mean 723.11, std. dev 778, max 8754.28
-	*** a bit smaller than wave 3
-
-	mdesc			cp_yld cp_hrv if cp_lnd != .
-	*** none missing
-	
-	drop 			mi_miss cp_hrv_1_ cp_hrv_2_ cp_hrv_3_
-
-	sum				tf_* cp_*
-
 * **********************************************************************
 * 5 - end matter, clean up to save
 * **********************************************************************

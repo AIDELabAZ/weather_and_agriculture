@@ -54,14 +54,14 @@
 	drop if sa3iq4	==	9	|	sa3iq4	==	10	|	sa3iq4	==	11
 	***2630 deleted
 	
-	replace sa3iq6i 	= 	0 	if 	sa3iq6i	==	. 	& 	sa3iq3	==	2
-	***600 changes
-	replace sa3iq6a 	= 	0 	if 	sa3iq6a	==	. 	& 	sa3iq3	==	2
-	***600 changes
+	replace sa3iq6i 	= 	0 	if 	sa3iq6i	==	. 	& 	sa3iq3	> 0
+	***601 changes
+	replace sa3iq6a 	= 	0 	if 	sa3iq6a	==	. 	& 	sa3iq3	> 0
+	***601 changes
 	
 	* drop if missing both harvest quantities and harvest value
 	drop if 	sa3iq6a	==	. 	& 	sa3iq6i	==	.
-	***1 deleted
+	***0 deleted
 	
 	* replace missing value if quantity is not missing
 	replace			sa3iq6a = 0 if sa3iq6a == . & sa3iq6i != .
@@ -69,7 +69,7 @@
 	
 * replace missing quantity if value is not missing
 	replace			sa3iq6i = 0 if sa3iq6i == . & sa3iq6a != .
-	***no changes
+	***0 changes
 	
 	* check to see if there are missing observations for quantity and value
 	mdesc 			sa3iq6i sa3iq6a
@@ -102,11 +102,11 @@
 
 * summarize value of harvest
 	sum				vl_hrv, detail
-	*** median 23.81, mean 61.58, max 8334.43
+	*** median 66, mean 170, max 23,117
 
 * replace any +3 s.d. away from median as missing
 	replace			vl_hrv = . if vl_hrv > `r(p50)'+(3*`r(sd)')
-	*** replaced 122 values, max is now 571.50
+	*** replaced 122 values, max is now 1585
 	
 	* impute missing values
 	mi set 			wide 	// declare the data to be wide.
@@ -126,7 +126,7 @@
 	lab var			vl_hrv "Value of harvest (2015 USD), imputed"
 	drop			vl_hrv_1_
 	***imputed 122 observations out of 11566
-	*** mean from 49.5 to 50.1, max = 572
+	*** mean from 137 to 139, max = 1585
 	
 * **********************************************************************
 **#3 - generate maize harvest quantities
@@ -134,8 +134,18 @@
 	
 * converting harvest quantities to kgs
 	gen 			harv_kg = harvestq*sa3iq6_conv
-	mdesc 			harv_kg if harv_unit==1080
-	*** no missing maize
+	mdesc 			harv_kg if cropcode == 1080
+	*** 123 missing maize
+	
+* replace harv_kg as zero if there was no harvest
+	replace			harv_kg = 0 if sa3iq3 == 2
+	
+* three missing conversion factors
+	replace			harv_kg = harvestq*2.7072 if harv_kg == . ///
+						& cropcode == 1080 & sa3iq6_4 == 1
+	replace			harv_kg = harvestq*1.3482 if harv_kg == . ///
+						& cropcode == 1080 & sa3iq6_4 == 0
+	*** 3 changes made	
 	
 * check to see if outliers can be dealt with
 	by harv_unit	, sort: sum harv_kg if 	cropcode == 1080
@@ -151,7 +161,7 @@
 						
 * summarize value of harvest
 	sum				mz_hrv, detail
-	*** median 200, mean 612.52, max 20000
+	*** median 200, mean 584, max 20,000
 
 * replace any +3 s.d. away from median as missing
 	replace			mz_hrv = . if mz_hrv > `r(p50)' + (3*`r(sd)')
@@ -175,7 +185,7 @@
 	replace			mz_hrv = mz_hrv_1_  if cropcode == 1080
 	lab var			mz_hrv "Quantity of maize harvested (kg)"
 	drop			mz_hrv_1_
-	*** imputed 184 values out of 2665 total observations
+	*** imputed 61 values out of 2665 total observations
 	mdesc 			mz_hrv if harv_unit==1080
 		*** no missing maize observations
 

@@ -154,7 +154,7 @@
 	sum 			plot_size_hec_SR, detail
 	*** GPS tending to be smaller than self-reported - and more realistic
 
-	* need to get rid of a couple outliers
+* need to get rid of a couple outliers
 	*twoway			(scatter plot_size_hec_GPS plot_size_hec_SR	if 	plot_size_hec_GPS < 0.009)
 	replace			plot_size_hec_SR = plot_size_hec_GPS if plot_size_hec_GPS < 0.009 ///
 						& plot_size_hec_SR > .1
