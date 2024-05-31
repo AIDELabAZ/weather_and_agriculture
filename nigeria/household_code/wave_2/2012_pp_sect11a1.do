@@ -1,14 +1,14 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: alj
-* Edited on: 23 May 2024
+* Edited on: 29 May 2024
 * Edited by: jdm
 * Stata v.18
 
 * does
 	* reads in Nigeria, WAVE 2 (2012-2013),POST PLANTING, AG SECT11A1
 	* determines primary and secondary crops, cleans plot size (hecatres)
-	* outputs clean data file ready for combination with wave 2 plot data
+	* outputs clean data file ready for combination with wave 2 hh data
 
 * assumes
 	* access to all raw data
@@ -32,6 +32,7 @@
 	cap log close
 	log 	using	"`logout'/wave_2_pp_sect11a1", append
 
+	
 * **********************************************************************
 * 1 - describing plot size - self-reported and GPS
 * **********************************************************************
@@ -118,8 +119,9 @@
 	count			if plot_size_hec_GPS == . 
 
 	count	 		if plot_size_hec_SR != . & plot_size_hec_GPS != .
-	*** 5125 observations have both self reported and GPS plot size in hectares
-	*** 768 observations lack either the plot_size_hec_GPS or the plot_size_hec_SR
+	*** 5155 observations have both self reported and GPS plot size in hectares
+	count 			if plot_size_hec_SR == . & plot_size_hec_GPS == .
+	*** 30 observations lack either the plot_size_hec_GPS or the plot_size_hec_SR
 
 	pwcorr 			plot_size_hec_SR plot_size_hec_GPS
 	*** relatively low correlation = 0.1278 between selfreported plot size and GPS
@@ -128,7 +130,7 @@
 	sum 			plot_size_hec_GPS, detail
 	pwcorr 			plot_size_hec_SR plot_size_hec_GPS if ///
 						inrange(plot_size_hec_GPS,`r(p50)'-(3*`r(sd)'),`r(p50)'+(3*`r(sd)'))
-	*** correlation of points with +/- 3sd is lower 0.0708
+	*** correlation of points with +/- 3sd is lower 0.0702
 
 * check correlation within +/- 3sd of mean (GPS and SR)
 	sum 			plot_size_hec_GPS, detail
@@ -136,7 +138,7 @@
 	pwcorr 			plot_size_hec_SR plot_size_hec_GPS if ///
 						inrange(plot_size_hec_GPS,`r(p50)'-(3*`r(sd)'),`r(p50)'+(3*`r(sd)')) & ///
 						inrange(plot_size_hec_SR,`r(p50)'-(3*`r(sd)'),`r(p50)'+(3*`r(sd)'))
-	*** correlation between self reported and GPS for values within +/- 3 sd's of GPS and SR is still lower 0.0697
+	*** correlation between self reported and GPS for values within +/- 3 sd's of GPS and SR is still lower 0.0701
 
 * examine larger plot sizes
 	tab				plot_size_hec_GPS 	if 	plot_size_hec_GPS > 2
@@ -152,57 +154,42 @@
 						plot_size_hec_GPS > 3 & !missing(plot_size_hec_GPS)
 	*** correlation at higher plot sizes is higher - but still lower than overall: 0.1157
 
-* examine smaller plot sizes
-	*tab				plot_size_hec_GPS 	if 	plot_size_hec_GPS < 0.1
-	*** 1,344  below 0.1
-	*tab				plot_size_hec_GPS 	if 	plot_size_hec_GPS < 0.05
-	*** 714 below 0.5
-	tab				plot_size_hec_GPS 	if 	plot_size_hec_GPS < 0.005
-	*** only 13 below 0.005
-
-* check correlation in the top and bottom 1% of sizes
-	pwcorr 			plot_size_hec_SR plot_size_hec_GPS if ///
-						inrange(plot_size_hec_GPS,0.009,4)
-	*** correlation is .06
-	
 * compare GPS and SR
 * examine GPS 
-	sum 			plot_size_hec_GPS
-	sum 			plot_size_hec_SR
+	sum 			plot_size_hec_GPS, detail
+	sum 			plot_size_hec_SR, detail
 	*** GPS tending to be smaller than self-reported - and more realistic
-	*** as in Y1, will not include SR in imputation - only will include GPS 
-	
+
 	* need to get rid of a couple outliers
+	*twoway			(scatter plot_size_hec_GPS plot_size_hec_SR	if plot_size_hec_GPS < 0.009)
 	replace			plot_size_hec_SR = plot_size_hec_GPS if plot_size_hec_GPS < 0.009 ///
 						& plot_size_hec_SR > .1
-	*** three changes made
-	
-	*twoway			(scatter plot_size_hec_GPS plot_size_hec_SR	if 	plot_size_hec_GPS < 0.009)
+	*** 3 changes made
 	
 	* need to get rid of a couple outliers
-	replace			plot_size_hec_SR = plot_size_hec_GPS if plot_size_hec_SR > 200
-	*** 32 changes made
-	
-	*twoway			(scatter plot_size_hec_GPS plot_size_hec_SR	if 	plot_size_hec_GPS > 4 ///
+	*twoway			(scatter plot_size_hec_GPS plot_size_hec_SR	if plot_size_hec_GPS > 5 ///
 						& plot_size_hec_SR < 20)
-
-* replace top and bottom 1% as missing
-	gen				plotsize = plot_size_hec_GPS if plot_size_hec_GPS > 0.009 ///
-						& plot_size_hec_GPS < 3
+	replace			plot_size_hec_GPS = . if plot_size_hec_GPS > 20 & plot_size_hec_SR < 20
+	replace			plot_size_hec_SR = plot_size_hec_GPS if plot_size_hec_SR > 200
+	*** 2 changes made
+	
+* replace bottom 5%  and top 1% as missing
+	gen				plotsize = plot_size_hec_GPS if plot_size_hec_GPS > 0.023 ///
+						& plot_size_hec_GPS < 4.1
 	replace			plotsize = plot_size_hec_GPS if plot_size_hec_SR > 3 ///
 						& plot_size_hec_GPS >= 3
-	*** 886 missing then 37 real changes made
+	*** 1,041 missing then 25 real changes made	
 	
 	list 			plot_size_hec_GPS plot_size_hec_SR plotsize 	if ///
 						plot_size_hec_GPS > 3 & !missing(plot_size_hec_GPS), sep(0)
 
-* impute missing plot sizes using predictive mean matching
+* impute missing plot sizes using predictive mean matching - can't use GPS size
 	mi set 			wide // declare the data to be wide.
 	mi xtset		, clear // this is a precautinary step to clear any existing xtset
 	mi register 	imputed plotsize // identify plotsize_GPS as the variable being imputed
 	sort			hhid plotid, stable // sort to ensure reproducability of results
-	mi impute 		pmm plotsize plot_size_hec_SR i.state, add(1) rseed(245780) ///
-						noisily dots force knn(5) bootstrap
+	mi impute 		pmm plotsize i.state, ///
+						add(1) rseed(245780) noisily dots force knn(10) bootstrap
 	mi unset
 
 * look at the data
@@ -210,7 +197,7 @@
 	tabstat 		plot_size_hec_GPS plot_size_hec_SR plotsize_1_, ///
 						by(mi_miss) statistics(n mean min max) columns(statistics) ///
 						longstub format(%9.3g)
-	*** imputed values change VERY little - mean from 0.51 to 0.454
+	*** imputed values change VERY little - mean from 0.51 to 0.469
 	*** reasonable changes
 	
 * **********************************************************************
