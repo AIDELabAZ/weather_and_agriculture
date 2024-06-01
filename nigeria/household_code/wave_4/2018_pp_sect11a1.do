@@ -1,8 +1,8 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: jet
-* Edited on: 29 Feb 2024
-* Edited by: alj
+* Edited on: 31 May 2024
+* Edited by: jdm
 * Stata v.18
 
 * does
@@ -13,10 +13,10 @@
 
 * assumes
 	* access to the raw data
-	* land-conversion.dta conversion file
 
 * TO DO:
-	* custom save, log
+	* complete
+	
 	
 ***********************************************************************
 **# 0 - setup
@@ -30,7 +30,7 @@
 
 * open log	
 	cap log close
-*	log using "$logout/2018_ph_sect11a1"
+	log using "$logout/2018_ph_sect11a1", append
 
 ***********************************************************************
 **# 1 - find unique identifier and determine plot size
@@ -58,10 +58,8 @@
 
 * merge in conversion file
 	merge 			m:1 	zone using 	"$cnvrt/land-conversion"
-	
 	***all observations matched
 
-	
 	keep 			if 		_merge == 3
 	drop 			_merge
 
@@ -83,27 +81,38 @@
 	*hec
 	replace 		plot_size_hec = plot_size_SR			if plot_unit == 6
 
-	rename 			plot_size_hec plot_size_hec_SR
-	lab var			plot_size_hec_SR 	"SR plot size converted to hectares"
-
-	count 			if plot_size_hec_SR !=.
-	count			if plot_size_hec_SR == . 
+	count 			if plot_size_hec !=.
+	count			if plot_size_hec == . 
 	*** 4 observations do not have plot_size_hec_SR
 	*** 11072 observations have plot_size_hec_SR
+	
+	rename 			plot_size_hec plot_size_hec_SR
+	lab var			plot_size_hec_SR 	"SR plot size converted to hectares"
 
 	* convert GPS  to hectares
 	count if plot_size_GPS == .
 	*** 4,202 missing GPS
+	
 	gen 			plot_size_2 = .
 	replace 		plot_size_2 = plot_size_GPS*sqmcon
 	rename 			plot_size_2 plot_size_hec_GPS
 	lab	var			plot_size_hec_GPS "GPS measured area of plot in hectares"
-
-	count if plot_size_hec_GPS != .
-	*** these 4202 observations have no value of GPS given so cannot be converted 
+	*** 4,202 observations do not have plot_size_hec_GPS
+	*** these observations have no value of GPS given so cannot be converted 
 	*** will impute missing
-	count if plot_size_hec_GPS == .
-	*** 6,874 observations for plot size in hectares GPS 
+	
+* replace missing self reported with GPS
+	replace			plot_size_hec_SR = plot_size_hec_GPS if plot_size_hec_SR == .
+	*** 10 changes made
+	
+	count 			if plot_size_hec_GPS !=.
+	count			if plot_size_hec_GPS == . 
+	*** 6,874 observations have plot_size_hec_GPS
+
+	count	 		if plot_size_hec_SR != . & plot_size_hec_GPS != .
+	*** 6,874 observations have both self reported and GPS plot size in hectares
+	count 			if plot_size_hec_SR == . & plot_size_hec_GPS == .
+	*** 4 observations lack either the plot_size_hec_GPS or the plot_size_hec_SR
 	
 	pwcorr 			plot_size_hec_SR plot_size_hec_GPS
 	*** very low correlation = 0.017 between selfreported plot size and GPS
@@ -112,7 +121,7 @@
 	sum 			plot_size_hec_GPS, detail
 	pwcorr 			plot_size_hec_SR plot_size_hec_GPS if ///
 						inrange(plot_size_hec_GPS,`r(p50)'-(3*`r(sd)'),`r(p50)'+(3*`r(sd)'))
-	*** correlation of points with +/- 3sd is higher 0.0341
+	*** correlation of points with +/- 3sd is higher 0.0313
 
 * check correlation within +/- 3sd of mean (GPS and SR)
 	sum 			plot_size_hec_GPS, detail
@@ -130,71 +139,66 @@
 	*** only one is greater than 20 
 
 	* correlation at higher plot sizes
-	list 			plot_size_hec_GPS plot_size_hec_SR 	if ///
+*	list 			plot_size_hec_GPS plot_size_hec_SR 	if ///
 						plot_size_hec_GPS > 3 & !missing(plot_size_hec_GPS), sep(0)
 	pwcorr 			plot_size_hec_GPS plot_size_hec_SR 	if 	///
 						plot_size_hec_GPS > 3 & !missing(plot_size_hec_GPS)
 	*** much lower correlation at higher plot sizes than correlation among all values - 0.0647
 
-* examine smaller plot sizes
-	tab				plot_size_hec_GPS 	if 	plot_size_hec_GPS < 0.1
-	*** 1,801  below 0.1
-	tab				plot_size_hec_GPS 	if 	plot_size_hec_GPS < 0.05
-	*** 980 below 0.5
-	tab				plot_size_hec_GPS 	if 	plot_size_hec_GPS < 0.005
-	*** 40 below 0.005
-	*** the smallest plot is 4 square meters, could feasibly be a very small vegetable patch
-	*** all small values are reasonable - give GPS sensing abilities 
 
-*correlation at lower plot sizes
-	list 			plot_size_hec_GPS plot_size_hec_SR 	if 	///
-						plot_size_hec_GPS < 0.01, sep(0)
-	pwcorr 			plot_size_hec_GPS plot_size_hec_SR 	if ///
-						plot_size_hec_GPS < 0.01
-	*** higher correlation between GPS and SR plotsize, correlation = 0.1086
-	*** still comparatively low to wave 3, and relationship changed sign
-
-	* compare GPS and SR
+* compare GPS and SR
 * examine GPS 
 	sum 			plot_size_hec_GPS
 	sum 			plot_size_hec_SR
 	*** GPS tending to be smaller than self-reported - and more realistic
 	*** as in wave 3, will not include SR in imputation - only will include GPS 
+* need to get rid of a couple outliers
+	*twoway			(scatter plot_size_hec_GPS plot_size_hec_SR	if 	plot_size_hec_GPS < 0.009)
+	replace			plot_size_hec_SR = plot_size_hec_GPS if plot_size_hec_GPS < 0.009 ///
+						& plot_size_hec_SR > .1
+	*** 14 changes made
 	
-	*hist	 		plot_size_hec_GPS 	if 	plot_size_hec_GPS < 0.3
-	*hist	 		plot_size_hec_GPS 	if 	plot_size_hec_GPS < 0.2
-	*** distributions are very close to the shape of wave 3 distributions
-	*** roughly uniform distribution until 0.5 to 0.3 hectares
-	*** distribution looks okay! 
+	* need to get rid of a couple outliers
+	*twoway			(scatter plot_size_hec_GPS plot_size_hec_SR	if plot_size_hec_GPS > 5 ///
+						& plot_size_hec_SR < 20)
+	replace			plot_size_hec_GPS = . if plot_size_hec_GPS > 20 & plot_size_hec_SR < 20
+	replace			plot_size_hec_SR = plot_size_hec_GPS if plot_size_hec_SR > 200
+	*** 7 changes made
+	
+* replace bottom 5%  and top 1% as missing
+	gen				plotsize = plot_size_hec_GPS if plot_size_hec_GPS > 0.022 ///
+						& plot_size_hec_GPS < 4
+	replace			plotsize = plot_size_hec_GPS if plot_size_hec_SR > 3 ///
+						& plot_size_hec_GPS >= 3
+	*** 4,628 missing then 26 real changes made
+	
+	list 			plot_size_hec_GPS plot_size_hec_SR plotsize 	if ///
+						plot_size_hec_GPS > 3 & !missing(plot_size_hec_GPS), sep(0)
 
-	* impute missing plot sizes using predictive mean matching
+* impute missing plot sizes using predictive mean matching - like wv1, 2 can't use gps in impute
 	mi set 			wide // declare the data to be wide.
 	mi xtset		, clear // this is a precautinary step to clear any existing xtset
-	mi register 	imputed plot_size_hec_GPS // identify plotsize_GPS as the variable being imputed
+	mi register 	imputed plotsize // identify plotsize_GPS as the variable being imputed
 	sort			hhid plotid, stable // sort to ensure reproducability of results
-	mi impute 		pmm plot_size_hec_GPS i.state, add(1) rseed(245780) noisily dots ///
-						force knn(5) bootstrap
+	mi impute 		pmm plotsize i.state, ///
+						add(1) rseed(245780) noisily dots force knn(5) bootstrap
 	mi unset
 
-* look at the data 
-* this piece of code gives three values to consider: SR, GPS before 	conversion, and GPS after conversion (indicated with _1_) 
+* look at the data
 	tab				mi_miss
-	tabstat 		plot_size_hec_GPS plot_size_hec_SR plot_size_hec_GPS_1_, ///
+	tabstat 		plot_size_hec_GPS plot_size_hec_SR plotsize_1_, ///
 						by(mi_miss) statistics(n mean min max) columns(statistics) ///
 						longstub format(%9.3g)
-						
-* drop if anything else is still missing
-	list			plot_size_hec_GPS plot_size_hec_SR 	if 	///
-						missing(plot_size_hec_GPS_1_), sep(0)
-	drop 			if missing(plot_size_hec_GPS_1_)
-	*** 0 observations deleted
-	
-	rename			plot_size_hec_GPS_1_ plotsize
+	*** imputed values change VERY little - mean from 0.527 to 0.471
+	*** reasonable changes
+
+* **********************************************************************
+* 3 - end matter, clean up to save
+* **********************************************************************
+
+	replace			plotsize = plotsize_1_ 
 	lab	var			plotsize	"plot size (ha)"
-	
-************************************************************************
-**# 3 - end matter, clean up to save
-************************************************************************
+
 
 	keep 			hhid zone state lga hhid ea plotid plotsize
 
@@ -209,7 +213,7 @@
 
 
 * save file
-	save 			"ph_sect11a1.dta", replace 
+	save 			"$export/pp_sect11a1.dta", replace 
 
 * close the log
 	log	close

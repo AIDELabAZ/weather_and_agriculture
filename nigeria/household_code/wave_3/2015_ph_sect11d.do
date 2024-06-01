@@ -1,8 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
-* Created by: alj
-* Edited by: ek
-* Stata v.16
+* Created by: ek
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* reads in Nigeria, WAVE 3 (2015-2016), POST HARVEST, NIGERIA AG SECT11D - Fertilizer
@@ -10,12 +11,13 @@
 	* outputs clean data file ready for combination with wave 2 plot data
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* mdesc.ado
 	
 * TO DO:
 	* done
 
+	
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
@@ -27,8 +29,9 @@
 
 * open log	
 	cap log close
-	*log using "`logout'/ph_sect11d", append
+	log using "`logout'/ph_sect11d", append
 
+	
 * **********************************************************************
 * 1 - determine fertilizer and conversion to kgs
 * **********************************************************************
@@ -151,8 +154,7 @@ rename s11dq1 fert_any
 	summarize 
 	
 * save file
-		customsave , idvar(hhid) filename("ph_sect11d.dta") ///
-			path("`export'/`folder'") dofile(ph_sect11d) user($user)
+	save 			"`export'/ph_sect11d.dta", replace
 
 * close the log
 	log	close

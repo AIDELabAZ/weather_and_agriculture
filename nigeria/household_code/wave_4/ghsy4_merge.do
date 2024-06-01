@@ -1,8 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: jdm
-* Edited by : alj, ek
-* Stata v.16
+* Edited on: 29 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* merges individual cleaned plot datasets together
@@ -12,7 +13,6 @@
 
 * assumes
 	* previously cleaned household datasets
-	* customsave.ado
 	* double counting assumed in labor - only use harvest labor 
 
 * TO DO:
@@ -22,15 +22,16 @@
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
+	
+* define paths	
+	global	root			"$data/household_data/nigeria/wave_4/refined"
+	global 	export  		"$data/household_data/nigeria/wave_4/refined"
+	global 	logout  		"$data/household_data/nigeria/logs"
 
-* define paths
-	loc		root	=	"$data/household_data/nigeria/wave_3/refined"
-	loc 	export	=	"$data/household_data/nigeria/wave_3/refined"
-	loc 	logout	=	"$data/household_data/nigeria/logs"
+* open log	
+	cap log close
+	log using "$logout/ghsy4_merge", append
 
-* open log
-	cap 	log 	close
-	log 	using 	"`logout'/ghsy3_merge_wave_3", append
 
 	
 * **********************************************************************
@@ -38,21 +39,22 @@
 * **********************************************************************
 
 * start by loading harvest quantity and value, since this is our limiting factor
-	use 			"`root'/ph_secta3i.dta", clear
+	use 			"$root/ph_secta3i.dta", clear
 
 	isid			cropplot_id
 	
 * merge in plot size data
-	merge 			m:1 hhid plotid using "`root'/ph_sect11a1", generate(_11a1)
-	*** 80 are missing in master, 10,414 matched
-	*** most unmerged (457) are from using, meaning we lack production data
+	merge 			m:1 hhid plotid using "$root/pp_sect11a1", generate(_11a1)
+	*** 0 are missing in master, 10,414 matched
+	*** all unmerged (3953) are from using, meaning we lack production data
 	*** per Malawi (rs_plot) we drop all unmerged observations
 
 	drop			if _11a1 != 3
 	
 * merging in irrigation data
-	merge			m:1 hhid plotid using "`root'/pp_sect11b1", generate(_11b1)
-	*** none are missing in master, 10414 matched 
+	merge			m:1 hhid plotid using "$root/pp_sect11b1", generate(_11b1)
+	*** none are missing in master, 10414 matched
+	*** 3953 missing from using
 	*** we assume these are plots without irrigation
 	
 	replace			irr_any = 2 if irr_any == . & _11b1 == 1
@@ -61,39 +63,41 @@
 	drop			if _11b1 == 2
 	
 * merging in planting labor data
-	merge		m:1 hhid plotid using "`root'/pp_sect11c1", generate(_11c1)
+	merge		m:1 hhid plotid using "$root/pp_sect11c1", generate(_11c1)
 	*** 0 are missing in master, 10414 matched
+	*** 1234 missing from using
 	
 	drop			if _11c1 == 2
 	*** not going to actually use planting labor in analysis - will omit
 
-* merging in pesticide and herbicide use
-	merge		m:1 hhid plotid using "`root'/ph_sect11c2", generate(_11c2)
-	*** 1 missing in master, 10413 
+* merging in pesticide, herbicide, fertilizer use
+	merge		m:1 hhid plotid using "$root/ph_sect11c2", generate(_11c2)
+	*** 0 missing in master, 11566 mathced
+	*** 1170 missing from using
 	*** we assume these are plots without pest or herb
 
 	replace			pest_any = 2 if pest_any == . & _11c2 == 1
 	replace			herb_any = 2 if herb_any == . & _11c2 == 1
-	*** 1 change made for each 
+
+	*** 0 changes made for each 
 	
 	drop			if _11c2 == 2
 
-* merging in fertilizer use
-	merge		m:1 hhid plotid using "`root'/ph_sect11d", generate(_11d)
-	*** 2 missing from master, 10412 matched 
-	*** we will impute the missing values later
-	
-	drop			if _11d == 2
-
 * merging in harvest labor data
-	merge		m:1 hhid plotid using "`root'/ph_secta2", generate(_a2)
-	*** 1 missing from master, 10413 matched
+	merge		m:1 hhid plotid using "$root/ph_secta2", generate(_a2)
+	*** 207 missing from master 998 from using, 11359 matched
 	*** we will impute the missing values later
 	*** only going to include harvest labor in analysis - will include this and rename generally
 	*** can revisit this later
 
 	drop			if _a2 == 2
 
+* merging in households data
+	merge		m:1 hhid using "$root/pp_secta", generate(_a)
+	*** 0 missing from master, 2,026 from using, 11,566 matched
+	
+	drop			if _a == 2
+	
 * drop observations missing values (not in continuous)
 	drop			if plotsize == .
 	drop			if irr_any == .
@@ -101,7 +105,7 @@
 	drop			if herb_any == .
 	*** no observations dropped
 
-	drop			_11a1 _11b1 _11c1 _11c2 _11d _a2
+	drop			_11a1 _11b1 _11c1 _11c2 _a2 _a
 	
 	
 * **********************************************************************
@@ -131,7 +135,8 @@
 						mz_hrv mz_lnd mz_lab mz_frt ///
 			 (max)	pest_any herb_any irr_any  ///
 						mz_pst mz_hrb mz_irr mz_damaged, ///
-						by(hhid plotid plot_id zone state lga sector ea)
+						by(hhid plotid plot_id zone state lga sector ///
+						ea wgt18 wgt_pnl old_new track)
 
 * replace non-maize harvest values as missing
 	tab				mz_damaged, missing
@@ -141,7 +146,7 @@
 	}	
 	replace			mz_hrv = . if mz_damaged == . & mz_hrv == 0		
 	drop 			mz_damaged
-	*** 3,637 changes made
+	*** 4458 changes made
 	
 	
 * **********************************************************************
@@ -166,7 +171,7 @@
 * construct production value per hectare
 	gen				vl_yld = vl_hrv / plotsize
 	assert 			!missing(vl_yld)
-	lab var			vl_yld "value of yield (2010USD/ha)"
+	lab var			vl_yld "value of yield (2015 USD/ha)"
 
 * impute value per hectare outliers 
 	sum				vl_yld
@@ -185,16 +190,16 @@
 						& !inlist(vl_yld,.,0) & !mi(maxrep)
 	tabstat			vl_yld vl_yldimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 2163 to 1385
-	*** reduces max from 20157 to 11769
+	*** reduces mean from 663 to 521
+	*** reduces max from 43844 to 20366
 	
 	drop			stddev median replacement maxrep minrep
-	lab var			vl_yldimp	"value of yield (2010USD/ha), imputed"
+	lab var			vl_yldimp	"value of yield (2015 USD/ha), imputed"
 
 * inferring imputed harvest value from imputed harvest value per hectare
 	generate		vl_hrvimp = vl_yldimp * plotsize 
-	lab var			vl_hrvimp "value of harvest (2010USD), imputed"
-	lab var			vl_hrv "value of harvest (2010USD)"
+	lab var			vl_hrvimp "value of harvest (2015 USD), imputed"
+	lab var			vl_hrv "value of harvest (2015 USD)"
 	
 	
 * **********************************************************************
@@ -223,8 +228,8 @@
 						& !inlist(labordays_ha,.,0) & !mi(maxrep)
 	tabstat 		labordays_ha labordays_haimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 453 to 310
-	*** reduces max from 4555 to 3100
+	*** reduces mean from 116 to 96
+	*** reduces max from 2475 to 1199
 
 	drop			stddev median replacement maxrep minrep
 	lab var			labordays_haimp	"farm labor use (days/ha), imputed"
@@ -260,8 +265,8 @@
 						& !inlist(fert_ha,.,0) & !mi(maxrep)
 	tabstat 		fert_ha fert_haimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 140 to 116
-	*** reduces max from 2128 to 1656
+	*** reduces mean from 177 to 145
+	*** reduces max from 12039 to 6087
 	
 	drop			stddev median replacement maxrep minrep
 	lab var			fert_haimp	"fertilizer use (kg/ha), imputed"
@@ -304,8 +309,8 @@
 					& !inlist(mz_yld,.,0) & !mi(maxrep)
 	tabstat 		mz_yld mz_yldimp, ///
 					f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 7675 to 5141
-	*** reduces max from 49971 to 30753
+	*** reduces mean from 1496 to 1255
+	*** reduces max from 34728 to 14632
 					
 	drop 			stddev median replacement maxrep minrep
 	lab var 		mz_yldimp "maize yield (kg/ha), imputed"
@@ -342,8 +347,8 @@
 						& !inlist(mz_lab_ha,.,0) & !mi(maxrep)
 	tabstat 		mz_lab_ha mz_lab_haimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 505 to 318
-	*** reduces max from 4382 to 2505
+	*** reduces mean from 123 to 100
+	*** reduces max from 2463 to 1156
 
 	drop			stddev median replacement maxrep minrep
 	lab var			mz_lab_haimp	"maize labor use (days/ha), imputed"
@@ -379,8 +384,8 @@
 						& !inlist(mz_frt_ha,.,0) & !mi(maxrep)
 	tabstat 		mz_frt_ha mz_frt_haimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 212 to 164
-	*** reduces max from 2656 to 2060
+	*** reduces mean from 230 to 191
+	*** reduces max from 12039 to 4360
 
 	drop			stddev median replacement maxrep minrep
 	lab var			mz_frt_haimp	"fertilizer use (kg/ha), imputed"
@@ -408,21 +413,21 @@
 
 * value of harvest
 	bysort			hhid (plot_id) : egen tf_hrv = sum(vl_hrvimp)
-	lab var			tf_hrv	"Total value of harvest (2010 USD)"
+	lab var			tf_hrv	"Total value of harvest (2015 USD)"
 	sum				tf_hrv, detail
 	
 * value of yield
 	generate		tf_yld = tf_hrv / tf_lnd
-	lab var			tf_yld	"value of yield (2010 USD/ha)"
+	lab var			tf_yld	"value of yield (2015 USD/ha)"
 	sum				tf_yld, detail
-	*** the max 174965 USD/ha is a bit high
+	*** the max 4631.99 USD/ha, seems low
 	
 * labor
 	bysort 			hhid (plot_id) : egen lab_tot = sum(labordaysimp)
 	generate		tf_lab = lab_tot / tf_lnd
 	lab var			tf_lab	"labor rate (days/ha)"
 	sum				tf_lab, detail
-	*** the max 53291 days per hectare is a bit high
+	*** the max 2702.43 days per hectare
 
 * fertilizer
 	bysort 			hhid (plot_id) : egen fert_tot = sum(fertimp)
@@ -510,13 +515,14 @@
 	
 * count before collapse
 	count
-	*** 5367 obs
+	*** 7124 obs
 	
-	collapse (max) tf_* cp_*, by(zone state lga sector ea hhid)
+	collapse (max) 	tf_* cp_*, by(zone state lga sector ea hhid ///
+						wgt18 wgt_pnl old_new track)
 
 * count after collapse 
 	count 
-	*** 5367 to 2783 observations 
+	*** drops to 3238 observations 
 	
 * return non-maize production to missing
 	replace			cp_yld = . if cp_yld == 0
@@ -536,8 +542,8 @@
 	
 * label variables
 	lab var			tf_lnd	"Total farmed area (ha)"
-	lab var			tf_hrv	"Total value of harvest (2010 USD)"
-	lab var			tf_yld	"value of yield (2010 USD/ha)"
+	lab var			tf_hrv	"Total value of harvest (2015 USD)"
+	lab var			tf_yld	"value of yield (2015 USD/ha)"
 	lab var			tf_lab	"labor rate (days/ha)"
 	lab var			tf_frt	"fertilizer rate (kg/ha)"
 	lab var			tf_pst	"Any plot has pesticide"
@@ -552,172 +558,30 @@
 	lab var			cp_hrb	"Any maize plot has herbicide"
 	lab var			cp_irr	"Any maize plot has irrigation"
 	
-* clean tf yield outliers
-	*scatter 		tf_yld tf_lnd
-	*scatter 		tf_yld tf_lnd if tf_lnd < 0.5
-	tab				tf_hrv if tf_yld > 6000
-	*scatter 		tf_lab tf_lnd
-	*** yield outliers appear unreasonable above 5000 yields
-	
-	* max is determined by comparing the right end tail distribution to wave 1 maxes using a kdensity peak.
-	sum 			tf_yld tf_lab tf_hrv, detail			
-	
-	*kdensity 		tf_hrv if tf_hrv > 5000
-	*** peak is at 5,250
-	*kdensity		tf_yld if tf_yld > 9000
-	*** peak is at 10,000
-	*kdensity 		tf_lab if tf_lab > 1400
-	*** peak is around 1,900
-	*kdensity		tf_lnd if tf_yld > 10000
-	
-	*kdensity tf_yld if tf_lnd < 0.1 & tf_yld < 10000
-	*** max tf_yld when lnd is 0.1
-	
-	*kdensity tf_lab if tf_lnd < 0.1 & tf_lab > 400
-	*kdensity tf_lab if tf_lnd < 0.1 & tf_lab < 10000
-
-	replace 		tf_lab = . if tf_lab > 500 & tf_lnd < 0.1
-	*** 131 changes
-	replace 		tf_lab = . if tf_lab > 1900
-	*** 47 changes
-	replace 		tf_hrv = . if tf_yld > 1000 & tf_lnd < 0.1
-	*** 173 changes
-
-	*scatter 		tf_yld tf_lnd 
-	
 * impute missing labor
-	sum 			tf_lab
+	sum 			tf_lab , detail			
+	*** max is 1128, reasonable
+	*** no imputation
 	
-	mi set 			wide 	// declare the data to be wide.
-	mi xtset		, clear 	// clear any xtset that may have had in place previously
-	mi register		imputed tf_lab // identify tf_lab as the variable being imputed
-	sort			hhid state zone, stable // sort to ensure reproducability of results
-	mi impute 		pmm tf_lab i.state tf_lnd, add(1) rseed(245780) ///
-						noisily dots force knn(5) bootstrap
-	mi 	unset	
-	
-	*** review imputation
-	sum				tf_lab_1_
-	replace 		tf_lab = tf_lab_1_
-	sum 			tf_lab, detail
-	*** mean 173.5, max 1880.39
-	drop			mi_miss tf_lab_1_
-	mdesc			tf_lab
-	*** none missing
-
 * impute tf_hrv outliers
-	*** impute in stages based on proximity of similar land values
-	*** first the harvests on land smaller than 0.1 then land smaller than 0.6
-	sum 			tf_hrv
-	
-	mi set 			wide 	// declare the data to be wide.
-	mi xtset		, clear 	// clear any xtset that may have had in place previously
-	mi register		imputed tf_hrv // identify tf_hrv as the variable being imputed
-	sort			hhid state zone, stable // sort to ensure reproducability of results
-	mi impute 		pmm tf_hrv i.state tf_lnd tf_lab if tf_lnd < 0.1, add(1) rseed(245780) ///
-						noisily dots force knn(5) bootstrap
-
-	sort			hhid state zone, stable // sort to ensure reproducability of results
-	mi impute 		pmm tf_hrv i.state tf_lnd tf_lab if tf_lnd < 0.6, add(1) rseed(245780) ///
-						noisily dots force knn(5) bootstrap
-	mi unset
-		
-	sort 			tf_hrv
-	replace 		tf_hrv = tf_hrv_2_	if 	tf_hrv == . & tf_hrv_1_ == .
-	replace 		tf_hrv = tf_hrv_1_	if 	tf_hrv == .
-	replace 		tf_yld = tf_hrv / tf_lnd
 	sum 			tf_yld, detail
-	*** mean 714.92, max 13591.4
-	mdesc 			tf_yld
-	*** 0 missing
-	drop 			mi_miss tf_hrv_1_ tf_hrv_2_
-	
+	*** max is 6275, also reasonable
+	*** no imputation
+					
 * impute cp_lab
 	sum 			cp_lab, detail
-	*scatter			cp_lnd cp_lab
-	*kdensity 		cp_lab if cp_lnd < 1 & cp_lab < 500
-	*** max is 50
-	
-	replace 		cp_lab = . if cp_lab > 200 & cp_lnd < 0.1
-	*** 224 changes
-	
-	mi set 			wide 	// declare the data to be wide.
-	mi xtset		, clear 	// clear any xtset that may have had in place previously
-	mi register		imputed cp_lab // identify cp_lab as the variable being imputed
-	sort			hhid state zone, stable // sort to ensure reproducability of results
-	mi impute 		pmm cp_lab i.state cp_lnd, add(1) rseed(245780) ///
-						noisily dots force knn(5) bootstrap
-	mi 	unset	
-	
-	*** review imputation
-	sum				cp_lab_1_
-	replace 		cp_lab = cp_lab_1_
-	sum 			cp_lab, detail
-	*** mean 225.78, max 1995.69
-	drop			mi_miss cp_lab_1_
-	mdesc			cp_lab if cp_lnd !=.
-	*** none missing
+	*** max is 1128, also reasonable
+	*** no imputation
 	
 * cp yield outliers
-	*scatter 		cp_yld cp_lnd
-	*scatter 		cp_yld cp_lnd if cp_lnd < 0.5
-	*** maize yield is higher on average than the total crop yield, mean is 5221.5
 	sum 			cp_yld, detail
-	*** mean 5221.55, std dev 31808.34, max is 720661
-	sum 			cp_hrv, detail
-	*** mean 894.53, std dev 1183.46, max 10466.78
-	sum 			cp_yld if cp_lnd < 0.5, detail
-	*kdensity 		cp_yld if cp_lnd < 0.5 & cp_yld <10000
-	*** max cp_yld is 1000
+	*** max is 11,032, also reasonable
+	*** no imputation
 	
-	* change outliers to missing
-	replace 		cp_hrv = . if cp_yld > 12000
-	*** 77 changes made
-	replace 		cp_yld = . if cp_yld > 12000
-	*** 77 changes made
-	replace 		cp_hrv = . if cp_lnd < 0.5 & cp_yld > 1000
-	*** 537 changes made
+* unlike in other waves, at this stage variables look reasonable
+* max of each is less than max of variable in other wave - EVEN AFTER - imputation
+* so we do not impute anything at this stage
 	
-	sum 			cp_lnd if cp_yld == ., detail
-	*** mean 0.0837, std dev 0.084, max 0.4
-	*scatter 		cp_yld cp_lnd 
-	
-* impute missing values (impute in stages to get imputation near similar land values)
-	sum 			cp_hrv
-	
-	mi set 			wide 	// declare the data to be wide.
-	mi xtset		, clear 	// clear any xtset that may have had in place previously
-	mi register		imputed cp_hrv // identify cp_hrv as the variable being imputed
-	sort			hhid state zone, stable // sort to ensure reproducability of results
-	mi impute 		pmm cp_hrv i.state cp_lnd if cp_lnd < 0.03, add(1) rseed(245780) ///
-						noisily dots force knn(5) bootstrap
-
-	sort			hhid state zone, stable // sort to ensure reproducability of results
-	mi impute 		pmm cp_hrv i.state cp_lnd if cp_lnd < 0.1, add(1) rseed(245780) ///
-						noisily dots force knn(5) bootstrap
-					
-	sort			hhid state zone, stable // sort to ensure reproducability of results
-	mi impute 		pmm cp_hrv i.state cp_lnd if cp_lnd < 0.6, add(1) rseed(245780) ///
-						noisily dots force knn(5) bootstrap
-	mi 				unset	
-
-	sort 			cp_hrv
-	replace 		cp_hrv = cp_hrv_3_ if cp_hrv == . & cp_hrv_2_ == . & cp_hrv_1_
-	replace 		cp_hrv = cp_hrv_2_ if cp_hrv == . & cp_hrv_1_ == .
-	replace 		cp_hrv = cp_hrv_1_ if cp_hrv == . 
-
-	replace 		cp_yld = cp_hrv / cp_lnd
-	sum 			cp_yld, detail
-	*** mean 1140.92, std. dev 1909.06, max 35323.22
-	*** still high but those outliers will be removed when we winsorize
-
-	mdesc			cp_yld cp_hrv if cp_lnd != .
-	*** none missing
-	
-	drop 			mi_miss cp_hrv_1_ cp_hrv_2_ cp_hrv_3_
-
-	sum				tf_* cp_*
-
 * **********************************************************************
 * 5 - end matter, clean up to save
 * **********************************************************************
@@ -726,15 +590,16 @@
 	isid			hhid
 
 * merge in geovars
-	merge			m:1 hhid using "`root'/NGA_geovars", force
+	merge			m:1 hhid using "$root/NGA_geovars", force
 	keep			if _merge == 3
 	drop			_merge
 	
 * generate year identifier
-	gen				year = 2015
+	gen				year = 2018
 	lab var			year "Year"
 		
 	order 			zone state lga sector ea hhid aez year /// 	
+					wgt18 wgt_pnl old_new track ///
 					tf_hrv tf_lnd tf_yld tf_lab tf_frt ///
 					tf_pst tf_hrb tf_irr cp_hrv cp_lnd cp_yld cp_lab ///
 					cp_frt cp_pst cp_hrb cp_irr
@@ -743,8 +608,7 @@
 	summarize 
 	
 * saving production dataset
-	customsave , idvar(hhid) filename(hhfinal_ghsy3.dta) path("`export'") ///
-			dofile(ghsy3_merge) user($user) 
+	save 			"$export/hhfinal_ghsy4.dta", replace
 
 * close the log
 	log	close

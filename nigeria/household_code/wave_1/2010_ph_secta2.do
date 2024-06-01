@@ -1,8 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: alj
-* Edited by: ek
-* Stata v.16
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* reads in Nigeria wave 1 (2010-2011), POST HARVEST, NGA SECTA2 AG - Labor 
@@ -10,12 +11,13 @@
 	* outputs clean data file ready for combination with wave 1 plot data
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* mdesc.ado
 	
 * TO DO:
 	* complete
 
+	
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
@@ -31,6 +33,7 @@
 * open log	
 	cap log close
 	log using "`logout'/ph_secta2", append
+		
 		
 * **********************************************************************
 * 1 - determine labor allocation 
@@ -150,8 +153,7 @@
 	summarize 
 
 * save file
-		customsave , idvar(hhid) filename("ph_secta2.dta") ///
-			path("`export'/`folder'") dofile(ph_secta2) user($user)
+	save 			"`export'/ph_secta2.dta", replace
 			
 * close the log
 	log	close

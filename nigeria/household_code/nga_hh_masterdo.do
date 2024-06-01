@@ -1,14 +1,15 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: jdm
-* Stata v.16
+* Edited on: 29 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* Executes all wave specific Nigeria hh .do files
 	* outputs finished houshold data set ready to merge with weather
 
 * assumes
-	* customsave.ado 
 	* subsidiary, wave-specific .do files
 
 * TO DO:
@@ -35,7 +36,7 @@
 	
 * **********************************************************************
 * 2 - run individual HH cleaning .do files
-* **********************************************************************
+************************************************************************
 
 * loops through three waves of nga hh code
 
@@ -57,7 +58,6 @@
 	}		
 }
 
-
 * **********************************************************************
 * 3 - run wave specific .do files to merge hh data together
 * **********************************************************************
@@ -66,8 +66,9 @@
 	do 			"`dofile'/wave_1/ghsy1_merge.do"			//	merges wv 1 hh datasets
 	do 			"`dofile'/wave_2/ghsy2_merge.do"			//	merges wv 2 hh datasets
 	do 			"`dofile'/wave_3/ghsy3_merge.do"			//	merges wv 3 hh datasets
+	do 			"`dofile'/wave_4/ghsy4_merge.do"			//	merges wv 3 hh datasets
 
-	
+
 * **********************************************************************
 * 4 - run wave specific .do files to merge with weather
 * **********************************************************************
@@ -76,6 +77,7 @@
 	do 			"`dofile'/wave_1/ghsy1_build.do"			//	merges NPSY1 to weather
 	do 			"`dofile'/wave_2/ghsy2_build.do"			//	merges NPSY2 to weather
 	do 			"`dofile'/wave_3/ghsy3_build.do"			//	merges NPSY3 to weather
+	do 			"`dofile'/wave_4/ghsy4_build.do"			//	merges NPSY3 to weather
 
 	
 * **********************************************************************

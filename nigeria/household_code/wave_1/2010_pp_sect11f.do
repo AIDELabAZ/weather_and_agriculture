@@ -1,8 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: alj
-* Edited by: ek
-* Stata v.16
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* reads in Nigeria, WAVE 1 (2010-2011), POST PLANTING
@@ -10,8 +11,12 @@
 	* planting dates look ok, so we don't need anything from this file
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* mdesc.ado
+
+* TO DO:
+	* complete 
+	
 
 * **********************************************************************
 * 0 - setup
@@ -29,6 +34,7 @@
 	cap log close
 	log using "`logout'/pp_sect11f", append
 
+	
 * **********************************************************************
 * 1 - general clean up, renaming, etc. 
 * **********************************************************************
@@ -65,8 +71,7 @@
 * **********************************************************************
 
 * save file
-		customsave , idvar(hhid) filename("pp_sect11f.dta") ///
-			path("`export'/`folder'") dofile(pp_sect11f) user($user)
+	save 		"`export'/pp_sect11f.dta", replace
 
 * close the log
 	log	close

@@ -1,39 +1,43 @@
 * Project: WB Weather
-* Created on: May 2020
-* Created by: alj
-* Edited by: ek
+* Created on: May 2024
+* Created by: reece
+* Edited on: 24 May 2024
+* Edited by: reece
 * Stata v.16
 
 * does
-	* reads in Nigeria, WAVE 3 (2015-2016) POST PLANTING, NIGERIA AG SECT11B1
+	* reads in Nigeria, WAVE 4 (2018-2019) POST PLANTING, NIGERIA AG SECT11B1
 	* determines irrigation and plot use
 	* outputs clean data file ready for combination with wave 3 hh data
 
 * assumes
 	* customsave.ado
 	
+* TO DO:
+	* everything
+	
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
 	
 * define paths	
-	loc root = "$data/household_data/nigeria/wave_3/raw"
-	loc export = "$data/household_data/nigeria/wave_3/refined"
-	loc logout = "$data/household_data/nigeria/logs"
+	global root = "$data/household_data/nigeria/wave_4/raw"
+	global export = "$data/household_data/nigeria/wave_4/refined"
+	global logout = "$data/household_data/nigeria/logs"
 
 * close log (in case still open)
 	*log close
 	
 * open log	
 	cap log close
-	log using "`logout'/pp_sect11b1", append
+	log using "$logout/2018_pp_sect11b1", append
 
 * **********************************************************************
 * 1 - determine irrigation and plot use
 * **********************************************************************
 		
 * import the first relevant data file
-		use "`root'/sect11b1_plantingw3", clear 	
+		use "$root/sect11b1_plantingw4", clear 	
 
 describe
 sort hhid plotid
@@ -45,7 +49,7 @@ rename s11b1q39 irr_any
 
 * check to see if values are missing
 	mdesc			irr_any
-	***99 missing
+	***2010 missing
 	
 	
 * convert missing values to "no"
@@ -70,8 +74,7 @@ rename s11b1q39 irr_any
 
 
 * save file
-		customsave , idvar(hhid) filename("pp_sect11b1.dta") ///
-			path("`export'/`folder'") dofile(pp_sect11b1) user($user)
+	save 			"$export/pp_sect11b1.dta", replace 
 
 * close the log
 	log	close
