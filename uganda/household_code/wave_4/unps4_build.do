@@ -187,7 +187,7 @@
 }
 
 * save file
-	isid				hhid
+	isid				hh
 	
 	qui: compress
 	
@@ -348,7 +348,7 @@
 }
 
 * save file
-	isid				hhid
+	isid				hh
 	
 	qui: compress
 	
@@ -377,10 +377,6 @@
 	foreach v of varlist `zgdd'{
 	    replace		`v' = 0 if `v' == .
 	}		
-	
-	rename			hhid hh4
-	tostring		hhid_pnl, gen(hhid) force format(%20.0g)
-	replace			hhid = "" if hhid == "."
 	
 	qui: compress
 	summarize 

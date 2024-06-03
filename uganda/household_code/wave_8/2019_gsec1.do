@@ -40,6 +40,7 @@
 	isid 			hhid
 	
 * rename variables
+	rename			hhidold hh
 	rename 			s1aq02a county
 	rename 			s1aq03a subcounty
 	rename 			s1aq04a parish
@@ -67,8 +68,8 @@
 **# 2 - end matter, clean up to save
 ***********************************************************************
 
-	keep 			hhid region district county subcounty parish ///
-						wgt19 subreg hhidold
+	keep 			hhid hh region district county subcounty parish ///
+						wgt19 subreg
 	compress
 	describe
 

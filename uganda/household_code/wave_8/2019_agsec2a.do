@@ -181,7 +181,7 @@
 **#4 - end matter, clean up to save
 * **********************************************************************
 	
-	keep 			hhid prcid region district county subcounty ///
+	keep 			hhid hh prcid region district county subcounty ///
 					parish wgt19 plotsize irr_any
 
 	compress

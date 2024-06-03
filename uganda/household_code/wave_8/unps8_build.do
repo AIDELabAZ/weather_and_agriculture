@@ -377,6 +377,8 @@
 	    replace		`v' = 0 if `v' == .
 	}		
 	
+	rename			hh hh_7_8
+	
 	qui: compress
 	summarize 
 	

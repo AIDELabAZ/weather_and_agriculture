@@ -487,15 +487,35 @@
 * verify values are accurate
 	sum				tf_* cp_*
 
+* generate new hhid to match with previous rounds
+	isid			hh
+	isid			hhid
 	
+	drop			hhid
+	format 			%17.0g hhid_pnl
+	tostring		hhid_pnl, gen(hhid) format(%17.0g)
+	*** should be 860 with missing values
+	
+* replace them with current wave hhid
+	replace			hhid = "" if hhid == "."
+	drop 			hhid_pnl
+	*** replaced 860 missing observations
+	
+* create future panel ID variable
+	gen				HHID = substr(hh, 1, 6) + substr(hh, 11, 2)
+	
+
 ************************************************************************
 **# 8 - end matter, clean up to save
 ************************************************************************
 	
 * verify unique household id
-	isid			hhid
+	isid			hh
 
 * label variables
+	lab var			hh "Unique ID for wave 4"
+	lab var			hhid "Unique previous panel ID"
+	lab var			HHID "Unique future panel ID"
 	lab var			tf_lnd	"Total farmed area (ha)"
 	lab var			tf_hrv	"Total value of harvest (2015 USD)"
 	lab var			tf_yld	"value of yield (2015 USD/ha)"
@@ -519,8 +539,6 @@
 	drop			if _merge == 2
 	drop			_merge
 	
-	tostring		hhid, replace
-	
 * replace missing values
 	replace			season = 1 if region == 3
 	replace			season = 0 if season == .	
@@ -532,7 +550,7 @@
 	gen				year = 2013
 	lab var			year "Year"
 			
-	order 			region district subcounty parish hhid hh hhid_pnl wgt13 /// 	
+	order 			region district subcounty parish hhid hh HHID wgt13 /// 	
 					year season tf_hrv tf_lnd tf_yld tf_lab tf_frt ///
 					tf_pst tf_hrb tf_irr cp_hrv cp_lnd cp_yld cp_lab ///
 					cp_frt cp_pst cp_hrb cp_irr 

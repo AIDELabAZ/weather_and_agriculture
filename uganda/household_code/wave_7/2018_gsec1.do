@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: themacfreezie
-* Edited on: 24 May 24
+* Edited on: 3 June 24
 * Edited by: jdm
 * Stata v.18
 
@@ -13,7 +13,8 @@
 	* mdesc.ado
 
 * TO DO:
-	* done
+	* currently written just to allow me to merge waves 7 and 8 together
+	* needs to be adapted for use in cleaning wave 7
 
 	
 * **********************************************************************
@@ -39,7 +40,8 @@
 
 * rename variables
 	isid 			hhid
-	rename			t0_hhid hhidold
+	rename			hhid hh_7_8
+	rename			t0_hhid HHID
 
 	rename 			distirct_name district
 	rename 			county_name county
@@ -53,13 +55,14 @@
 	drop if			district == ""
 	*** dropped 0 observations
 	
+	replace				year = 2018
 	
 * **********************************************************************
 * 2 - end matter, clean up to save
 * **********************************************************************
 
-	keep 			hhid region district county subcounty parish ///
-						wgt18 subreg hhidold
+	keep 			hh_7_8 HHID year region district county subcounty parish ///
+						wgt18 subreg
 
 	compress
 	describe

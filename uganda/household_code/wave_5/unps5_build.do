@@ -185,7 +185,7 @@
 }
 
 * save file
-	isid				hhid
+	isid				hh
 	
 	qui: compress
 	
@@ -346,7 +346,7 @@
 }
 
 * save file
-	isid				hhid
+	isid				hh
 	
 	qui: compress
 	
@@ -375,7 +375,7 @@
 	foreach v of varlist `zgdd'{
 	    replace		`v' = 0 if `v' == .
 	}		
-	
+		
 	qui: compress
 	summarize 
 	

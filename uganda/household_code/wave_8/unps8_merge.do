@@ -95,7 +95,7 @@
 			 (max)	pest_any herb_any irr_any fert_any  ///
 						mz_pst mz_hrb mz_irr mz_damaged ///
 			(mean)	harvmonth, ///
-					by(hhid prcid pltid region district county subcounty ///
+					by(hhid hh prcid pltid region district county subcounty ///
 						parish wgt19)
 
 * replace non-maize harvest values as missing
@@ -469,7 +469,7 @@
 	
 	collapse 		(max) tf_* cp_*, by(region district districtdstrng county ///
 						countydstrng subcounty subcountydstrng parish ///
-						parishdstrng wgt19 hhid)
+						parishdstrng wgt19 hhid hh)
 
 * count after collapse 
 	count 
@@ -500,6 +500,8 @@
 	isid			hhid
 
 * label variables
+	lab var			hh "Unique previous panel ID"
+	lab var			hhid "Unique ID for wave 8"
 	lab var			tf_lnd	"Total farmed area (ha)"
 	lab var			tf_hrv	"Total value of harvest (2010 USD)"
 	lab var			tf_yld	"value of yield (2010 USD/ha)"
@@ -528,7 +530,7 @@
 	gen				year = 2019
 	lab var			year "Year"
 			
-	order 			region district county subcounty parish hhid wgt19 /// 	
+	order 			region district county subcounty parish hhid hh wgt19 /// 	
 					year season tf_hrv tf_lnd tf_yld tf_lab tf_frt ///
 					tf_pst tf_hrb tf_irr cp_hrv cp_lnd cp_yld cp_lab ///
 					cp_frt cp_pst cp_hrb cp_irr 

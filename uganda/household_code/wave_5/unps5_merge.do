@@ -486,16 +486,25 @@
 
 * verify values are accurate
 	sum				tf_* cp_*
-
+	
+* generate new hhid to match with previous rounds
+	isid			hh
+	isid			hhid
+	
+* create future panel ID variable
+	rename			hhid HHID
+	
 	
 ************************************************************************
 **# 8 - end matter, clean up to save
 ************************************************************************
 	
 * verify unique household id
-	isid			hhid
+	isid			hh
 
 * label variables
+	lab var			hh "Unique ID for wave 5"
+	lab var			HHID "Unique future panel ID"
 	lab var			tf_lnd	"Total farmed area (ha)"
 	lab var			tf_hrv	"Total value of harvest (2010 USD)"
 	lab var			tf_yld	"value of yield (2010 USD/ha)"
@@ -530,7 +539,7 @@
 	gen				year = 2015
 	lab var			year "Year"
 			
-	order 			region district  subcounty parish  hhid hh wgt15 /// 	
+	order 			region district  subcounty parish hh HHID wgt15 /// 	
 					year season tf_hrv tf_lnd tf_yld tf_lab tf_frt ///
 					tf_pst tf_hrb tf_irr cp_hrv cp_lnd cp_yld cp_lab ///
 					cp_frt cp_pst cp_hrb cp_irr 
