@@ -196,15 +196,15 @@ label define cropid
 * **********************************************************************
 
 * restrict to variables of interest 
-	keep  			case_id HHID plotid gardenid cropid harvest harvest_losses intercrop_legume
-	order 			case_id HHID plotid gardenid cropid harvest harvest_losses intercrop_legume
+	keep  			y4_hhid plotid gardenid cropid harvest harvest_losses intercrop_legume
+	order 			y4_hhid plotid gardenid cropid harvest harvest_losses intercrop_legume
 	
 	compress
 	describe
 	summarize 
 	
 * save data
-	save 			"`export'/ag_mod_g.dta", replace
+	save 			"$export/ag_mod_g_19.dta", replace
 
 * close the log
 	log			close
