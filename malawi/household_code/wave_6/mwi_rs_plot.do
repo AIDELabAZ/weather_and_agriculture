@@ -14,9 +14,6 @@
 	* access to previous files include g, i, c, d 
 	
 * TO DO:
-*** DON'T USE THIS FILE IT IS MESSED UP AND FOR WAVE 6 BUT I'M NOT FIXING IT RIGHT NOW 
-*** adjustments could be done easily if this is needed to change back to wave 5
-*** SORRY! alj june 3 2024
 	* done 
 
 * **********************************************************************

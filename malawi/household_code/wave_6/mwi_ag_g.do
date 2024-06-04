@@ -103,10 +103,10 @@
 
 * bring in conversion file 
 	merge m:1 crop_code region unit_code condition using "$root/ihs_seasonalcropconversion_factor_2020.dta"
-	
+	*** 7313 matched, 2671 not matched = 1, 614 not matched = 2
+	drop if _merge == 2 
 	tabulate 		crop_code unit if _merge==1
 	*** could drop if == 1, but we know that we have some of these, from conversion_other - so will keep
-	*** 24,274 matched, 8,403 not matched
 	
 * **********************************************************************
 * 2 - clean for crop  
