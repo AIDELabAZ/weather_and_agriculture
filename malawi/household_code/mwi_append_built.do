@@ -524,7 +524,67 @@ foreach var of varlist v15_merra - v27_merra {
 	foreach v of varlist `v27' {
 		lab var 		`v' "Temperature Bin 80-100"	
 	}
-					
+	
+	
+* try to rationalize the cx, sp, lp data to resolve duplicates
+	distinct		cx_id
+	*** 18,790 cx observations, all distinct
+	distinct		sp_id
+	*** 4,489 sp obsverations, 2,687 distinct
+	distinct		lp_id
+	*** 3,250 lp obsverations, 1,377 distinct
+	
+* tag duplicates in the data
+	sort 			tf_hrv tf_lnd tf_yld tf_lab tf_frt tf_pst tf_hrb tf_irr ///
+						cp_hrv cp_lnd cp_yld cp_lab cp_frt cp_pst cp_hrb cp_irr ///
+						v01_rf1 v02_rf1 v03_rf1 v04_rf1 v05_rf1 v06_rf1 v07_rf1 ///
+						v08_rf1 v09_rf1 v10_rf1 v11_rf1 v12_rf1 v13_rf1 v14_rf1
+	egen			hhid = group(tf_hrv tf_lnd tf_yld tf_lab tf_frt tf_pst ///
+						tf_hrb tf_irr cp_hrv cp_lnd cp_yld cp_lab cp_frt ///
+						cp_pst cp_hrb cp_irr v01_rf1 v02_rf1 v03_rf1 v04_rf1 ///
+						v05_rf1 v06_rf1 v07_rf1 v08_rf1 v09_rf1 v10_rf1 v11_rf1 ///
+						v12_rf1 v13_rf1 v14_rf1)
+						
+	
+	egen			hhid2 = group(tf_hrv tf_lnd tf_yld tf_lab tf_frt tf_pst ///
+						tf_hrb tf_irr v01_rf1 v02_rf1 v03_rf1 v04_rf1 ///
+						v05_rf1 v06_rf1 v07_rf1 v08_rf1 v09_rf1 v10_rf1 v11_rf1 ///
+						v12_rf1 v13_rf1 v14_rf1)	 if hhid == .				
+	sum				hhid
+	replace			hhid = `r(max)' + hhid2 if hhid == . & hhid2 != .
+				
+	sum				hhid
+	replace			hhid = `r(max)' + 1 if hhid == . & hhid2 == .
+	drop			hhid2
+	
+	duplicates tag 	hhid, gen(dup)
+	
+* drop duplicates from cross section since we want to keep them in the panel
+	drop if			dup > 0 & dtype == "cx"
+	drop			dup
+	*** 197 dropped, all cross section
+
+* retag duplcates
+	duplicates tag 	hhid, gen(dup)
+	replace			dup = . if dup == 0
+	
+	xtset 			sp_id
+	xfill			dup if sp_id != ., i(sp_id)
+	
+* drop duplicate short panel households
+	drop if			dup == 1 & dtype == "sp"
+	*** drops 151 obs	
+
+*create household id across all three data sets
+	gen				mwi_id = cx_id
+
+	sum 			mwi_id
+	replace			mwi_id = sp_id + `r(max)' if mwi_id == .
+	
+	sum 			mwi_id
+	replace			mwi_id = lp_id + `r(max)' if mwi_id == .
+	lab var			mwi_id  "Malawi household id"	
+	
 * create household, country, and data identifiers
 	egen			uid = seq()
 	lab var			uid "unique id"

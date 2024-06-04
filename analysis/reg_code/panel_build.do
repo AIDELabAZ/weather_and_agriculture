@@ -52,12 +52,6 @@
 * read in data file
 	append			using "$source/malawi/mwi_complete.dta"
 
-* drop short panel and cross sectional
-	keep			if dtype == "lp"
-
-* rename panel id
-	rename			lp_id mwi_id
-	
 * organize variables
 	order			mwi_id, after(eth_id)		
 	
@@ -68,7 +62,7 @@
 * **********************************************************************
 * 3 - load in niger data
 * **********************************************************************
-
+/*
 * append niger
 	append			using "$source/niger/ngr_complete"
 			
@@ -77,7 +71,7 @@
 		
 * drop unnecessary variables
 	drop			uid
-
+*/
 	
 * **********************************************************************
 * 4 - load in nigeria data
@@ -101,9 +95,6 @@
 * append tanzania
 	append			using "$source/tanzania/tza_complete"		
 
-* drop short panel and cross sectional
-	keep			if dtype == "lp"
-
 * organize variables
 	order			tza_id, after(nga_id)					
 
@@ -118,14 +109,11 @@
 * append uganda
 	append			using "$source/uganda/uga_complete"		
 
-* drop short panel and cross sectional
-	keep if			dtype == "lp"
-
 * organize variables
 	order			uga_id, after(tza_id)			
 	
 * drop unnecessary variables
-	drop			uid uhid
+	drop			uid
 
 	
 * **********************************************************************
@@ -297,6 +285,9 @@
 * **********************************************************************
 * 9 - end matter
 * **********************************************************************
+
+* drop cross section households
+	drop if			dtype == 0
 
 * save complete results
 	qui: compress
