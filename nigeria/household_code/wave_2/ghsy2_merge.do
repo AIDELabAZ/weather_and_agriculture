@@ -1,8 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: jdm
-* Edited by : alj
-* Stata v.16
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* merges individual cleaned plot datasets together
@@ -12,12 +13,12 @@
 
 * assumes
 	* previously cleaned household datasets
-	* customsave.ado
 	* double counting assumed in labor - only use harvest labor 
 
 * TO DO:
 	* done 
 
+	
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
@@ -165,7 +166,7 @@
 * construct production value per hectare
 	gen				vl_yld = vl_hrv / plotsize
 	assert 			!missing(vl_yld)
-	lab var			vl_yld "value of yield (2010USD/ha)"
+	lab var			vl_yld "value of yield (2015 USD/ha)"
 
 * impute value per hectare outliers 
 	sum				vl_yld
@@ -184,16 +185,16 @@
 						& !inlist(vl_yld,.,0) & !mi(maxrep)
 	tabstat			vl_yld vl_yldimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 1182 to 890
-	*** reduces max from 80806 to 28744
+	*** reduces mean from 1163 to 895
+	*** reduces max from 56172 to 13250
 	
 	drop			stddev median replacement maxrep minrep
-	lab var			vl_yldimp	"value of yield (2010USD/ha), imputed"
+	lab var			vl_yldimp	"value of yield (2015 USD/ha), imputed"
 
 * inferring imputed harvest value from imputed harvest value per hectare
 	generate		vl_hrvimp = vl_yldimp * plotsize 
-	lab var			vl_hrvimp "value of harvest (2010USD), imputed"
-	lab var			vl_hrv "value of harvest (2010USD)"
+	lab var			vl_hrvimp "value of harvest (2015 USD), imputed"
+	lab var			vl_hrv "value of harvest (2015 USD)"
 	
 
 * **********************************************************************
@@ -287,7 +288,8 @@
 *maybe imputing zero values	
 	
 * impute yield outliers
-	sum				mz_yld
+	sum				mz_yld, detail
+	replace			mz_yld = . if mz_yld > 32000
 	bysort state : egen stddev = sd(mz_yld) if !inlist(mz_yld,.,0)
 	recode 			stddev (.=0)
 	bysort state : egen median = median(mz_yld) if !inlist(mz_yld,.,0)
@@ -303,8 +305,8 @@
 					& !inlist(mz_yld,.,0) & !mi(maxrep)
 	tabstat 		mz_yld mz_yldimp, ///
 					f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 3574 to 2304
-	*** reduces max from 855365 to 83842
+	*** reduces mean from 2426 to 1973
+	*** reduces max from 32945 to 29599
 					
 	drop 			stddev median replacement maxrep minrep
 	lab var 		mz_yldimp "maize yield (kg/ha), imputed"
@@ -518,8 +520,8 @@
 
 * label variables
 	lab var			tf_lnd	"Total farmed area (ha)"
-	lab var			tf_hrv	"Total value of harvest (2010 USD)"
-	lab var			tf_yld	"value of yield (2010 USD/ha)"
+	lab var			tf_hrv	"Total value of harvest (2015 USD)"
+	lab var			tf_yld	"value of yield (2015 USD/ha)"
 	lab var			tf_lab	"labor rate (days/ha)"
 	lab var			tf_frt	"fertilizer rate (kg/ha)"
 	lab var			tf_pst	"Any plot has pesticide"
@@ -534,9 +536,8 @@
 	lab var			cp_hrb	"Any maize plot has herbicide"
 	lab var			cp_irr	"Any maize plot has irrigation"
 	
-	
 * impute missing labor
-	*** max is determined by comparing the right end tail distribution to wave 1 maxes using a kdensity peak.
+	*** max is determined by comparing the right end tail distribution to wave maxes using a kdensity peak.
 	sum 			tf_lab , detail			
 	
 	*kdensity 		tf_lab if tf_lab > 1400
@@ -567,18 +568,20 @@
 	*** none missing
 	
 * impute tf_hrv outliers
-	*kdensity 		tf_yld if tf_yld > 9000
+	*kdensity 		tf_yld if tf_yld > 7300
 	*** max is 11000
 	sum 			tf_yld, detail
-	*** mean 835, max 17300
+	*** mean 836, max 13250
 	
-	replace 		tf_hrv =. if tf_yld > 9000
+	sum				tf_lnd tf_hrv  if tf_yld > 6300
+	
+	replace 		tf_hrv =. if tf_yld > 6300
 	
 	mi set 			wide 	// declare the data to be wide.
 	mi xtset		, clear 	// clear any xtset that may have had in place previously
 	mi register		imputed tf_hrv // identify tf_hrv as the variable being imputed
 	sort			hhid state zone, stable // sort to ensure reproducability of results
-	mi impute 		pmm tf_hrv i.state tf_lnd tf_lab, add(1) rseed(245780) ///
+	mi impute 		pmm tf_hrv i.state tf_lnd tf_lab tf_frt, add(1) rseed(245780) ///
 						noisily dots force knn(5) bootstrap
 	mi unset
 	
@@ -586,7 +589,16 @@
 	replace    		tf_hrv = tf_hrv_1_	if 	tf_hrv == .
 	replace 		tf_yld = tf_hrv / tf_lnd
 	sum 			tf_yld, detail
-	*** mean 707.25, max 13591.4
+	*** mean 747, max 39308
+	
+	replace			tf_hrv = 340 if tf_yld > 30000
+	replace			tf_hrv = 799 if tf_yld > 20000 & tf_yld < 30000
+	*** 2 changes made
+	
+	replace 		tf_yld = tf_hrv / tf_lnd
+	sum 			tf_yld, detail
+	*** mean 734, max 16615
+	
 	mdesc 			tf_yld
 	*** 0 missing
 	drop 			mi_miss tf_hrv_1_ 
@@ -625,13 +637,13 @@
 	*** mean 803.43, std dev 1000.29, max 9600
 	*kdensity cp_yld if cp_yld > 20000
 	
-	sum cp_hrv if cp_lnd < 0.1 & cp_yld > 10000, detail
+	sum cp_hrv if cp_lnd < 0.5 & cp_yld > 12000, detail
 	
 	* change outliers to missing
-	replace 		cp_hrv = . if cp_yld > 15000 & cp_lnd < 0.5
-	*** 15 changes made
-	replace 		cp_hrv = . if cp_yld > 15000
-	*** 4 changes
+	replace 		cp_hrv = . if cp_yld > 12000 & cp_lnd < 0.5
+	*** 10 changes made
+	replace 		cp_hrv = . if cp_lnd < .03
+	*** 17 changes
 
 * impute missing values (impute in stages to get imputation near similar land values)
 	sum 			cp_hrv
@@ -640,31 +652,63 @@
 	mi xtset		, clear 	// clear any xtset that may have had in place previously
 	mi register		imputed cp_hrv // identify cp_hrv as the variable being imputed
 	sort			hhid state zone, stable // sort to ensure reproducability of results
-	mi impute 		pmm cp_hrv i.state cp_lnd cp_lab if cp_lnd < 0.03, add(1) rseed(245780) ///
+	mi impute 		pmm cp_hrv i.state cp_lnd cp_lab, add(1) rseed(245780) ///
 						noisily dots force knn(5) bootstrap
-						
+									
+	mi 				unset	
+
+	sort 			cp_hrv
+	replace 		cp_hrv = cp_hrv_1_ if cp_hrv == . 
+	replace 		cp_yld = cp_hrv / cp_lnd
+	sum 			cp_yld, detail
+	*** mean 1785, max 56818
+	
+	drop mi_miss cp_hrv_1_	
+	
+	replace			cp_hrv = . if cp_yld > 9300
+	
+	mi set 			wide 	// declare the data to be wide.
+	mi xtset		, clear 	// clear any xtset that may have had in place previously
+	mi register		imputed cp_hrv // identify cp_hrv as the variable being imputed
 	sort			hhid state zone, stable // sort to ensure reproducability of results
-	mi impute 		pmm cp_hrv i.state cp_lnd cp_lab if cp_lnd < 0.1, add(1) rseed(245780) ///
+	mi impute 		pmm cp_hrv i.state cp_lnd cp_lab, add(1) rseed(245780) ///
 						noisily dots force knn(5) bootstrap
-					
+									
+	mi 				unset	
+
+	sort 			cp_hrv
+	replace 		cp_hrv = cp_hrv_1_ if cp_hrv == . 
+	replace 		cp_yld = cp_hrv / cp_lnd
+	sum 			cp_yld, detail
+	*** mean 1785, max 56818
+	
+	drop mi_miss cp_hrv_1_	
+	
+	replace 		cp_hrv = . if cp_yld > 17000
+	*** 2 changes
+
+* impute missing values (impute in stages to get imputation near similar land values)
+	sum 			cp_hrv
+	
+	mi set 			wide 	// declare the data to be wide.
+	mi xtset		, clear 	// clear any xtset that may have had in place previously
+	mi register		imputed cp_hrv // identify cp_hrv as the variable being imputed
 	sort			hhid state zone, stable // sort to ensure reproducability of results
-	mi impute 		pmm cp_hrv i.state cp_lnd cp_lab if cp_lnd < 0.6, add(1) rseed(245780) ///
-						noisily dots force knn(5) bootstrap					
+	mi impute 		pmm cp_hrv i.state cp_lnd cp_lab, add(1) rseed(245780) ///
+						noisily dots force knn(5) bootstrap
 						
 	mi 				unset	
 
 	sort 			cp_hrv
-	replace 		cp_hrv = cp_hrv_3_ if cp_hrv == . & cp_hrv_2_ == . & cp_hrv_1_
-	replace 		cp_hrv = cp_hrv_2_ if cp_hrv == . & cp_hrv_1_ == .
-	replace 		cp_hrv = cp_hrv_1_ if cp_hrv == . 
+	replace 		cp_hrv = cp_hrv_1_
 	replace 		cp_yld = cp_hrv / cp_lnd
 	sum 			cp_yld, detail
-	*** mean 1834.03, std. dev 2047.3, max 14682.85
+	*** mean 1656, max is 14,872
+	
+	drop mi_miss cp_hrv_1_
 
 	mdesc			cp_yld cp_hrv if cp_lnd != .
 	*** none missing
-	
-	drop mi_miss cp_hrv_1_ cp_hrv_2_ cp_hrv_3_			
 
 * **********************************************************************
 * 4 - end matter, clean up to save
@@ -691,8 +735,7 @@
 	summarize 
 	
 * saving production dataset
-	customsave , idvar(hhid) filename(hhfinal_ghsy2.dta) path("`export'") ///
-			dofile(ghsy2_merge) user($user) 
+	save 			"`export'/hhfinal_ghsy2.dta", replace
 
 * close the log
 	log	close

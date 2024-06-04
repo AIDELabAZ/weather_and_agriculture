@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: alj
-* Stata v.16
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* reads in Nigeria, WAVE 2 (2012-2013), POST PLANTING, AG SECT11C1
@@ -9,7 +11,7 @@
 	* outputs clean data file ready for combination with wave 2 plot data
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* mdesc.ado
 	
 * TO DO:
@@ -139,8 +141,7 @@
 	summarize 
 
 * save file
-	customsave , idvar(plot_id) filename("pp_sect11c1.dta") ///
-		path("`export'") dofile(pp_sect11c1) user($user)
+	save 			"`export'/pp_sect11c1.dta", replace
 
 * close the log
 	log	close

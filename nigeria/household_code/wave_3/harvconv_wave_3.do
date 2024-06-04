@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: alj
-* Stata v.16
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* reads in Nigeria, ag_conv_w3 (wave 3 conversion file)
@@ -9,12 +11,12 @@
 	* outputs conversion file ready for combination with wave 2 and wave 3 harvest data
 
 * assumes
-	* customsave.ado
 	* ag_conv_w3 conversion file
 
 * TO DO:
 	* complete
 
+	
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
@@ -28,12 +30,13 @@
 	cap log close
 	log 	using 	"`logout'/harvconv_master_wave_3", append	
 	
+	
 * **********************************************************************
 * 1 - general import and clean up
 * **********************************************************************
 
 * import the relevant conversion file
-	use 			"`cnvrt'\ag_conv_w3" , clear
+	use 			"`cnvrt'/ag_conv_w3" , clear
 	
 * rename for matching with harvest files
 	rename 			crop_cd cropcode
@@ -61,8 +64,7 @@
 	summarize
 
 * save file
-	customsave , idvar(crop_unit) filename("harvconv_wave_3.dta") ///
-		path("`export'") dofile(harvconv_wave_3) user($user)
+	save 			"`export'/harvconv_wave_3.dta", replace
 
 * close the log
 	log		close

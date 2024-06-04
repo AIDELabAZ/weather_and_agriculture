@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: ek
-* Edited on: 23 May 2024
+* Edited on: 4 June 2024
 * Edited by: jdm
 * Stata v.18
 
@@ -14,7 +14,7 @@
 	* all Uganda data has been cleaned and merged with rainfall
 
 * TO DO:
-	* complete
+	* NEED TO SORT OUT HOUSEHOLD ID
 	
 	
 * **********************************************************************
@@ -22,6 +22,7 @@
 * **********************************************************************
 
 * define paths
+	global		raw		=	"$data/household_data/uganda/wave_7/refined"
 	global		root 	= 	"$data/merged_data/uganda"
 	global		export 	= 	"$data/regression_data/uganda"
 	global		logout 	= 	"$data/merged_data/uganda/logs"
@@ -35,29 +36,104 @@
 * 1 - append first three waves of Uganda household data
 * **********************************************************************
 
-* import wave 1 Uganda
-	
+* import wave 1 Uganda	
 	use 			"$root/wave_1/unps1_merged", clear
-	*** at the moment I believe that all three waves of nigeria identify hh's the same
 	
 * append wave 2 file
 	append			using "$root/wave_2/unps2_merged", force	
 	
 * append wave 3 file 
-	append			using "$root/wave_3/unps3_merged", force	
+	append			using "$root/wave_3/unps3_merged", force
+
+* append wave 4 file 
+	append			using "$root/wave_4/unps4_merged", force
+	
+	rename			hhid hh_1_4
+	lab var 		hh_1_4 "Panel ID for waves 1-4"
+	
+* append wave 5 file 
+	append			using "$root/wave_5/unps5_merged", force
+		
+* append wave 7 household key file 
+	append			using "$raw/2018_gsec1.dta", force	
+	
+	rename			HHID hh_4_7
+	lab var 		hh_4_7 "Panel ID for waves 4-7"
+	
+* append wave 8 file 
+	append			using "$root/wave_8/unps8_merged", force	
+	
+* generate panel ID
+* start with hh in waves 1-4
+	sort			hh_1_4
+	egen			pnl_hhid = group(hh_1_4)
+	order 			hh_1_4 hh_4_7 hh_7_8 hhid year, before(pnl_hhid)
+	
+* now fill in pnl_hhid with households that match on wave 4-7
+	egen 			hh47 = group(hh_4_7)
+	sort 			hh47
+	xtset 			hh47
+	xfill 			hh_1_4 if hh_1_4 == "" & hh47 != ., i(hh47)
+	
+* now fill in pnl_hhid with households that match on wave 7-8
+	egen 			hh78 = group(hh_7_8)
+	sort 			hh78
+	xtset 			hh78
+	xfill 			hh_4_7 if hh_4_7 == "" & hh78 != ., i(hh78)
+	xfill 			hh47 if hh47 == . & hh78 != ., i(hh78)
+
+	sort 			hh47
+	xtset 			hh47
+	xfill 			hh_1_4 if hh_1_4 == "" & hh47 != ., i(hh47)
+	
+	drop			pnl_hhid
+	sort			hh_1_4
+	egen			pnl_hhid = group(hh_1_4)
+	
+	drop			hh47
+	sort			hh_4_7
+	egen			hh47 = group(hh_4_7) if pnl_hhid == .
+	
+	sum 			pnl_hhid
+	replace			pnl_hhid = hh47 + `r(max)' if pnl_hhid == .
+	
+	drop			hh78
+	sort			hh_7_8
+	egen			hh78 = group(hh_7_8) if pnl_hhid == .
+	
+	sum 			pnl_hhid
+	replace			pnl_hhid = hh78 + `r(max)' if pnl_hhid == .
+	
+	egen			hh8 = group(hhid) if pnl_hhid == .
+	
+	sum 			pnl_hhid
+	replace			pnl_hhid = hh8 + `r(max)' if pnl_hhid == .
+	*** one household seems to have an extra observation in 2018
+	*** H3350501 or 456103859120412ba80e3e5d4c19890d
+	*** the duplicate has ebcbdd6393f1445392d57880f2c6f016 for hh_7_8
+	*** i imagine this is an artifact of not actually have the wave 7 data
+	
+* drop wave 7. this is temporary until i integrate wave 7 is missing
+	drop if			data == ""
 	
 * check the number of observations again
-	count
-	*** 5252 observations 
+	distinct 		pnl_hhid
+	*** 11,696 observations from 5,110 households 
 	count if 		year == 2009
-	*** wave 1 has 1704
+	*** wave 1 has 1,883
 	count if 		year == 2010
-	*** wave 2 has 1741
+	*** wave 2 has 1,886
 	count if 		year == 2011
-	*** wave 3 has 1807
+	*** wave 3 has 2,022
+	count if 		year == 2013
+	*** wave 4 has 2,190
+	count if 		year == 2015
+	*** wave 5 has 1,870
+	count if 		year == 2019
+	*** wave 8 has 1,845
 
 * generate uganda panel id	
-	egen			uga_id = group(hhid)
+	egen			uga_id = group(pnl_hhid)
 	lab var			uga_id "Uganda panel household id"	
 
 * generate country and data types	
@@ -74,14 +150,19 @@
 	
 	replace			pw = wgt10 if pw == .
 	replace			pw = wgt11 if pw == .
+	replace			pw = wgt13 if pw == .
+	replace			pw = wgt15 if pw == .
+*	replace			pw = wgt18 if pw == .
+	replace			pw = wgt19 if pw == .
 	tab 			pw, missing
 	drop			if pw == .
 	lab var			pw "Household Sample Weight"
 
 * drop variables
-	rename			hhid uhid
 	drop			region district county subcounty parish ///
-						wgt09wosplits season wgt10 wgt11
+						wgt09wosplits season wgt10 wgt11 hh ///
+						wgt13 rotate wgt15 wgt18 subreg wgt19 ///
+						hh_1_4 hh_4_7 hh_7_8 hhid pnl_hhid hh47 hh78 hh8
 	
 	order			country dtype uga_id year aez pw
 

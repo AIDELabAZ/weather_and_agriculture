@@ -2,7 +2,9 @@
 * Created on: May 2020
 * Created by: alj
 * Edited by: ek
-* Stata v.16
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* reads in Nigeria, WAVE 1 (2010-2011) POST PLANTING, NIGERIA SECT 11B AG
@@ -10,12 +12,13 @@
 	* outputs clean data file ready for combination with wave 1 plot data
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* mdsec.ado
 	
 * TO DO:
 	* complete
 
+	
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
@@ -32,6 +35,7 @@
 	cap log close
 	log using "`logout'/pp_sect11b", append
 
+	
 * **********************************************************************
 * 1 - determine cultivated plot + irrigation 
 * **********************************************************************
@@ -73,9 +77,7 @@
 
 
 * save file
-		customsave , idvar(hhid) filename("pp_sect11b.dta") ///
-			path("`export'/`folder'") dofile(pp_sect11b) user($user)
-
+	save 			"`export'/pp_sect11b.dta", replace
 * close the log
 	log	close
 

@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 16 Feb 24
+* Edited on: 24 May 24
 * Edited by: jdm
 * Stata v.18
 
@@ -17,7 +17,7 @@
 	* mdesc.ado
 
 * TO DO:
-	* everything
+	* stuck at imputation because 80% of plot sizes are missing in self-report
 
 ************************************************************************
 **# 0 - setup
@@ -29,8 +29,8 @@
 	global 	logout 		"$data/household_data/uganda/logs"
 	
 * open log	
-	cap log close
-	log using "$logout/2018_agsec2a", append
+	cap log 			close
+	log using 			"$logout/2018_agsec2a", append
 
 	
 ************************************************************************
@@ -62,13 +62,15 @@
 ************************************************************************	
 	
 * merge the location identification
-	merge m:1 hhid using "`export'/2011_GSEC1"
-	*** 995 unmatched from master
-	*** that means 995 observations did not have location data
-	*** no option at this stage except to drop all unmatched
+	merge m:1 hhid using "$export/2018_GSEC1"
+	*** 4,310 matched, 58 unmatched from master
+	*** 843 unmatched from using
+	*** that means 843 observations did not have cultivation data
+	*** 58 parcels do not have location data, so we have to drop them
 	
 	drop 		if _merge != 3	
-	*** drops 995 observations
+	*** drops 901 observations
+	
 	
 ************************************************************************
 * 3 - keeping cultivated land
@@ -76,12 +78,17 @@
 
 * what was the primary use of the parcel
 	*** activity in the first season is recorded seperately from activity in the second season
-	tab 		 	a2aq11a 
+	tab 		 	s2aq11a 
+	tab				s2aq11b
 	*** activities include renting out, pasture, forest. cultivation, and other
 	*** we will only include plots used for annual or perennial crops
 	
-	keep			if a2aq11a == 1 | a2aq11a == 2
-	*** 431 observations deleted	
+	keep			if s2aq11a == 1 | s2aq11b == 1
+	*** 1,419 observations deleted	
+
+* verify that only parcels that did not have some annual crop on it are dropped
+	tab 			s2aq11a s2aq11b
+	*** zeros in every row and column other than first row/column
 
 	
 * **********************************************************************
@@ -90,15 +97,17 @@
 
 * summarize plot size
 	sum 			plotsizeGPS
-	***	mean 1.16 max 9, min .02
+	***	mean 1.31 max 9, min .08
 	*** no plotsizes that are zero
 	
 	sum				plotsizeSR
-	*** mean 2.36, max 100, min .01
+	*** mean 1.79, max 150, min .1
 
 * how many missing values are there?
 	mdesc 			plotsizeGPS
-	*** 1,585 missing, 94% of observations
+	*** 2,705 missing, 94% of observations
+	mdesc 			plotsizeSR
+	*** 2,263 missing, 78% of observations
 
 * convert acres to square meters
 	gen				plotsize = plotsizeGPS*0.404686
@@ -109,33 +118,33 @@
 
 * check correlation between the two
 	corr 			plotsize selfreport
-	*** 0.79 correlation, high correlation between GPS and self reported
+	*** 0.96 correlation, high correlation between GPS and self reported
 	
 * compare GPS and self-report, and look for outliers in GPS 
+	sum				selfreport, detail
+	drop if			selfreport == 60.7029
+	
 	sum				plotsize, detail
 	*** save command as above to easily access r-class stored results 
 
 * look at GPS and self-reported observations that are > ±3 Std. Dev's from the median 
 	list			plotsize selfreport if !inrange(plotsize,`r(p50)'-(3*`r(sd)'),`r(p50)'+(3*`r(sd)')) ///
 						& !missing(plotsize)
-	*** these all look good, largest size is 30 ha
+	*** these all look good, but largest self-reported is 60
 	
 * gps on the larger side vs self-report
 	tab				plotsize if plotsize > 3, plot
-	*** distribution has a few high values, but mostly looks reasonable
+	*** no GPS plot is greater than 3
 
 * correlation for larger plots	
-	corr			plotsize selfreport if plotsize > 3 & !missing(plotsize)
-	*** this is very high, 0.842, so these look good
+	corr			plotsize selfreport if plotsize > 2 & !missing(plotsize)
+* twoway (scatter plotsize selfreport if plotsize > 3 & !missing(plotsize))
+	*** this is high, 0.697, so these look good
 
 * correlation for smaller plots	
 	corr			plotsize selfreport if plotsize < .1 & !missing(plotsize)
-	*** this is very low 0.127
+	*** this is not great 0.422
 		
-* correlation for extremely small plots	
-	corr			plotsize selfreport if plotsize < .01 & !missing(plotsize)
-	*** this is terrible, 0.036, basically no relation, not unexpected
-	
 * summarize before imputation
 	sum				plotsize
 	*** mean 0.883, max 30.35, min 0.004
