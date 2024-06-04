@@ -1,9 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: ek
+* Edited on: 4 June 2024
 * Edited by: jdm
-* Last edit: 23 October 2020 
-* Stata v.16
+* Stata v.18
 
 * does
 	* merges weather data into ngr household data
@@ -11,7 +11,6 @@
 * assumes
 	* cleaned Ngr household data
 	* processed wave 2 weather data
-	* customsave.ado
 
 * TO DO:
 	* complete
@@ -215,8 +214,7 @@
 	qui: compress
 	summarize 
 	
-	customsave 	, idvar(hhid_y2) filename("ecvmay2_merged.dta") ///
-		path("`export'") dofile(ecvmay2_build) user($user)
+	save 			"`export'/ecvmay2_merged.dta", replace
 	
 * close the log
 	log	close

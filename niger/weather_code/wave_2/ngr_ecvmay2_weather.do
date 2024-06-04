@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: April 2020
 * Created by: jdm
-* Stata v.16
+* Edited on: 4 June 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* reads in Niger, wave 2 .dta files with daily values
@@ -16,7 +18,6 @@
 * assumes
 	* NGR_ECVMAY2_converter.do
 	* weather_command.ado
-	* customsave.ado
 
 * TO DO:
 	* completed
@@ -26,13 +27,10 @@
 * 0 - setup
 * **********************************************************************
 
-* set global user
-*	global user "jdmichler"
-
 * define paths	
-	loc root = "G:/My Drive/weather_project/weather_data/niger/wave_2/daily"
-	loc export = "G:/My Drive/weather_project/weather_data/niger/wave_2/refined"
-	loc logout = "G:/My Drive/weather_project/weather_data/niger/logs"
+	loc root = "$data/weather_data/niger/wave_2/daily"
+	loc export = "$data/weather_data/niger/wave_2/refined"
+	loc logout = "$data/weather_data/niger/logs"
 
 * open log	
 	log using "`logout'/ngr_ecvmay2_weather", replace
@@ -68,9 +66,9 @@ foreach folder of local folderList {
 		* run the user written weather command - this takes a while
 		weather rf_ , rain_data ini_month(6) fin_month(12) day_month(1) keep(hhid_y2)
 		
-		* save file
-		customsave , idvar(hhid_y2) filename("`dat'_`ext'_`sat'.dta") ///
-			path("`export'/`folder'") dofile(NGR_ECVMAY2_weather) user($user)
+	* save file
+		compress
+		save			"`export'/`dat'_n.dta", replace
 	}
 }
 
@@ -105,9 +103,9 @@ foreach folder of local folderList {
 		* run the user written weather command - this takes a while		
 		weather tmp_ , temperature_data growbase_low(10) growbase_high(30) ini_month(6) fin_month(12) day_month(1) keep(hhid_y2)
 		
-		* save file
-		customsave , idvar(hhid_y2) filename("`dat'_`ext'_`sat'.dta") ///
-			path("`export'/`folder'") dofile(NGR_ECVMAY2_weather) user($user)
+	* save file
+		compress
+		save			"`export'/`dat'_n.dta", replace
 		}
 }
 

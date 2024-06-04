@@ -1,9 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: alj
-* Edited by: alj
-* Last edit: 22 October 2020 
-* Stata v.16
+* Edited on: 4 June 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* reads in Niger, WAVE 2 (2014), POST HARVEST, ECVMA2 AS2E1P2
@@ -14,7 +14,7 @@
 
 * assumes
 	* cleaned price files from ECVMA_2014_AS2E2P2 (five files "2014_as2e2p2_p*", where *=1-5)
-	* customsave.ado
+	* access to all raw data
 	
 * TO DO:
 	* done
@@ -356,8 +356,7 @@
 	summarize
 
 * save file
-	customsave , idvar(crop_id) filename("2014_as2e1p2.dta") ///
-		path("`export'") dofile(2014_as2e1p2) user($user)
+	save 			"`export'/2014_as2e1p2.dta", replace
 
 * close the log
 	log		close
