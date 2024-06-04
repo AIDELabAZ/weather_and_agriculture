@@ -1,18 +1,20 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: themacfreezie
+* Edited on: 3 June 24
 * Edited by: jdm
-* Stata v.16
+* Stata v.18
 
 * does
-	* household Location data (2011_GSEC1) for the 1st season
+	* household Location data (2018_GSEC1) for the 1st season
 
 * assumes
-	* customsave.ado
+	* access to raw data 
 	* mdesc.ado
 
 * TO DO:
-	* done
+	* currently written just to allow me to merge waves 7 and 8 together
+	* needs to be adapted for use in cleaning wave 7
 
 	
 * **********************************************************************
@@ -20,55 +22,54 @@
 * **********************************************************************
 
 * define paths	
-	loc root 		= "$data/household_data/uganda/wave_3/raw"  
-	loc export 		= "$data/household_data/uganda/wave_3/refined"
-	loc logout 		= "$data/household_data/uganda/logs"
+	global 			root 	"$data/household_data/uganda/wave_7/raw"  
+	global 			export 	"$data/household_data/uganda/wave_7/refined"
+	global 			logout 	"$data/household_data/uganda/logs"
 	
 * open log	
-	cap log 		close
-	log using 		"`logout'/2011_GSEC1", append
+	cap 			log 	close
+	log 			using 	"$logout/2018_GSEC1", append
 
 	
 * **********************************************************************
 * 1 - UNPS 2011 (Wave 3) - General(?) Section 1 
 * **********************************************************************
 
-* import wave 3 season 1
-	use				"`root'/GSEC1", clear
+* import wave 7 season 1
+	use				"$root/hh/GSEC1", clear
 
 * rename variables
-	isid 			HHID
-	rename 			HHID hhid
+	isid 			hhid
+	rename			hhid hh_7_8
+	rename			t0_hhid HHID
 
-	rename 			h1aq1 district
-	rename 			h1aq2 county
-	rename 			h1aq3 subcounty
-	rename 			h1aq4 parish
-	rename 			HHS_hh_shftd_dsntgrtd hh_status2011
-	rename 			mult wgt11
-	***	district variables not labeled in this wave, just coded
+	rename 			distirct_name district
+	rename 			county_name county
+	rename 			subcounty_name subcounty
+	rename 			parish_name parish
+	rename 			hwgt_wc wgt18
 
 	tab 			region, missing
 
 * drop if missing
 	drop if			district == ""
-	*** dropped 164 observations
+	*** dropped 0 observations
 	
+	replace				year = 2018
 	
 * **********************************************************************
 * 2 - end matter, clean up to save
 * **********************************************************************
 
-	keep 			hhid region district county subcounty parish ///
-						hh_status2011 wgt11
+	keep 			hh_7_8 HHID year region district county subcounty parish ///
+						wgt18 subreg
 
 	compress
 	describe
 	summarize
 
 * save file
-		customsave , idvar(hhid) filename("2011_GSEC1.dta") ///
-			path("`export'") dofile(2011_GSEC1) user($user)
+		save		"$export/2018_gsec1.dta", replace 
 
 * close the log
 	log	close
