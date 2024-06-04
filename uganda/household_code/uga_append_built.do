@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: ek
-* Edited on: 23 May 2024
+* Edited on: 4 June 2024
 * Edited by: jdm
 * Stata v.18
 
@@ -54,10 +54,20 @@
 	count if 		year == 2010
 	*** wave 2 has 1741
 	count if 		year == 2011
+<<<<<<< Updated upstream
 	*** wave 3 has 1807
+=======
+	*** wave 3 has 2,022
+	count if 		year == 2013
+	*** wave 4 has 2,190
+	count if 		year == 2015
+	*** wave 5 has 1,870
+	count if 		year == 2019
+	*** wave 8 has 1,845
+>>>>>>> Stashed changes
 
 * generate uganda panel id	
-	egen			uga_id = group(hhid)
+	egen			uga_id = group(pnl_hhid)
 	lab var			uga_id "Uganda panel household id"	
 
 * generate country and data types	
@@ -74,14 +84,19 @@
 	
 	replace			pw = wgt10 if pw == .
 	replace			pw = wgt11 if pw == .
+	replace			pw = wgt13 if pw == .
+	replace			pw = wgt15 if pw == .
+*	replace			pw = wgt18 if pw == .
+	replace			pw = wgt19 if pw == .
 	tab 			pw, missing
 	drop			if pw == .
 	lab var			pw "Household Sample Weight"
 
 * drop variables
-	rename			hhid uhid
 	drop			region district county subcounty parish ///
-						wgt09wosplits season wgt10 wgt11
+						wgt09wosplits season wgt10 wgt11 hh ///
+						wgt13 rotate wgt15 wgt18 subreg wgt19 ///
+						hh_1_4 hh_4_7 hh_7_8 hhid pnl_hhid hh47 hh78 hh8
 	
 	order			country dtype uga_id year aez pw
 
