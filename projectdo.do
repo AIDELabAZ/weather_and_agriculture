@@ -134,7 +134,14 @@ if $pack == 1 {
 */
 
 * **********************************************************************
-* 2 - run analysis .do files
+* 4 - run panel build and regression .do files
+* **********************************************************************
+/*
+	do			"$code/analysis/panel_build.do"
+	do			"$code/analysis/regressions.do"
+*/
+* **********************************************************************
+* 4 - run analysis .do files
 * **********************************************************************
 /*
 	do			"$code/analysis/viz_code/sum_table.do"
