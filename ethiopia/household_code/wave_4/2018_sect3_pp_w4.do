@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: May 2024
 * Created by: jdm
-* Edited on 24 May 2024
+* Edited on 6 June 2024
 * Edited by: jdm
 * Stata v.18
 
@@ -34,7 +34,7 @@
 
 
 * **********************************************************************
-* 1 - preparing ESS 2015/16 (Wave 3) - Post Planting Section 3 
+* 1 - preparing ESS 2018/19 (Wave 4) - Post Planting Section 3 
 * **********************************************************************
 
 * load pp section 3 data
@@ -49,8 +49,10 @@
 	isid 		holder_id parcel_id field_id
 
 * creating district identifier
-	distinct	ea_id
-	*** 264 distinct eas
+	egen 		district_id = group( saq01 saq02)
+	lab var 	district_id "Unique district identifier"
+	distinct	saq01 saq02, joint
+	*** 75 distinct district
 
 * field status check
 	rename 		s3q03 status, missing
@@ -96,23 +98,31 @@
 * create zone and region conversion factors by taking average	
 	egen 		zone_mean = mean( conversion), by(region zone local_unit)
 	egen 		region_mean = mean( conversion), by(region local_unit)
+	egen 		country_mean = mean( conversion), by(local_unit)
 
 	replace		conversion = 1 if local_unit == 1
-	replace		conversion = 0.0001 if local_unit == 2
+	replace		conversion = 10000 if local_unit == 2
 	replace		conversion = zone_mean if conversion == .
 	replace		conversion = region_mean if conversion == .
-	* now only missing 6,422
+	replace		conversion =country_mean if conversion == .
+	*** now only missing 5,254
 
 ************************************************************************
 **	2 - constructing conversion factors
 ************************************************************************	
 
-* replace self-reported equal to missing if there is no conversion factor
-	replace		s3q02a = . if conversion == .
-	*** 6,422 changes
 
-	fdfd 
-	*this is where I stopped 
+* replace self-reported equal to missing if there is no conversion factor
+* will not replace sef-reported if given in hectares, meters squared
+	replace		conversion = 1 if local_unit == 1 & conversion == .
+	*** 0 changes
+	
+	replace		conversion = 1 if local_unit == 2 & conversion == .	
+	*** 0 changes 
+	
+	replace		s3q02a = . if conversion == .
+	*** 5,254 changes
+	
 
 ************************************************************************
 **	3 - constructing area measurements
@@ -123,70 +133,61 @@
 ************************************************************************	
 	
 * problem? There are over 12,000 obs with units of measure not included in the conversion file
-	summarize 	local_unit, detail // Quantity of land units, self-reported
-	generate 	selfreport_sqm = conversion * pp_s3q02_a if local_unit !=0
-	summarize 	selfreport_sqm, detail // resulting land area (sq. meters)
-	generate 	selfreport_ha = selfreport_sqm * 0.0001
+	generate 	selfreport_ha = s3q02a / conversion
 	summarize 	selfreport_ha, detail // resulting land area (hectares)
 	
+* massive outliers, all record in ha. most likely square meters if in top 95%
+	sum 		s3q02a if local_unit == 1, detail
+	replace		conversion = 10000 if s3q02a > 4 & local_unit == 1
+	*** 16 changes made
+	
+	replace 	selfreport_ha = s3q02a / conversion
 
+	
 ************************************************************************
-**	3b - constructing area measurements (gps & rope-and-compass) 
+**	3b - constructing area measurements (gps) 
 ************************************************************************	
 
-* generate GPS & rope-and-compass land area of plot in hectares 
-* as a starting point, we expect both to be more accurate than self-report 
-	summarize 	pp_s3q04 pp_s3q08_a
-	generate 	gps = pp_s3q05_a * 0.0001 if pp_s3q04 == 1
-	generate 	rap = pp_s3q08_b * 0.0001 if pp_s3q08_a == 1
-	summarize 	gps rap, detail
+* generate GPS land area of plot in hectares 
+* as a starting point, we expect both to be more accurate than self-report
+	generate 	gps = s3q08 / 10000 if s3q07 != 3
+	summarize 	gps, detail
 
 * compare GPS and self-report, and look for outliers in GPS 
 	summarize 	gps, detail 	//	same command as above to easily access r-class stored results 
-	list 		gps rap selfreport_ha if !inrange(gps,`r(p50)'-(3*`r(sd)'),`r(p50)'+(3*`r(sd)')) & !missing(gps)	
+	list 		gps selfreport_ha if !inrange(gps,`r(p50)'-(3*`r(sd)'),`r(p50)'+(3*`r(sd)')) & !missing(gps)	
 	*** looking at GPS and self-reported observations that are > ±3 Std. Dev's from the median 
 
 * GPS on the larger side vs self-report
-	tabulate 	gps if gps>2, plot	// GPS doesn't seem outrageous, 22 obs > 10 ha
+	tabulate 	gps if gps>2, plot	// GPS doesn't seem outrageous, 2 obs > 10 ha
 	* in Wave 1 there were NO GPS measured fields > 10 ha
 
 	sort 		gps		
-	list 		gps rap selfreport_ha if gps>3 & !missing(gps), sep(0)	
-	*** large gps values are sometimes way off from the self-reported
+	list 		gps selfreport_ha if gps>3 & !missing(gps), sep(0)	
+	*** most large gps values are similar to self-reported
+	*** where they differ i assume conversion factor was wrong
 
+	
 * GPS on the smaller side vs self-report 
-	summarize 	gps if gps<0.002 // ~3,000 obs
+	summarize 	gps if gps<0.002 // 
 	tabulate 	gps if gps<0.002, plot		
 	*** like wave 1, data distirubtion is somewhat lumpy due to the precision constraints of the technology 
-	*** including 430 obs that Stata recognizes as gps = 0 (and one that's negative)
+	*** including 1 obs that Stata recognizes as gps = 0
 	
-	sort 		gps					
-	list 		gps selfreport_ha if gps<0.002, sep(0)	// GPS tends to be less than self-reported size
-
-
 ************************************************************************
 **	3c - evaluating various area measurements 
 ************************************************************************		
 	
 * evaluating correlations between various measures
-	pwcorr 		gps rap 
-	*** 0.6912 correlation
+	pwcorr 		gps selfreport_ha
+	*** 0.26 correlation
 	
-	pwcorr 		gps rap if !inrange(gps,0.002,4)
-	*** 0.6984 - correlation outside this range similar to overall
-	
-	pwcorr 		gps rap if inrange(gps,0.002,4) 
-	*** 0.7772 - higher than outside the central range
-	
-	pwcorr 		selfreport_ha rap 	
-	*** 0.2006 correlation - low
-	
-	pwcorr 		selfreport_ha gps	
-	*** 0.0019 correlation - very very low
+	pwcorr 		gps selfreport_ha if !inrange(gps,0.002,4)
+	*** 0.02 - correlation outside this range similar to overall
 	
 	pwcorr 		selfreport_ha gps if inrange(gps,0.002,4) ///
 					& inrange(selfreport_ha,0.002,4)
-	*** 0.6811 - much much higher when range is restricted for both	
+	*** 0.50 - much much higher when range is restricted for both	
 	
 *	twoway 		(scatter selfreport_ha gps if inrange(gps,0.002,4) ///
 					& inrange(selfreport_ha,0.002,4))
@@ -198,12 +199,9 @@
 
 * make plotsize using GPS area if it is within reasonable range
 	generate 	plotsize = gps
-	replace 	plotsize = rap if plotsize == . & rap != . // replace missing values with rap
-	summarize 	selfreport_ha gps rap plotsize, detail	
-	*** we have some self-report information where we are missing plotsize 
 	
 	summarize 	selfreport_ha if missing(plotsize), detail
-	*** 109 obs w/ selfreport_ha missing plotsize
+	*** 31 obs w/ selfreport_ha missing plotsize
 	
 * replace any zero values as missing
 	replace		plotsize = . if plotsize <= 0
@@ -219,15 +217,15 @@
 
 * summarize results of imputation
 	tabulate 	mi_miss	//	this binary = 1 for the full set of observations where plotsize_GPS is missing
-	tabstat 	gps rap selfreport_ha plotsize plotsize_1_, by(mi_miss) ///
+	tabstat 	gps selfreport_ha plotsize plotsize_1_, by(mi_miss) ///
 					statistics(n mean min max) columns(statistics) longstub ///
 					format(%9.3g) 
-	*** 109 imputations made
+	*** 31 imputations made
 	
 	drop		mi_miss
 
 * verify that there is nothing to be done to get a plot size for the observations where plotsize_GPS_1_ is missing
-	list 		gps rap selfreport_ha plotsize if missing(plotsize_1_), sep(0)
+	list 		gps selfreport_ha plotsize if missing(plotsize_1_), sep(0)
 	*** there are some missing values that we have GPS for
 	
 	replace 	plotsize_1_ = gps if missing(plotsize_1_) & !missing(gps) & gps > 0 // replace with existing gps values
@@ -237,13 +235,18 @@
 	rename 		(plotsize plotsize_1_)(plotsize_raw plotsize)
 	label 		variable plotsize		"Plot Size (ha)"
 	sum 		plotsize, detail
-	*** i'm not a fan of the one negative plotsize
-	
+
 
 ************************************************************************
 **	4 - constructing other variables of interest
 ************************************************************************
 
+* look at irrigation dummy
+	generate 	irrigated = 1 if s3q17 == 1
+	replace		irrigated = 0 if irrigated == .
+	label 		variable irrigated "Is field irrigated?"
+
+	
 ************************************************************************
 **	4a - irrigation and labor
 ************************************************************************
@@ -256,71 +259,68 @@
 * in this survey we can't tell gender or age of household members
 * since we can't match household members we deal with each activity seperately
 
-* look at irrigation dummy
-	generate 	irrigated = pp_s3q12 if pp_s3q12 >= 1
-	label 		variable irrigated "Is field irrigated?"
-
 * household non-harvest labor
 * replace weeks worked equal to zero if missing
-	replace		pp_s3q27_b = 0 if pp_s3q27_b == . 
-	replace		pp_s3q27_f = 0 if pp_s3q27_f == . 
-	replace		pp_s3q27_j = 0 if pp_s3q27_j == . 
-	replace		pp_s3q27_n = 0 if pp_s3q27_n == . 
+	replace		s3q29b = 0 if s3q29b == . 
+	replace		s3q29f = 0 if s3q29f == . 
+	replace		s3q29j = 0 if s3q29j == . 
+	replace		s3q29n = 0 if s3q29n == . 
 	
 * find average # of days worked by first worker reported (most obs)
-	sum 		pp_s3q27_c pp_s3q27_g pp_s3q27_k pp_s3q27_o
-	*** pp_s3q27_c has by far the most obs, mean is 2.59
+	sum 		s3q29c s3q29g s3q29k s3q29o
+	*** s3q29c has by far the most obs, mean is 2.58
 	
 * replace days per week worked equal to 2.59 if missing and weeks were worked 
-	replace		pp_s3q27_c = 2.59 if pp_s3q27_c == . &  pp_s3q27_b != 0 
-	replace		pp_s3q27_g = 2.42 if pp_s3q27_g == . &  pp_s3q27_f != 0  
-	replace		pp_s3q27_k = 2.37 if pp_s3q27_k == . &  pp_s3q27_j != 0  
-	replace		pp_s3q27_o = 2.2 if pp_s3q27_o == . &  pp_s3q27_n != 0  
+	replace		 s3q29c = 2.59 if  s3q29c == . &   s3q29b != 0 
+	replace		 s3q29g = 2.42 if  s3q29g == . &   s3q29f != 0  
+	replace		 s3q29k = 2.37 if  s3q29k == . &   s3q29j != 0  
+	replace		 s3q29o = 2.2 if  s3q29o == . &   s3q29n != 0  
 	
 * replace days per week worked equal to 0 if missing and no weeks were worked
-	replace		pp_s3q27_c = 0 if pp_s3q27_c == . &  pp_s3q27_b == 0 
-	replace		pp_s3q27_g = 0 if pp_s3q27_g == . &  pp_s3q27_f == 0  
-	replace		pp_s3q27_k = 0 if pp_s3q27_k == . &  pp_s3q27_j == 0  
-	replace		pp_s3q27_o = 0 if pp_s3q27_o == . &  pp_s3q27_n == 0  
+	replace		 s3q29c = 0 if  s3q29c == . &   s3q29b == 0 
+	replace		 s3q29g = 0 if  s3q29g == . &   s3q29f == 0  
+	replace		 s3q29k = 0 if  s3q29k == . &   s3q29j == 0  
+	replace		 s3q29o = 0 if  s3q29o == . &   s3q29n == 0  
 	
-	summarize	pp_s3q27_b pp_s3q27_c pp_s3q27_f pp_s3q27_g pp_s3q27_j ///
-					pp_s3q27_k pp_s3q27_n pp_s3q27_o
+	summarize	 s3q29b  s3q29c  s3q29f  s3q29g  s3q29j ///
+					 s3q29k  s3q29n  s3q29o
 	*** it looks like the above approach works
 
-* other hh labor
+* hired labor
 * there is an assumption here
 	/* 	survey instrument splits question into # of men, total # of days
-		where pp_s3q29_a is # of men and pp_s3q29_b is total # of days (men)
+		where s3q30a is # of men and s3q30b is total # of days (men)
 		there is also women (c & d)
 		the assumption is that total # of days is the total
 		and therefore does not require being multiplied by # of men
-		there are weird obs that make this assumption shakey
-		where # of men = 3 and total # of days = 1 for example
-		the same dilemna/assumption applies to hired labor (pp_s3q28_*)
-		this can be revised if we think this assumption is shakey */
-
-* replace total days = 0 if total days is missing
-	replace		pp_s3q29_b = 0 if pp_s3q29_b == . 
-	replace		pp_s3q29_d = 0 if pp_s3q29_d == . 	
+		there are weird obs that make this assumption shakey */
+		
+* replace hired = 0 if hired is missing
+	replace		s3q30a = 0 if s3q30a == . 
+	replace		s3q30d = 0 if s3q30d == . 	
+	replace		s3q31a = 0 if s3q31a == . 	
+	replace		s3q31c = 0 if s3q31c == . 	
 	
 * replace total days = 0 if total days is missing, hired labor
-	replace		pp_s3q28_b = 0 if pp_s3q28_b == . 
-	replace		pp_s3q28_e = 0 if pp_s3q28_e == . 	
+	replace		s3q30b = 0 if s3q30b == . 
+	replace		s3q30e = 0 if s3q30e == . 	
+	replace		s3q31b = 0 if s3q31b == . 
+	replace		s3q31d = 0 if s3q31d == . 	
 	
 * generating individual household labor rates
-	generate	laborhh_1 = pp_s3q27_b * pp_s3q27_c
-	generate	laborhh_2 = pp_s3q27_f * pp_s3q27_g
-	generate	laborhh_3 = pp_s3q27_j * pp_s3q27_k
-	generate	laborhh_4 = pp_s3q27_n * pp_s3q27_o
-	generate	laborhi_m = pp_s3q28_b
-	generate	laborhi_f = pp_s3q28_e
-	generate	laborfr_m = pp_s3q29_b
-	generate	laborfr_f = pp_s3q29_d
+	generate	laborhh_1 = s3q29b * s3q29c
+	generate	laborhh_2 = s3q29f * s3q29g
+	generate	laborhh_3 = s3q29j * s3q29k
+	generate	laborhh_4 = s3q29n * s3q29o
+	generate	laborhi_m = s3q30b
+	generate	laborhi_f = s3q30e
+	generate	laborfr_m = s3q31b
+	generate	laborfr_f = s3q31d
 	
 	summarize	labor*	
 	
-* one outlying value to be addressed in laborhi_m
-	replace 	laborhi_m = 273 if laborhi_m > 273
+* one outlying value to be addressed in laborfr_m
+	replace 	laborfr_m = 150 if laborfr_m > 273
 
 * generate aggregate hh and hired labor variables	
 	generate 	laborday_hh = laborhh_1 + laborhh_2 + laborhh_3 + laborhh_4
@@ -341,49 +341,49 @@
 ************************************************************************
 
 * look at fertilizer use
-	generate	fert_any = 1 if pp_s3q15 == 1 | pp_s3q18 ==1 | pp_s3q20a_1 == 1 ///
-					| pp_s3q20a == 1
+	generate	fert_any = 1 if s3q21 == 1 | s3q22 == 1 | s3q23 == 1 | s3q24 == 1
 	replace		fert_any = 0 if fert_any == . 
 	
 * constructing continuous fertilizer variable
 * making any missing ob zero if there is a value for another inorganic fertilizer
 * variable in the same observation	
-	generate 	fert_u = pp_s3q16  // urea
-	replace		fert_u = 0 if pp_s3q16 == . & (pp_s3q19 != . | pp_s3q20a_2 != . ///
-					| pp_s3q20a_7 != .)
+	generate 	fert_u = s3q21a  // urea
+	replace		fert_u = 0 if s3q21a == . & (s3q22a != . | s3q23a != . ///
+					| s3q24a != .)
 	
-	generate 	fert_d = pp_s3q19 // DAP
-	replace		fert_d = 0 if pp_s3q19 == . & (pp_s3q16 != . | pp_s3q20a_2 != . ///
-					| pp_s3q20a_7 != .)
+	generate 	fert_d = s3q22a // DAP
+	replace		fert_d = 0 if s3q22a == . & (s3q21a != . | s3q23a != . ///
+					| s3q24a != .)
 	
-	generate 	fert_n = pp_s3q20a_2 // NPS
-	replace		fert_n = 0 if pp_s3q20a_2 == . & (pp_s3q16 != . | pp_s3q19 != . ///
-					| pp_s3q20a_7 != .)
+	generate 	fert_n = s3q23a // NPS
+	replace		fert_n = 0 if s3q23a == . & (s3q21a != . | s3q22a != . ///
+					| s3q24a != .)
 	*** unit of measure not specified, assuming kg
 					
-	generate 	fert_o = pp_s3q20a_7 // other chemical fertilizer
-	replace		fert_o = 0 if pp_s3q20a_7 == . & (pp_s3q16 != . | pp_s3q19 != . ///
-					| pp_s3q20a_2 != .)
+	generate 	fert_o = s3q24a // other chemical fertilizer
+	replace		fert_o = 0 if s3q24a == . & (s3q21a != . | s3q22a != . ///
+					| s3q23a != .)
 	*** unit of measure not specified, assuming kg
 	
 	generate 	kilo_fert = fert_u + fert_d + fert_n + fert_o
-	label var 	kilo_fert "Kilograms of fertilizer applied (Urea and DAP only)"
+	label var 	kilo_fert "Kilograms of fertilizer applied"
 	drop 		fert_u fert_d fert_n fert_o
-	*** kilo_fert only captures Urea, DAP, NPS, and other inorganics - 5,172 obs
+	*** kilo_fert only captures Urea, DAP, NPS, and other inorganics - 3,909 obs
 	*** no quantities are provided for compost, manure, or organic fertilizer
 	*** will attempt to impute missing values
 	
 	replace		kilo_fert = 0 if fert_any == 0 & kilo_fert == .
-	*** 11,401 changes made
+	*** 9,453 changes made
 	
 * summarize fertilizer
-	sum				kilo_fert, detail
-	*** median 0, mean 24.5, max 10,000
+	replace		kilo_fert = . if kilo_fert > 20000
+	*** median 0, mean 27.5, max 50,000
 
 * replace any +3 s.d. away from median as missing
-	replace			kilo_fert = . if kilo_fert > `r(p50)'+(3*`r(sd)')
-	*** replaced 125 values, mean is now 7.77, max is now 801
-	
+	sum				kilo_fert, detail
+	replace			kilo_fert = . if kilo_fert > `r(p50)'+(2*`r(sd)')
+	*** replaced 17 values, mean is now 13, max is now 20000
+
 * impute missing values
 	mi set 			wide 	// declare the data to be wide.
 	mi xtset		, clear 	// clear any xtset that may have had in place previously
@@ -401,7 +401,7 @@
 	replace			kilo_fert = kilo_fert_1_
 	lab var			kilo_fert "fertilizer use (kg), imputed"
 	drop			kilo_fert_1_ 
-	*** 125 imputations made
+	*** 21 imputations made
 	
 
 * ***********************************************************************
@@ -410,15 +410,14 @@
 
 * renaming some variables of interest
 	rename 		household_id hhid
-	rename 		household_id2 hhid2
-	rename		pp_s3q03b purestand
+	rename		s3q04 purestand
 	
 * restrict to variables of interest 
 * this is how world bank has their do-file set up
 * if we want to keep all identifiers (i.e. region, zone, etc) we can do that easily
-	keep  		holder_id- pp_s3q0a purestand kilo_fert labordays_plant plotsize ///
-					irrigated fert_any field_id
-	order 		holder_id- saq06
+	keep  		holder_id- saq09 purestand kilo_fert labordays_plant plotsize ///
+					irrigated fert_any parcel_id field_id
+	order 		holder_id- saq09
 
 * final preparations to export
 	isid 		holder_id parcel field
@@ -427,8 +426,8 @@
 	describe
 	summarize
 	sort 		holder_id parcel field
-	customsave , idvar(field_id) filename(PP_SEC3.dta) path("`export'") ///
-		dofile(PP_SEC3) user($user)
+	
+	save 		"$export/PP_SEC3.dta", replace
 
 * close the log
 	log	close

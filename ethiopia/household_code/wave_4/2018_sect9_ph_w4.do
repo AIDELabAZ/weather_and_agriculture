@@ -1,21 +1,22 @@
 * Project: WB Weather
 * Created on: June 2020
 * Created by: McG
-* Stata v.16
+* Edited on: 4 June 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* cleans Ethiopia household variables, wave 3 PH sec9
 	* seems to roughly correspong to Malawi ag-modG and ag-modM
 	* contains harvest weights and other info (dates, etc.)
 	* hierarchy: holder > parcel > field > crop
-	* WRITE whAT THIS IS DOIng
 
 * assumes
-	* customsave.ado
+	* raw lsms-isa data
 	* distinct.ado
 	
 * TO DO:
-	* done
+	* 
 	
 	
 * **********************************************************************
@@ -23,13 +24,13 @@
 * **********************************************************************
 
 * define paths
-	loc root = "$data/household_data/ethiopia/wave_3/raw"
-	loc export = "$data/household_data/ethiopia/wave_3/refined"
-	loc logout = "$data/household_data/ethiopia/logs"
-
-* open log
-	cap log close
-	log using "`logout'/wv3_PHSEC9", append
+	global		root 		 	"$data/household_data/ethiopia/wave_4/raw"  
+	global		export 		 	"$data/household_data/ethiopia/wave_4/refined"
+	global		logout 		 	"$data/household_data/ethiopia/logs"
+	
+* open log	
+	cap log 	close
+	log 		using			"$logout/wv4_PHSEC9", append
 
 
 * **********************************************************************
@@ -37,38 +38,27 @@
 * **********************************************************************
 
 * load data
-	use 		"`root'/sect9_ph_w3.dta", clear
+	use 		"$root/sect9_ph_w4.dta", clear
 
 * dropping duplicates
 	duplicates drop
 	*** 0 obs dropped 
-		
-* one ob missing local ids, even though holder_id has 4 other obs and crop_code is present	
-	replace 	household_id = "07070100903022" ///
-					if holder_id == "0707010090302201" & household_id == ""
-	replace 	household_id2 = "070701088800903022" ///
-					if holder_id == "0707010090302201" & household_id2 == ""
-	replace 	rural = 1 if holder_id == "0707010090302201" & rural == .
-	replace 	pw_w3 = 3452.8 if holder_id == "0707010090302201" & pw_w3 == .
-	replace 	ea_id = "07070100903" ///
-					if holder_id == "0707010090302201" & ea_id == ""
-	replace 	saq01 = 7 if holder_id == "0707010090302201" & saq01 == .
-	replace 	saq02 = 7 if holder_id == "0707010090302201" & saq02 == .
-	replace 	saq03 = 1 if holder_id == "0707010090302201" & saq03 == .
-	replace 	saq04 = 9 if holder_id == "0707010090302201" & saq04 == .
-	replace 	saq05 = 3 if holder_id == "0707010090302201" & saq05 == .
-	replace 	saq06 = 22 if holder_id == "0707010090302201" & saq06 == .
-	replace 	ph_saq07 = 1 if holder_id == "0707010090302201" & ph_saq07 == .
 	
+	isid 		holder_id parcel_id field_id crop_id
+		
 * check # of maize obs
+	rename		s9q00b crop_code
 	tab			crop_code
-	*** 3,380 maize obs
+	*** 1,925 maize obs
 	
 * drop if obs haven't harvested crop
-	tab			ph_s9q03, missing
-	*** 4,398 answered no
+	tab			s9q04, missing
+	*** 2,103 answered no
 	
-	drop 		if ph_s9q03 == 2
+	drop 		if s9q04 == 2
+fdsfdsfds
+
+* stopped here
 	
 * drop trees and other perennial crops
 	drop if crop_code == 41 	// apples

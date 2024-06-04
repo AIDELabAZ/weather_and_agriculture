@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: May 2024
 * Created by: jdm
-* Edited on 24 May 2024
+* Edited on 4 June 2024
 * Edited by: jdm
 * Stata v.18
 
