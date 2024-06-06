@@ -127,7 +127,7 @@
 	
 * creating unique crop identifier
 	rename		crop_id crop
-	tostring	crop_code, generate(crop_idS)
+	tostring	crop, generate(crop_idS)
 	generate 	crop_id = holder_id + " " + ea_id + " " + parcel + " " ///
 					+ field + " " + crop_idS
 	isid		crop_id

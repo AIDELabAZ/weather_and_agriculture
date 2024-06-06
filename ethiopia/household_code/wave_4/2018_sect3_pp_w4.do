@@ -76,17 +76,17 @@
 
 * create conversion key 
 	rename		saq01 region
-	rename		saq02 zone
-	rename 		saq03 woreda
-	rename		saq05 ea
 	rename		saq14 sector
 	rename		saq04 city
 	rename		saq06 kebele
 	rename		s3q02b local_unit
 	
 * destring zone and woreda
+	gen			zone = saq02
 	destring	zone, replace
+	gen			woreda = saq03
 	destring	woreda, replace
+	gen			ea = saq05
 	destring	ea, replace
 
 * merge in land conversion factors	
@@ -95,6 +95,11 @@
 	*** conversion facotrs only given for timad, boy, senga, and kert and not for all woredas 
 	drop		if _merge == 2
 
+	drop		zone woreda ea
+	rename		saq02 zone
+	rename 		saq03 woreda
+	rename		saq05 ea
+	
 * create zone and region conversion factors by taking average	
 	egen 		zone_mean = mean( conversion), by(region zone local_unit)
 	egen 		region_mean = mean( conversion), by(region local_unit)

@@ -40,7 +40,24 @@
 	use 		"$root/sect11_ph_w4.dta", clear
 
 * dropping duplicates
-	duplicates drop
+	duplicates 	drop
+	format 		%4.0g harvestedcrop_id
+	rename		s11q01 crop_code
+	
+* unique identifier can only be generated including crop code as some fields are mixed
+	describe
+	sort 		holder_id harvestedcrop_id
+	isid 		holder_id harvestedcrop_id
+
+* creating unique crop identifier
+	drop if		crop_code == .
+	*** 2 dropped
+	
+	tostring	harvestedcrop_id, generate(crop_codeS)
+	generate 	crop_id = holder_id + " " + crop_codeS
+	isid		crop_id
+	drop		crop_codeS
+	rename		harvestedcrop_id crop
 	
 * creating district identifier
 	egen 		district_id = group( saq01 saq02)
@@ -58,19 +75,6 @@
 	
 	drop 		if s11q07 == 2
 	
-* creating unique crop identifier
-	rename		s11q01 crop_code
-	drop if		crop_code == .
-	tostring	crop_code, generate(crop_codeS)
-	generate 	crop_id = holder_id + " " + crop_codeS
-	isid		crop_id
-	drop		crop_codeS	
-	
-* generate unique identifier
-	describe
-	sort 		holder_id crop_code
-	isid 		holder_id crop_code
-
 * create conversion key 
 	rename		s11q03a2 unit_cd
 	merge 		m:1 crop_code unit_cd using "$export/Crop_CF_Wave4.dta"
@@ -89,7 +93,7 @@
 * 2a - generating conversion factors
 * ***********************************************************************	
 	
-* constructing conversion factor - same procedure as sect9_ph_w3
+* constructing conversion factor - same procedure as sect9_ph_w4
 * exploring conversion factors - are any the same across all regions and obs?
 	tab 		unit_cd
 	egen		unitnum = group(unit_cd)
@@ -250,40 +254,40 @@
 * make datasets with crop price information	
 	preserve
 	collapse 		(p50) p_holder=price (count) n_holder=price, by(crop_code holder_id ea woreda zone region)
-	save 			"$export/w3_sect11_pholder.dta", replace 	
+	save 			"$export/w4_sect11_pholder.dta", replace 	
 	restore
 	
 	preserve
 	collapse 		(p50) p_ea=price (count) n_ea=price, by(crop_code ea woreda zone region)
-	save 			"$export/w3_sect11_pea.dta", replace 	
+	save 			"$export/w4_sect11_pea.dta", replace 	
 	restore
 	
 	preserve
 	collapse 		(p50) p_woreda=price (count) n_woreda=price, by(crop_code woreda zone region)
-	save 			"$export/w3_sect11_pworeda.dta", replace 	
+	save 			"$export/w4_sect11_pworeda.dta", replace 	
 	restore
 	
 	preserve
 	collapse 		(p50) p_zone=price (count) n_zone=price, by(crop_code zone region)
-	save 			"$export/w3_sect11_pzone.dta", replace 
+	save 			"$export/w4_sect11_pzone.dta", replace 
 	restore
 	
 	preserve
 	collapse 		(p50) p_region=price (count) n_region=price, by(crop_code region)
-	save 			"$export/w3_sect11_pregion.dta", replace 
+	save 			"$export/w4_sect11_pregion.dta", replace 
 	restore
 	
 	preserve
 	collapse 		(p50) p_crop=price (count) n_crop=price, by(crop_code)
-	save 			"$export/w3_sect11_pcrop.dta", replace 
+	save 			"$export/w4_sect11_pcrop.dta", replace 
 	restore	
 	
 * merge price data back into dataset
-	merge 			m:1 crop_code ea woreda zone region	        using "$export/w3_sect11_pea.dta", assert(3) nogenerate
-	merge 			m:1 crop_code woreda zone region	        using "$export/w3_sect11_pworeda.dta", assert(3) nogenerate
-	merge 			m:1 crop_code zone region	        		using "$export/w3_sect11_pzone.dta", assert(3) nogenerate
-	merge 			m:1 crop_code region						using "$export/w3_sect11_pregion.dta", assert(3) nogenerate
-	merge 			m:1 crop_code 						        using "$export/w3_sect11_pcrop.dta", assert(3) nogenerate
+	merge 			m:1 crop_code ea woreda zone region	        using "$export/w4_sect11_pea.dta", assert(3) nogenerate
+	merge 			m:1 crop_code woreda zone region	        using "$export/w4_sect11_pworeda.dta", assert(3) nogenerate
+	merge 			m:1 crop_code zone region	        		using "$export/w4_sect11_pzone.dta", assert(3) nogenerate
+	merge 			m:1 crop_code region						using "$export/w4_sect11_pregion.dta", assert(3) nogenerate
+	merge 			m:1 crop_code 						        using "$export/w4_sect11_pcrop.dta", assert(3) nogenerate
 
 
 * ***********************************************************************

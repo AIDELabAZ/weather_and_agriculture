@@ -41,7 +41,9 @@
 	use 		"$root/sect10_ph_w4.dta", clear
 
 * dropping duplicates
-	duplicates drop
+	duplicates  drop
+	format 		%4.0g crop_id
+	rename		s9q00b crop_code
 
 * unique identifier can only be generated including crop code as some fields are mixed
 	describe
@@ -65,8 +67,6 @@
 					+ field + " " + crop_codeS
 	isid		crop_id
 	drop		crop_codeS
-
-	isid 		holder_id parcel_id field_id crop_id
 
 * creating district identifier
 	egen 		district_id = group( saq01 saq02)
@@ -180,8 +180,12 @@
 	rename 		saq03 woreda
 	rename		saq05 ea
 
+	lab var 		crop_code "Crop Identifier"
+	lab var			crop_id "Unique Crop ID"
+	lab var			crop "Unique Crop ID Within Plot"
+	
 *	Restrict to variables of interest
-	keep  		holder_id- saq09 crop_id labordays_harv
+	keep  		holder_id- saq09 crop_code crop_id labordays_harv
 	order 		holder_id- crop
 
 * final preparations to export

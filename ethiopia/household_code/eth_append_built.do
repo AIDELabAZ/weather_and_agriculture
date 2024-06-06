@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: mcg
-* Edited on: 20 May 2024
+* Edited on: 6 June 2024
 * Edited by: jdm
 * Stata v.18
 
@@ -46,15 +46,20 @@
 * append wave 3 dataset
 	append		using "$root/wave_3/essy3_merged", force	
 	
+* append wave 4 dataset
+	append		using "$root/wave_4/essy4_merged", force	
+	
 * check the number of observations again
 	count
-	*** 7307 observations 
+	*** 9303 observations 
 	count if 		year == 2011
 	*** wave 1 has 1689
 	count if 		year == 2013
 	*** wave 2 has 2900
 	count if 		year == 2015
 	*** wave 3 has 2718
+	count if 		year == 2018
+	*** wave 4 has 1996
 	
 * drop observations missing year 1 household id
 	drop if			household_id == ""
@@ -75,13 +80,12 @@
 	
 * generate one variable for sampling weight
 	gen				weight = pw
-	tab				weight, missing
 	
 	replace			weight = pw2 if weight == .
 	replace			weight = pw_w3 if weight == .
-	tab 			weight, missing
+	replace			weight = pw_w4 if weight == .
 	
-	drop			pw pw2 pw_w3
+	drop			pw pw2 pw_w3 pw_w4
 	
 	rename			weight pw
 	lab var			pw "Household Sample Weight"

@@ -42,6 +42,8 @@
 
 * dropping duplicates
 	duplicates drop
+	format 		%4.0g crop_id
+	rename		s4q01b crop_code
 
 * unique identifier can only be generated including crop code as some fields are mixed (s4q03d)
 	describe
@@ -66,8 +68,8 @@
 	generate 	field_id = holder_id + " " + parcel + " " + field
 	
 * creating unique crop identifier
-	rename		crop_id crop_code
-	tostring	crop_code, generate(crop_idS)
+	rename		crop_id crop
+	tostring	crop, generate(crop_idS)
 	generate 	crop_id = holder_id + " " + ea_id + " " + parcel + " " ///
 					+ field + " " + crop_idS
 	isid		crop_id
@@ -136,7 +138,7 @@
 	rename 		saq05 ea
 	
 * restrict to variables of interest
-	keep  		holder_id- s4q01b pesticide_any herbicide_any field_prop ///
+	keep  		holder_id- crop_code pesticide_any herbicide_any field_prop ///
 					damaged damaged_pct parcel_id field_id crop_id
 	order 		holder_id- ea
 
