@@ -16,9 +16,7 @@
 	* distinct.ado
 
 * TO DO:
-	* the only isid variable i found is individual_id2
-	* where is the isid for wave 3?
-	* otherwise complete
+	* done
 
 	
 * **********************************************************************
@@ -36,7 +34,7 @@
 
 	
 * **********************************************************************
-* 1 - preparing ESS 2015/16 (Wave 3) - Household Section 1 
+* 1 - preparing ESS 2018/19 (Wave 4) - Household Section 1 
 * **********************************************************************
 
 * load data
@@ -50,12 +48,11 @@
 	sort 		household_id individual_id
 	isid 		household_id individual_id
 
-* in previous waves we creater district identifier, in wave 4 we can use ea_id
-	*egen 		district_id = group( saq01 saq02)
-	*label var 	district_id "Unique district identifier"
-	*distinct	saq01 saq02, joint
-	distinct	ea_id
-	*** 535 distinct eas
+* create district identifier
+	egen 		district_id = group( saq01 saq02)
+	label var 	district_id "Unique district identifier"
+	distinct	saq01 saq02, joint
+	*** 105 distinct districts
 
 
 * ***********************************************************************

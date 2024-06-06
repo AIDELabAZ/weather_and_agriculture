@@ -50,7 +50,7 @@
 	save		"$export/Crop_CF_Wave4.dta", replace
 
 * **********************************************************************
-* 2 - preparing ESS (Wave 3) - Post Harvest Section 9
+* 2 - preparing ESS (Wave 4) - Post Harvest Section 9
 * **********************************************************************
 
 * load data

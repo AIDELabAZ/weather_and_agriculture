@@ -30,7 +30,7 @@
 	
 * open log	
 	cap log 	close
-	log 		using			"$logout/wv3_PPSEC4", append
+	log 		using			"$logout/wv4_PPSEC4", append
 
 
 * **********************************************************************

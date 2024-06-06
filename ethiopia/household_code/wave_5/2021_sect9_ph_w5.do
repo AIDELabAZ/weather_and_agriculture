@@ -1,21 +1,22 @@
 * Project: WB Weather
 * Created on: June 2020
 * Created by: McG
-* Stata v.16
+* Edited on: 4 June 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* cleans Ethiopia household variables, wave 3 PH sec9
 	* seems to roughly correspong to Malawi ag-modG and ag-modM
 	* contains harvest weights and other info (dates, etc.)
 	* hierarchy: holder > parcel > field > crop
-	* WRITE whAT THIS IS DOIng
 
 * assumes
-	* customsave.ado
+	* raw lsms-isa data
 	* distinct.ado
 	
 * TO DO:
-	* done
+	* complete through 3a. start at 3b
 	
 	
 * **********************************************************************
@@ -23,52 +24,59 @@
 * **********************************************************************
 
 * define paths
-	loc root = "$data/household_data/ethiopia/wave_3/raw"
-	loc export = "$data/household_data/ethiopia/wave_3/refined"
-	loc logout = "$data/household_data/ethiopia/logs"
-
-* open log
-	cap log close
-	log using "`logout'/wv3_PHSEC9", append
-
+	global		root 		 	"$data/household_data/ethiopia/wave_5/raw"  
+	global		export 		 	"$data/household_data/ethiopia/wave_5/refined"
+	global		logout 		 	"$data/household_data/ethiopia/logs"
+	
+* open log	
+	cap log 	close
+	log 		using			"$logout/wv5_PHSEC9", append
 
 * **********************************************************************
-* 1 - preparing ESS (Wave 3) - Post Harvest Section 9
+* 1 - fix duplicate observation in crop conversion data
+* **********************************************************************
+
+* unlike in other waves, there is a duplicate in the conv data
+* need to take care of the duplicate first before merging later
+
+* load data
+	use 		"$root/Crop_CF_Wave5.dta", clear
+	
+* drop duplicates
+	duplicates 	drop crop_code unit_cd, force
+	*** 1 dropped
+	
+* save data
+	save		"$export/Crop_CF_Wave5.dta", replace
+
+* **********************************************************************
+* 2 - preparing ESS (Wave 5) - Post Harvest Section 9
 * **********************************************************************
 
 * load data
-	use 		"`root'/sect9_ph_w3.dta", clear
+	use 		"$root/sect9_ph_w5.dta", clear
 
 * dropping duplicates
-	duplicates drop
+	duplicates 	drop
+	format 		%4.0g crop_id
+	rename		s9q00b crop_code
 	*** 0 obs dropped 
-		
-* one ob missing local ids, even though holder_id has 4 other obs and crop_code is present	
-	replace 	household_id = "07070100903022" ///
-					if holder_id == "0707010090302201" & household_id == ""
-	replace 	household_id2 = "070701088800903022" ///
-					if holder_id == "0707010090302201" & household_id2 == ""
-	replace 	rural = 1 if holder_id == "0707010090302201" & rural == .
-	replace 	pw_w3 = 3452.8 if holder_id == "0707010090302201" & pw_w3 == .
-	replace 	ea_id = "07070100903" ///
-					if holder_id == "0707010090302201" & ea_id == ""
-	replace 	saq01 = 7 if holder_id == "0707010090302201" & saq01 == .
-	replace 	saq02 = 7 if holder_id == "0707010090302201" & saq02 == .
-	replace 	saq03 = 1 if holder_id == "0707010090302201" & saq03 == .
-	replace 	saq04 = 9 if holder_id == "0707010090302201" & saq04 == .
-	replace 	saq05 = 3 if holder_id == "0707010090302201" & saq05 == .
-	replace 	saq06 = 22 if holder_id == "0707010090302201" & saq06 == .
-	replace 	ph_saq07 = 1 if holder_id == "0707010090302201" & ph_saq07 == .
 	
+	isid 		holder_id parcel_id field_id crop_id
+	
+	duplicates 	drop holder_id parcel_id field_id crop_code, force
+	*** 32 observations of 13,740 dropped
+	
+	isid		holder_id parcel_id field_id crop_code
+		
 * check # of maize obs
 	tab			crop_code
-	*** 3,380 maize obs
+	*** 1,909 maize obs
 	
 * drop if obs haven't harvested crop
-	tab			ph_s9q03, missing
-	*** 4,398 answered no
-	
-	drop 		if ph_s9q03 == 2
+	tab			s9q04, missing
+	drop 		if s9q04 == 2
+	*** 2,143 answered no
 	
 * drop trees and other perennial crops
 	drop if crop_code == 41 	// apples
@@ -103,12 +111,8 @@
 	drop if crop_code == 120	// other, cereal
 	drop if crop_code == 121	// other, case crops
 	drop if crop_code == 123	// other, vegetable
-				
-* finding unique identifier
-	describe
-	sort 		holder_id parcel_id field_id crop_code
-	isid 		holder_id parcel_id field_id crop_code, missok
-	
+	* about 5,000 dropped
+		
 * creating parcel identifier
 	rename		parcel_id parcel
 	tostring	parcel, replace
@@ -120,95 +124,96 @@
 	generate 	field_id = holder_id + " " + ea_id + " " + parcel + " " + field
 	
 * creating unique crop identifier
-	tostring	crop_code, generate(crop_codeS)
+	rename		crop_id crop
+	tostring	crop, generate(crop_idS)
 	generate 	crop_id = holder_id + " " + ea_id + " " + parcel + " " ///
-					+ field + " " + crop_codeS
+					+ field + " " + crop_idS
 	isid		crop_id
-	drop		crop_codeS
+	drop		crop_idS
 
 * creating district identifier
 	egen 		district_id = group( saq01 saq02)
 	label var 	district_id "Unique district identifier"
 	distinct	saq01 saq02, joint
-	*** 69 distinct districts
-	*** same as pp sect3, good
+	*** 58 distinct districts
+	*** 5 less than in sec4, 10 less than in sect3
 	
 * check for missing crop codes
 	tab			crop_code, missing
 	** no missing crop codes in this wave =]
 
 * create conversion key 
-	rename		ph_s9q04_b unit_cd
+	rename		s9q05b unit_cd
 	tab 		unit_cd, missing
-	*** missing 4,398 units of measure
+	*** none missing units of measure
 	
-	merge 		m:1 crop_code unit_cd using "`root'/Crop_CF_Wave3.dta"
-	*** 2,789 obs not matched from master data
-	*** liekly due to no unit_cd
+	merge 		m:1 crop_code unit_cd using "$export/Crop_CF_Wave5.dta"
+	*** 609 obs not matched from master data
 	
-	tab 		_merge
 	drop		if _merge == 2
 	drop		_merge
 
 
 * ***********************************************************************
-* 2 - finding harvest weights
+* 3 - finding harvest weights
 * ***********************************************************************	
 
 * ***********************************************************************
-* 2a - generating conversion factors
+* 3a - generating conversion factors
 * ***********************************************************************	
 	
 * creating harvest (kg) based on self reported values
 * self reported values listed in various units of measure
-	rename		ph_s9q04_a hrvqty_self
-	rename 		ph_s9q05 hrvqty_self_kgest	
+	rename		s9q05a hrvqty_self
+	rename 		s9q06 hrvqty_self_kgest	
 	
 * exploring conversion factors - are any the same across all regions and obs?
 	tab 		unit_cd
 	egen		unitnum = group(unit_cd)
-	*** 56 units listed
+	*** 59 units listed
 	
 	gen			cfavg = (mean_cf1 + mean_cf2 + mean_cf3 + mean_cf4 + mean_cf6 ///
 							+ mean_cf7 + mean_cf12 + mean_cf99)/8
 	pwcorr 		cfavg mean_cf_nat	
 	*** correlation of 0.9999 - this will work
 	
-	local 		units = 56
+	local 		units = 59
 	forvalues	i = 1/`units'{
 	    
 		tab		unit_cd if unitnum == `i'
 		tab 	cfavg if unitnum == `i', missing
 	} 
 	*** results! universal units are:
-	*** kilogram, gram, quintal, and jenbe
-	*** bunch (small, medium, and large)
-	*** shekim (small, medium, and large)
-	*** zorba/akara (small, medium and large)
-	*** also, chinets (small, medium, and large) have no conversion factors given
+	*** kilogram, gram, quintal, box
+	*** shekim (small, medium, and large), esir (large)
+	*** festal (small, large)
+	*** missing units are:
+	*** lt, cl, jenbe, melekiya, zelela (small, medium), zorba
+	*** bunch and chinets (small, medium, and large) and other
+	*** have no conversion factors given
 
 * generating conversion factors
 * starting with units found to be universal
 	gen			cf = 1 if unit_cd == 1 			// kilogram
 	replace		cf = .001 if unit_cd == 2 		// gram
 	replace		cf = 100 if unit_cd == 3 		// quintal
+	replace		cf = 1 if unit_cd == 4 			// kilogram
+	replace		cf = .001 if unit_cd == 5 		// gram
+	replace		cf = 48.05125 if unit_cd == 6 	// box/casa
+	replace		cf = 1.92 if unit_cd == 63		// esir (large)
+	replace		cf = 1.415 if unit_cd == 71
+	replace		cf = 6.769 if unit_cd == 73		//  festal
+	replace		cf = 7.27 if unit_cd == 161		// shekim
+	replace		cf = 21.66 if unit_cd == 162
+	replace		cf = 41 if unit_cd == 163
+	
+* then use conversion factors from past rounds for ones missing in this wave
 	replace		cf = 31.487 if unit_cd == 7 	// jenbe
 	replace		cf = 9.6 if unit_cd == 41		// bunches
 	replace		cf = 17.5 if unit_cd == 42
 	replace		cf = 19.08 if unit_cd == 43	
-	replace		cf = 7.27 if unit_cd == 161		// shekim
-	replace		cf = 21.66 if unit_cd == 162
-	replace		cf = 41 if unit_cd == 163
-	replace		cf = .16 if unit_cd == 191		// zorba/akara
-	replace		cf = .27 if unit_cd == 192
-	replace		cf = .57 if unit_cd == 193
 	
-* using algebra to back out (universal) cfs for chinets
-	gen 		impqty = hrvqty_self_kgest/hrvqty_self
-	sum 		impqty if unit_cd == 51, detail			// chinet small, cf = 30
-	sum 		impqty if unit_cd == 52, detail			// chinet small, cf = 50
-	sum 		impqty if unit_cd == 53, detail			// chinet small, cf = 70
-	
+* using chinets from previous rounds
 	replace 	cf = 30 if unit_cd == 51		// chinets
 	replace 	cf = 50 if unit_cd == 52
 	replace 	cf = 70 if unit_cd == 53
@@ -229,147 +234,52 @@
 	
 * checking veracity of kg estimates
 	tab 		cf, missing
-	*** missing 2,120 - slightly fewer than missed merges due to univeral units
-	
-	tab			cf if hrvqty_self != ., missing
-	tab			hrvqty_self if cf != ., missing
-	*** there are no self report harvest quanities w/out a conversion factor
-	
+	*** missing 423 - fewer than missed merges due to univeral units
+
 	
 * ***********************************************************************
-* 2b - constructing harvest weights
+* 3b - constructing harvest weights
 * ***********************************************************************		
 	
 	gen			hrvqty_self_converted = hrvqty_self * cf
 	pwcorr		hrvqty_self_converted hrvqty_self_kgest
-	*** correlation of 0.5045 - not terrible but not great either
-	*** i'm inclined to take the surveyor's estimate over the converted kgs
-	*** being that the conversion factors are region wide averages
-	*** the surveyor may have been able to estimate based on more local info
+	*** correlation of 0.13 - terrible esp compared to wave 3 which was .54
 	
-	gen			hrvqty_selfr = hrvqty_self_kgest
-	replace		hrvqty_selfr = hrvqty_self_converted if hrvqty_selfr == . 
-	*** only 98 changes made in this step
+	sum			hrvqty_self_converted hrvqty_self_kgest
+	*** self-report mean 230, min .001, max 55,000
+	*** surveyor	mean 362, min -350, max 510,000
+	
+	*** in previous waves we have used surveyor's estimates
+	*** this wave i'm inclined to take the surveyor's estimate over the converted kgs
+	*** being that the surveyor reports negative as well as values over 100k
+	
+	gen			hrvqty_selfr = hrvqty_self_converted
+	replace		hrvqty_selfr = hrvqty_self_kgest if hrvqty_selfr == . 
+	*** only 708 changes made in this step
 
-	tab			hrvqty_selfr, missing
-	*** missing 17 obs
-	
 	sum 		hrvqty_selfr, detail
-	*** mean qty 135 kg, this seems plausible
-	*** max at 50K - less plausible
-	*** there are 49 obs = 0, crop damage?
+	*** mean qty 219 kg, this seems plausible
+	*** max at 55K - less plausible
+	*** there are 8 obs = 0
 
+* unlike previous waves with many zeros, we only have 8
+* they all are missing conversion factors
+* surveyors reported zero so will keep them
 	
-* ***********************************************************************
-* 2c - resolving zero values
-* ***********************************************************************		
-
-* crop damage
-	rename 		ph_s9q11 damaged
-	rename 		ph_s9q13 damaged_pct
-	tab 		damaged_pct damaged, missing
-	tab 		hrvqty_selfr damaged, missing
-	*** crop damage reported on 47 of the 49 obs w/ harv quantity = 0
-	*** what about 100% crop damage on other obs?
-	
-	tab 		damaged_pct if hrvqty_selfr == 0
-	*** wide range of percentages, was hoping for all 100s	
-	
-	generate 	destroyed = 1 if damaged == 1 & damaged_pct == 100
-	gen 		destroyed_lite = 1 if damaged_pct == 100
-	replace		destroyed = 0 if destroyed == .
-	replace 	destroyed_lite = 0 if destroyed_lite == .
-	pwcorr		destroyed destroyed_lite
-	*** correlation of 0.9981 - will use destroyed_lite
-	
-	tab			damaged_pct
-	tab 		destroyed_lite, missing
-	*** 1,965 obs reporting 100% destroyed
-	*** the problem here is i'm not confident in how damaged_pct is reported
-	*** there are 11 obs >100% damage
-	*** there are also 258 obs reporting <5% damage
-	
-* let's take stock of where we're at so far
-*	order 		hrvqty_selfr hrvqty_self_kgest hrvqty_self_converted ///
-*					hrvqty_self cf destroyed_lite destroyed damaged damaged_pct ///
-*					unit_cd							
-	sort 		hrvqty_selfr 
-	tab			hrvqty_self if hrvqty_selfr == 0, missing
-	*** these all have non-zero self reported values
-	*** two are listed as destroyed (100% crop damage)
-	
-	tab			hrvqty_self_converted if hrvqty_selfr == 0, missing
-	*** 11 of 49 missing, due to missing conversion factors
-	
-* i'm torn as to what to do, i'm going to replace zeros w/ self reported values
-* this may be inconsistent with my thought process on lines 177-179
-	replace		hrvqty_selfr = hrvqty_self_converted if hrvqty_selfr == 0 & ///
-					hrvqty_self_converted != .
-	sort		hrvqty_selfr
-	*** only 11 zeros remain, still 17 = .
-	*** if this step is taken, neither of the two destroyed obs remain (line 236)
-	
-	tab 		unit_cd if hrvqty_selfr == 0
-	*** mostly (7 of 11) chinet small
-	
-	sort		hrvqty_selfr holder_id
-	*** only four holders represent these 11 obs
-	*** could there be matches for the same unit in the same region?
-
-* what cf's am i needing?
-	sort		hrvqty_selfr holder_id unit_cd
-	*** i need: 	a medium chinet (52) in snnp, a small chinet (51) in snnp, 
-	***				a small kerchat/kemba (91) in snnp, box/casa (6) in harari
-	*** recall that no conversion factors were given for any chinets
-	
-	sort 		unit_cd household_id holder_id
-	***	findings:	the same holder that has a zero value for hrvqty_selfr
-	***				has two other crops given in kerchat/kemba small, with two
-	***				different conversion factors. 
-	***				i thought this couldn't be the case. i'm confused
-	***				the same holder, same location, no regional differences
-	***				values for box/casa in harari vary wildly
-	
-* here's what occurs to me
-	sum			mean_cf7 if unit_cd == 91 // mean 10.2935
-	sum			mean_cf99 if unit_cd == 6 // mean 50.5405
-	
-	replace		cf = 10.2935 if unit_cd == 91 & saq01 == 7 & hrvqty_selfr == 0 ///
-					& cf == .
-	*** 2 changes, good
-	
-	replace		cf = 50.5405 if unit_cd == 6 & saq01 == 13 & hrvqty_selfr == 0 ///
-					& cf == .
-	*** 1 change
-	
-	replace		hrvqty_self_converted = hrvqty_self * cf ///
-					if hrvqty_self_converted == .
-	*** 3 changes
-	
-	replace 	hrvqty_selfr = hrvqty_self_converted if hrvqty_selfr == 0 ///
-					& hrvqty_self_converted != .
-	*** 3 changes
-	
-* chinet conversions - 30 for small, 50 for medium, 70 for large
-	
-* remaining zeros are all chinets in SNNP - 8 obs
-* can a regional conversion factor be reverse engineered? how?
-* either replace with missing and impute or continue to count these as zeros
-* chinet conversions - 30 for small, 50 for medium, 70 for large
-* based on algebra and supported by online research
+* unlike other waves there are also no missing values
 	
 	
 * ***********************************************************************
-* 2d - resolving missing values
+* 2d - resolving outliers
 * ***********************************************************************		
 
 * summarize value of harvest
 	sum				hrvqty_selfr, detail
-	*** median 45, mean 135, max 50,000 - max is huge!
+	*** median 28, mean 219, max 55,000 - max is huge!
 
 * replace any +3 s.d. away from median as missing
 	replace			hrvqty_selfr = . if hrvqty_selfr > `r(p50)'+(3*`r(sd)')
-	*** replaced 114 values, max is now 2,000
+	*** replaced 33 values, max is now 3,258
 	
 * impute missing harvest weights using predictive mean matching 
 	mi set 		wide //	declare the data to be wide. 
@@ -385,7 +295,7 @@
 	tabstat 	hrvqty_selfr hrvqty_selfr_1_, by(mi_miss) ///
 					statistics(n mean min max) columns(statistics) longstub ///
 					format(%9.3g) 
-	*** 4,427 imputations made
+	*** 33 imputations made
 	
 	drop		mi_miss	
 
@@ -400,149 +310,6 @@
 	
 
 * ***********************************************************************
-* 2d - pulling in fruit/root/nut harvest quantities
-* ***********************************************************************	
-
-* append fruit/root data
-*	append		using "`export'/PH_SEC12.dta"
-
-* am now moving this to merge file due to isid issues
-	
-
-* ***********************************************************************
-* 3 - constructing prices
-* ***********************************************************************	
-	
-* will now only do price info in ess3_merge.do
-
-/* merging in sec 11 price data
-* merging in ea level price data	
-	merge 		m:1 crop_code region zone woreda ea using "`export'/w3_sect11_pea.dta"
-
-	drop 		if _merge == 2
-	drop 		_merge	
-	
-* merging in woreda level price data	
-	merge 		m:1 crop_code region zone woreda using "`export'/w3_sect11_pworeda.dta"
-	
-	drop 		if _merge == 2
-	drop 		_merge	
-	
-* merging in zone level price data	
-	merge 		m:1 crop_code region zone using "`export'/w3_sect11_pzone.dta"
-	
-	drop 		if _merge == 2
-	drop 		_merge	
-	
-* merging in region level price data	
-	merge 		m:1 crop_code region using "`export'/w3_sect11_pregion.dta"
-	
-	drop 		if _merge == 2
-	drop 		_merge	
-	
-* merging in crop level price data	
-	merge 		m:1 crop_code using "`export'/w3_sect11_pcrop.dta"
-	
-	drop 		if _merge == 2
-	drop 		_merge	
-	
-* generating implied crop values, using median price whee we have 10+ obs	
-
-	gen			croppricei = .
-
-	replace 	croppricei = p_ea if n_ea>=10 & missing(croppricei)
-	*** 81 replaced
-	
-	replace 	croppricei = p_woreda if n_woreda>=10 & missing(croppricei)
-	*** 116 replaced
-	
-	replace 	croppricei = p_zone if n_zone>=10 & missing(croppricei)
-	*** 958 replaced 
-	
-	replace 	croppricei = p_region if n_region>=10 & missing(croppricei)
-	*** 7,162 replaced
-	
-	replace 	croppricei = p_crop if missing(croppricei)
-	*** 3,616 replaced 
-	
-	label variable croppricei	"implied unit value of crop"
-
-* examine the results
-	sum			hvst_qty croppricei
-	*** still missing prices for 2,904
-	*** assuming these missing prices all come from the same group of crops
-	
-	tab crop_code if croppricei != .
-	tab crop_code if croppricei == .
-	*** fennel, cardamon*, chilies*, ginger*, RED PEPPER*, tumeric*, BEER ROOT*,
-	*** carrot*, kale*, lettuce, pumpkin*, spinach*, coriander*, TIMEZ KIMEM
-	*** none of these crops appear when price isn't missing
-	*** those w/ asterisks have price info in section 12
-
-* merging in sec 12 price data	
-	drop 		p_ea- n_crop
-	
-* merging in ea level price data	
-	merge 		m:1 crop_code region zone woreda ea using "`export'/w3_sect12_pea.dta"
-
-	drop 		if _merge == 2
-	drop 		_merge	
-	
-* merging in woreda level price data	
-	merge 		m:1 crop_code region zone woreda using "`export'/w3_sect12_pworeda.dta"
-	
-	drop 		if _merge == 2
-	drop 		_merge	
-	
-* merging in zone level price data	
-	merge 		m:1 crop_code region zone using "`export'/w3_sect12_pzone.dta"
-	
-	drop 		if _merge == 2
-	drop 		_merge	
-	
-* merging in region level price data	
-	merge 		m:1 crop_code region using "`export'/w3_sect12_pregion.dta"
-
-	drop 		if _merge == 2
-	drop 		_merge	
-	
-* merging in crop level price data	
-	merge 		m:1 crop_code using "`export'/w3_sect12_pcrop.dta"	
-	
-	drop 		if _merge == 2
-	drop 		_merge	
-	
-* generating implied crop values, using median price whee we have 10+ obs	
-	replace 	croppricei = p_ea if n_ea>=10 & missing(croppricei)
-	*** 57 replaced
-	
-	replace 	croppricei = p_woreda if n_woreda>=10 & missing(croppricei)
-	*** 41 replaced
-	
-	replace 	croppricei = p_zone if n_zone>=10 & missing(croppricei)
-	*** 108 replaced 
-	
-	replace 	croppricei = p_region if n_region>=10 & missing(croppricei)
-	*** 1,607 replaced
-	
-	replace 	croppricei = p_crop if missing(croppricei)
-	*** 1,075 replaced 
-	
-* checking results
-	sum			hvst_qty croppricei
-	*** still missing prices for over 1,788
-	*** assuming these missing prices all come from the same group of crops
-	
-	tab 		crop_code if croppricei != .
-	tab 		crop_code if croppricei == .
-	*** still missing prices for fennel, lettuce, timiz kenem
-	*** 16 obs total - no prices in either sec 11 or 12
-	*** will drop
-	
-	drop		if croppricei == .
-*/	
-	
-* ***********************************************************************
 * 5 - cleaning and keeping
 * ***********************************************************************
 
@@ -554,12 +321,11 @@
 	rename		hrvqty_selfr hvst_qty
 
 * purestand or mixed and if mixed what percent was planted with this crop?
-	rename		ph_s9q01 purestand
-	rename		ph_s9q02 mixedcrop_pct
+	rename		s9q02 purestand
+	rename		s9q03 mixedcrop_pct
 
 * renaming some variables of interest
 	rename 		household_id hhid
-	rename 		household_id2 hhid2	
 	
 * generate section id variable
 	gen			sec = 9
@@ -571,7 +337,6 @@
 					purestand mixedcrop_pct sec
 	*** keeping purestand/mixed as a precaution
 	
-	drop		crop_name
 	order 		holder_id- crop_code
 	
 * renaming and relabelling variables
@@ -581,7 +346,8 @@
 	lab var			ea "Village / Enumeration Area Code"	
 	lab var			mz_hrv "Quantity of Maize Harvested (kg)"
 	lab var 		crop_code "Crop Identifier"
-	lab var			crop_id "Unique Crop ID Within Plot"
+	lab var			crop_id "Unique Crop ID"
+	lab var			crop "Unique Crop ID Within Plot"
 
 * final preparations to export
 	isid 			holder_id field parcel crop_code
@@ -589,13 +355,9 @@
 	compress
 	describe
 	summarize 
-	*** one ob is missing ea, other obs w/ same ea id exist
+	sort 			holder_id ea_id parcel field crop_code
 	
-	replace		ea = 6 if ea == .
-	summarize
-	sort 		holder_id ea_id parcel field crop_code
-	customsave , idvar(crop_id) filename(PH_SEC9.dta) path("`export'") ///
-		dofile(PP_SEC9) user($user)
+	save			"$export/PH_SEC9.dta", replace
 
 * close the log
 	log	close
