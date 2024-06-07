@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: April 2020
 * Created by: jdm
-* Stata v.16
+* Edited on: 7 June 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* Executes all wave specific Niger weather .do files
@@ -11,7 +13,6 @@
 * assumes
 	* weather_command.ado
 	* subsidiary, wave-specific .do files
-	* customsave.ado
 
 * TO DO:
 	* completed
@@ -26,11 +27,8 @@ clear
 * set max vars
 	set maxvar 120000, perm  // this amount is only allowed for MP editions 
 	
-* set global user
-	global user "jdmichler"
-
 * define paths
-	loc root = "C:/Users/$user/git/weather_project/niger/weather_code"
+	loc root = "$code/niger/weather_code"
 
 
 * **********************************************************************

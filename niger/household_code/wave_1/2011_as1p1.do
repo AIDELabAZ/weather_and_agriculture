@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: June 2020
 * Created by: ek
-* Stata v.16
+* Edited on: 4 June 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* reads in Niger, WAVE 1 (2011), POST PLANTING (first passage), ecvmaas1_p1_en
@@ -12,7 +14,7 @@
 	* outputs clean data file ready for combination with wave 1 data
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* mdesc.ado
 
 * TO DO:
@@ -552,8 +554,7 @@
 	summarize
 
 * save file
-		customsave , idvar(plot_id) filename("2011_as1p1") ///
-			path("`export'") dofile(2011_as1p1) user($user)
+	save 			"`export'/2011_as1p1", replace
 
 * close the log
 	log	close

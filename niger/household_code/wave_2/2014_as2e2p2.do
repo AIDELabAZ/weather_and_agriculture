@@ -1,9 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: alj
-* Edited by: alj
-* Last edit: 22 October 2020 
-* Stata v.16
+* Edited on: 4 June 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* reads in Niger, WAVE 2 (2014), POST HARVEST, ECVMA2 AS2E1P2
@@ -12,6 +12,7 @@
 	* determines prices for merge (five files) into 2014_ase1p2
 
 * assumes
+	* access to all raw data
 	* cleaned version of 2014_ms00p1
 
 * TO DO:

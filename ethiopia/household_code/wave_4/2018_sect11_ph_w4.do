@@ -1,16 +1,18 @@
 * Project: WB Weather
 * Created on: June 2020
 * Created by: McG
-* Stata v.16
+* Edited on: 4 June 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
-	* cleans Ethiopia household variables, wave 3 PH sec11
+	* cleans Ethiopia household variables, wave 4 PH sec11
 	* seems to roughly correspong to Malawi ag-modI and ag-modO
 	* contains crop sales data
 	* hierarchy: holder > parcel > field > crop
 
 * assumes
-	* customsave.ado
+	* raw lsms-isa data
 	
 * TO DO:
 	* done
@@ -21,56 +23,62 @@
 * **********************************************************************
 
 * define paths
-	loc root = "$data/household_data/ethiopia/wave_3/raw"
-	loc export = "$data/household_data/ethiopia/wave_3/refined"
-	loc logout = "$data/household_data/ethiopia/logs"
-
-* open log
-	cap log close
-	log using "`logout'/wv3_PHSEC11", append
+	global		root 		 	"$data/household_data/ethiopia/wave_4/raw"  
+	global		export 		 	"$data/household_data/ethiopia/wave_4/refined"
+	global		logout 		 	"$data/household_data/ethiopia/logs"
+	
+* open log	
+	cap log 	close
+	log 		using			"$logout/wv4_PHSEC11", append
 
 
 * **********************************************************************
-* 1 - preparing ESS (Wave 3) - Post Harvest Section 11
+* 1 - preparing ESS (Wave 4) - Post Harvest Section 11
 * **********************************************************************
 
 * load data
-	use 		"`root'/sect11_ph_w3.dta", clear
+	use 		"$root/sect11_ph_w4.dta", clear
 
 * dropping duplicates
-	duplicates drop
+	duplicates 	drop
+	format 		%4.0g harvestedcrop_id
+	rename		s11q01 crop_code
+	
+* unique identifier can only be generated including crop code as some fields are mixed
+	describe
+	sort 		holder_id harvestedcrop_id
+	isid 		holder_id harvestedcrop_id
+
+* creating unique crop identifier
+	drop if		crop_code == .
+	*** 2 dropped
+	
+	tostring	harvestedcrop_id, generate(crop_codeS)
+	generate 	crop_id = holder_id + " " + crop_codeS
+	isid		crop_id
+	drop		crop_codeS
+	rename		harvestedcrop_id crop
 	
 * creating district identifier
 	egen 		district_id = group( saq01 saq02)
 	label var 	district_id "Unique district identifier"
 	distinct	saq01 saq02, joint
-	*** 69 distinct districts
-	*** same as pp sect2, pp sect3, and ph sect9, good	
+	*** 71 distinct districts
+	*** same as ph sect9, finally one that matches!
 	
 * drop if obs haven't sold any crop
-	tab			ph_s11q01
-	*** 6,181 answered no (!)
+	tab			s11q07
+	*** 6,724 answered no (!)
 	
-	tab			ph_s11q04 ph_s11q01, missing
+	tab			s11q11a s11q07, missing
 	*** sales data not present for al 6,181 obs that answered no
 	
-	drop 		if ph_s11q01 == 2
+	drop 		if s11q07 == 2
 	
-* creating unique crop identifier
-	tostring	crop_code, generate(crop_codeS)
-	generate 	crop_id = holder_id + " " + crop_codeS
-	isid		crop_id
-	drop		crop_codeS	
-	
-* generate unique identifier
-	describe
-	sort 		holder_id crop_code
-	isid 		holder_id crop_code
-
 * create conversion key 
-	rename		ph_s11q03_b unit_cd
-	merge 		m:1 crop_code unit_cd using "`root'/Crop_CF_Wave3_use.dta"
-	*** 92 not matched from master
+	rename		s11q03a2 unit_cd
+	merge 		m:1 crop_code unit_cd using "$export/Crop_CF_Wave4.dta"
+	*** 386 not matched from master
 
 	tab 		_merge
 	drop		if _merge == 2
@@ -85,39 +93,49 @@
 * 2a - generating conversion factors
 * ***********************************************************************	
 	
-* constructing conversion factor - same procedure as sect9_ph_w3
+* constructing conversion factor - same procedure as sect9_ph_w4
 * exploring conversion factors - are any the same across all regions and obs?
 	tab 		unit_cd
 	egen		unitnum = group(unit_cd)
-	*** 29 units listed
+	*** 44 units listed
 	
 	gen			cfavg = (mean_cf1 + mean_cf2 + mean_cf3 + mean_cf4 + mean_cf6 ///
 							+ mean_cf7 + mean_cf12 + mean_cf99)/8
 	pwcorr 		cfavg mean_cf_nat	
 	*** correlation of 0.9999 - this will work
 	
-	local 		units = 29
+	local 		units = 41
 	forvalues	i = 1/`units'{
 	    
 		tab		unit_cd if unitnum == `i'
 		tab 	cfavg if unitnum == `i', missing
 	} 
 	*** results! universal units are:
-	*** kilogram, gram, quintal, and box
-	*** piece/number lg, kubaya lg, and kubaya md are "universal", only one ob
-	*** also, chinets (small, medium, and large) have no conversion factors given
+	*** kilogram, gram, quintal, jenbe
+	*** shekem (small, medium, large), bunch, Zorba/Akara, and medeb (small)
+	*** also, akumada (large), chinets (small, medium, and large) have no conversion factors given
 
 * generating conversion factors
 * starting with units found to be universal
 	gen			cf = 1 if unit_cd == 1 			// kilogram
 	replace		cf = .001 if unit_cd == 2 		// gram
 	replace		cf = 100 if unit_cd == 3 		// quintal
-	replace 	cf = 48.0513 if unit_cd == 6	// box
+	replace 	cf = 31.487 if unit_cd == 7		// jenbe
+	replace		cf = 9.6 if unit_cd == 41		// bunch (small)
+	replace		cf = 17.5 if unit_cd == 42
+	replace		cf = 19.08 if unit_cd == 43
+	replace		cf = .4 if unit_cd == 132		// medeb (small)
+	replace		cf = 7.27 if unit_cd == 161		// shekim
+	replace		cf = 21.66 if unit_cd == 162
+	replace		cf = 41 if unit_cd == 163
+	replace		cf = .16 if unit_cd == 191		// zorba (small)
 	
+* using chinets from previous rounds
+	replace		cf = 48.05125 if unit_cd == 6 	// box/casa
 	replace 	cf = 30 if unit_cd == 51		// chinets
 	replace 	cf = 50 if unit_cd == 52
 	replace 	cf = 70 if unit_cd == 53
-	
+
 * now moving on to region specific units
 	replace 	cf = mean_cf1 if saq01 == 1 & cf == .
 	replace		cf = mean_cf2 if saq01 == 2 & cf == .	
@@ -134,22 +152,13 @@
 	
 * checking veracity of kg estimates
 	tab 		cf, missing
-	*** missing 53 converstion factors
+	*** missing 285 converstion factors
 	
 	sort		cf unit_cd
-	*** missing obs are spread out across different units
-	*** kubaya (sm)
-	*** kunna/mishe/kefer/enkib (sm, md, lg) 
-	*** madaberia/nuse/shera/cheret (sm, md, lg)
-	*** tasa/tanika/shember/selmon (md, lg)
-
-	*** all the units above have lots of other obs w/ values
+	*** most of the units missing are other values
 	*** all units labelled 'other' missing a conversion factor
 
 * filling in as many missing cfs as possible
-	sum			cf if unit_cd == 101, detail	// kubaya (sm)
-	replace 	cf = `r(p50)' if unit_cd == 101 & cf == .
-	
 	sum			cf if unit_cd == 111, detail	// kunna/mishe/kefer/enkib (sm)
 	replace 	cf = `r(p50)' if unit_cd == 111 & cf == .
 	
@@ -176,17 +185,9 @@
 	
 * check results
 	sort		cf unit_cd
-	*** 23 obs still missing cfs are all labelled 'other'
-	
-* ultimate goal is to create a region based set of prices (birr/kg) by crop
-* we can therefore probably throw out those 23 obs
-	tab			crop_code if unit_cd == 900
-	* majority is rape seed, 15 obs of 53 rape seed observations
-	* could meaningfully impact price of rape seed (crop_cod = 26)
-	* other eight obs are spread across 7 crops:
-	* barley, maize, sorghum, teff, wheat, horse beans (2 obs), field peas
-	
-	drop		if unit_cd == 900
+	*** 211 obs still missing cfs, 114 are labelled 'other'
+
+	drop		if cf == .
 
 	
 * ***********************************************************************
@@ -194,19 +195,22 @@
 * ***********************************************************************	
 	
 * renaming key variables	
-	rename		ph_s11q03_a sales_qty
+	rename		s11q11a sales_qty
 	tab			sales_qty, missing
 	*** not missing any values
 	
-	rename		ph_s11q04 sales_val
+	rename		s11q12 sales_val
 	
 * converting sales quantity to kilos
 	gen			sales_qty_kg = sales_qty * cf
 	tab 		sales_val
-	*** not missing any sales values
+	*** 9 missing any sales values
+	
+	drop if		sales_val == .
 	
 * generate a price per kilogram
 	gen 		price = sales_val/sales_qty_kg
+	drop if		price == .
 	*** this can be applied to harvested crops which weren't sold
 	
 	lab var		price "Sales Price (BIRR/kg)"
@@ -224,66 +228,66 @@
 	
 * distinct geographical areas by crop
 	distinct 	crop_code, joint
-	*** 42 distinct crops
+	*** 64 distinct crops
 	
 	distinct 	crop_code region, joint
-	*** 117 distinct regions by crop
+	*** 232 distinct regions by crop
 
 	distinct 	crop_code region zone, joint
-	*** 407 distinct zones by crop
+	*** 613 distinct zones by crop
 	
 	distinct 	crop_code region zone woreda, joint
-	*** 652 distinct woreda by crop
+	*** 774 distinct woreda by crop
 	
 	distinct 	crop_code region zone woreda ea, joint
-	*** 677 distinct eas by crop
+	*** 774 distinct eas by crop
 
 	distinct 	crop_code region zone woreda ea holder_id, joint
-	*** 1963 distinct holders by crop (this is the dataset)
+	*** 2360 distinct holders by crop (this is the dataset)
 	
 * summarize prices	
+	replace			price = 3703.704 if price > 3703.704
 	sum 			price, detail
-	*** mean = 14.75, max = 1500, min = 0 (??)
+	*** mean = 70, max = 3,703, min = 0 (??)
 	*** will do some imputations later
 	
 * make datasets with crop price information	
-
 	preserve
 	collapse 		(p50) p_holder=price (count) n_holder=price, by(crop_code holder_id ea woreda zone region)
-	save 			"`export'/w3_sect11_pholder.dta", replace 	
+	save 			"$export/w4_sect11_pholder.dta", replace 	
 	restore
 	
 	preserve
 	collapse 		(p50) p_ea=price (count) n_ea=price, by(crop_code ea woreda zone region)
-	save 			"`export'/w3_sect11_pea.dta", replace 	
+	save 			"$export/w4_sect11_pea.dta", replace 	
 	restore
 	
 	preserve
 	collapse 		(p50) p_woreda=price (count) n_woreda=price, by(crop_code woreda zone region)
-	save 			"`export'/w3_sect11_pworeda.dta", replace 	
+	save 			"$export/w4_sect11_pworeda.dta", replace 	
 	restore
 	
 	preserve
 	collapse 		(p50) p_zone=price (count) n_zone=price, by(crop_code zone region)
-	save 			"`export'/w3_sect11_pzone.dta", replace 
+	save 			"$export/w4_sect11_pzone.dta", replace 
 	restore
 	
 	preserve
 	collapse 		(p50) p_region=price (count) n_region=price, by(crop_code region)
-	save 			"`export'/w3_sect11_pregion.dta", replace 
+	save 			"$export/w4_sect11_pregion.dta", replace 
 	restore
 	
 	preserve
 	collapse 		(p50) p_crop=price (count) n_crop=price, by(crop_code)
-	save 			"`export'/w3_sect11_pcrop.dta", replace 
+	save 			"$export/w4_sect11_pcrop.dta", replace 
 	restore	
 	
 * merge price data back into dataset
-	merge 			m:1 crop_code ea woreda zone region	        using "`export'/w3_sect11_pea.dta", assert(3) nogenerate
-	merge 			m:1 crop_code woreda zone region	        using "`export'/w3_sect11_pworeda.dta", assert(3) nogenerate
-	merge 			m:1 crop_code zone region	        		using "`export'/w3_sect11_pzone.dta", assert(3) nogenerate
-	merge 			m:1 crop_code region						using "`export'/w3_sect11_pregion.dta", assert(3) nogenerate
-	merge 			m:1 crop_code 						        using "`export'/w3_sect11_pcrop.dta", assert(3) nogenerate
+	merge 			m:1 crop_code ea woreda zone region	        using "$export/w4_sect11_pea.dta", assert(3) nogenerate
+	merge 			m:1 crop_code woreda zone region	        using "$export/w4_sect11_pworeda.dta", assert(3) nogenerate
+	merge 			m:1 crop_code zone region	        		using "$export/w4_sect11_pzone.dta", assert(3) nogenerate
+	merge 			m:1 crop_code region						using "$export/w4_sect11_pregion.dta", assert(3) nogenerate
+	merge 			m:1 crop_code 						        using "$export/w4_sect11_pcrop.dta", assert(3) nogenerate
 
 
 * ***********************************************************************
@@ -292,7 +296,6 @@
 
 * renaming some variables of interest
 	rename 		household_id hhid
-	rename 		household_id2 hhid2
 
 *	Restrict to variables of interest
 	keep  		holder_id- crop_code price crop_id p_ea- n_crop
@@ -304,8 +307,8 @@
 	describe
 	summarize 
 	sort 		holder_id ea_id crop_code
-	customsave , idvar(crop_id) filename(PH_SEC11.dta) path("`export'") ///
-		dofile(PP_SEC11) user($user)
+	
+	save		 "$export/PH_SEC11.dta", replace
 
 * close the log
 	log	close
