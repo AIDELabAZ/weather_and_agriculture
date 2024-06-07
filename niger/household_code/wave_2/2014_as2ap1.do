@@ -1,9 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: alj
+* Edited on: 4 June 2024
 * Edited by: jdm
-* Last edit: 23 October 2020 
-* Stata v.16
+* Stata v.18
 
 * does
 	* reads in Niger, WAVE 2 (2014), POST PLANTING, AG AS2AP1
@@ -13,7 +13,7 @@
 	* outputs clean data file ready for combination with wave 2 plot data
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* mdesc.ado
 	
 * TO DO:
@@ -401,8 +401,7 @@
 	summarize
 
 * save file
-		customsave , idvar(plot_id) filename("2014_as2ap1.dta") ///
-			path("`export'") dofile(2014_AS2AP1) user($user)
+		save 			"`export'/2014_as2ap1.dta", replace
 
 * close the log
 	log	close
