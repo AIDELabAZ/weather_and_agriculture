@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: June 2020
 * Created by: McG
-* Edited on: 4 June 2024
+* Edited on: 7 June 2024
 * Edited by: jdm
 * Stata v.18
 
@@ -16,7 +16,7 @@
 	* distinct.ado
 	
 * TO DO:
-	* complete through 3a. start at 3b
+	* done
 	
 	
 * **********************************************************************
@@ -197,8 +197,8 @@
 	gen			cf = 1 if unit_cd == 1 			// kilogram
 	replace		cf = .001 if unit_cd == 2 		// gram
 	replace		cf = 100 if unit_cd == 3 		// quintal
-	replace		cf = 1 if unit_cd == 4 			// kilogram
-	replace		cf = .001 if unit_cd == 5 		// gram
+	replace		cf = 1 if unit_cd == 4 			// liters
+	replace		cf = .001 if unit_cd == 5 		// cm
 	replace		cf = 48.05125 if unit_cd == 6 	// box/casa
 	replace		cf = 1.92 if unit_cd == 63		// esir (large)
 	replace		cf = 1.415 if unit_cd == 71
@@ -209,14 +209,17 @@
 	
 * then use conversion factors from past rounds for ones missing in this wave
 	replace		cf = 31.487 if unit_cd == 7 	// jenbe
-	replace		cf = 9.6 if unit_cd == 41		// bunches
+	replace		cf = 9.6 if unit_cd == 41		// zelela (small)
 	replace		cf = 17.5 if unit_cd == 42
 	replace		cf = 19.08 if unit_cd == 43	
-	
-* using chinets from previous rounds
 	replace 	cf = 30 if unit_cd == 51		// chinets
 	replace 	cf = 50 if unit_cd == 52
 	replace 	cf = 70 if unit_cd == 53
+	replace		cf = .4 if unit_cd == 132		// medeb (small)
+	replace		cf = .16 if unit_cd == 191		// zorba (small)
+	replace		cf = .27 if unit_cd == 192
+	replace		cf = .57 if unit_cd == 193
+
 	
 * now moving on to region specific units
 	replace 	cf = mean_cf1 if saq01 == 1 & cf == .
@@ -234,7 +237,40 @@
 	
 * checking veracity of kg estimates
 	tab 		cf, missing
-	*** missing 423 - fewer than missed merges due to univeral units
+	*** missing 220 converstion factors
+	
+	tab 		unit_cd if cf == .
+	*** most of the units missing are other values
+	*** all units labelled 'other' missing a conversion factor
+
+* filling in as many missing cfs as possible
+	sum			cf if unit_cd == 111, detail	// kunna/mishe/kefer/enkib (sm)
+	replace 	cf = `r(p50)' if unit_cd == 111 & cf == .
+	
+	sum			cf if unit_cd == 112, detail	// kunna/mishe/kefer/enkib (md)
+	replace 	cf = `r(p50)' if unit_cd == 112 & cf == .
+	
+	sum			cf if unit_cd == 113, detail	// kunna/mishe/kefer/enkib (lg)
+	replace 	cf = `r(p50)' if unit_cd == 113 & cf == .
+	
+	sum			cf if unit_cd == 121, detail	// madaberia/nuse/shera/cheret (sm)
+	replace 	cf = `r(p50)' if unit_cd == 121 & cf == .
+	
+	sum			cf if unit_cd == 122, detail	// madaberia/nuse/shera/cheret (md)
+	replace 	cf = `r(p50)' if unit_cd == 122 & cf == .
+	
+	sum			cf if unit_cd == 123, detail	// madaberia/nuse/shera/cheret (lg)
+	replace 	cf = `r(p50)' if unit_cd == 123 & cf == .
+	
+	sum			cf if unit_cd == 182, detail	// tasa/tanika/shember/selmon (md)
+	replace 	cf = `r(p50)' if unit_cd == 182 & cf == .
+	
+	sum			cf if unit_cd == 183, detail	// tasa/tanika/shember/selmon (lg)
+	replace 	cf = `r(p50)' if unit_cd == 183 & cf == .
+	
+* check results
+	tab 		unit_cd if cf == .
+	*** 347 obs still missing cfs, 171 are labelled 'other'
 
 	
 * ***********************************************************************
@@ -243,30 +279,29 @@
 	
 	gen			hrvqty_self_converted = hrvqty_self * cf
 	pwcorr		hrvqty_self_converted hrvqty_self_kgest
-	*** correlation of 0.13 - terrible esp compared to wave 3 which was .54
+	*** correlation of 0.97 - great esp compared to wave 4 which was .517
 	
 	sum			hrvqty_self_converted hrvqty_self_kgest
-	*** self-report mean 230, min .001, max 55,000
-	*** surveyor	mean 362, min -350, max 510,000
+	*** self-report mean 215, min .001, max 19,000
+	*** surveyor	mean 202, min 0, max 42,000
 	
-	*** in previous waves we have used surveyor's estimates
-	*** this wave i'm inclined to take the surveyor's estimate over the converted kgs
-	*** being that the surveyor reports negative as well as values over 100k
+	*** in waves 1-3 we have used surveyor's estimates
+	*** in wave 4 we used self-reported
+	*** this wave i'm inclined to take the converted kgs over the surveyor's estimate
+	*** self-reported have lower max and this is what we did in wave 4
 	
 	gen			hrvqty_selfr = hrvqty_self_converted
 	replace		hrvqty_selfr = hrvqty_self_kgest if hrvqty_selfr == . 
-	*** only 708 changes made in this step
+	*** only 414 changes made in this step
 
 	sum 		hrvqty_selfr, detail
-	*** mean qty 219 kg, this seems plausible
-	*** max at 55K - less plausible
-	*** there are 8 obs = 0
+	*** mean qty 215 kg, this seems plausible
+	*** max at 42K - less plausible
+	*** there are no obs = 0
 
-* unlike previous waves with many zeros, we only have 8
-* they all are missing conversion factors
-* surveyors reported zero so will keep them
+* unlike previous waves with many zeros, we have none
 	
-* unlike other waves there are also no missing values
+* unlike other waves there are only 9 missing values
 	
 	
 * ***********************************************************************
@@ -275,11 +310,11 @@
 
 * summarize value of harvest
 	sum				hrvqty_selfr, detail
-	*** median 28, mean 219, max 55,000 - max is huge!
+	*** median 66, mean 215 max 42,000 - max is huge!
 
 * replace any +3 s.d. away from median as missing
 	replace			hrvqty_selfr = . if hrvqty_selfr > `r(p50)'+(3*`r(sd)')
-	*** replaced 33 values, max is now 3,258
+	*** replaced 33 values, max is now 2,215
 	
 * impute missing harvest weights using predictive mean matching 
 	mi set 		wide //	declare the data to be wide. 
@@ -295,7 +330,7 @@
 	tabstat 	hrvqty_selfr hrvqty_selfr_1_, by(mi_miss) ///
 					statistics(n mean min max) columns(statistics) longstub ///
 					format(%9.3g) 
-	*** 33 imputations made
+	*** 75 imputations made
 	
 	drop		mi_miss	
 

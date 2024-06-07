@@ -249,7 +249,7 @@
 	*** surveyor	mean 362, min -350, max 510,000
 	
 	*** in previous waves we have used surveyor's estimates
-	*** this wave i'm inclined to take the surveyor's estimate over the converted kgs
+	*** this wave i'm inclined to take the converted kgs over the surveyor's estimate
 	*** being that the surveyor reports negative as well as values over 100k
 	
 	gen			hrvqty_selfr = hrvqty_self_converted

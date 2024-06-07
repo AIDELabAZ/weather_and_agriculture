@@ -150,8 +150,6 @@
 	*** none have maxes > 91
 	
 	summarize 	laborhi_m laborfr_f laborhh_1 laborhh_2 laborhh_3, detail
-	*** only one large outlier for laborhi_m, laborfr_f, & laborhh_3
-	*** many outliers for laborhh_1, fewer for laborhh_2
 	*** no need to impute or deal with outliers
 
 * generate aggregate hh and hired labor variables	
