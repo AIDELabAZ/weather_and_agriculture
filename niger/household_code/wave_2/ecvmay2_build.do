@@ -137,44 +137,44 @@
 			loc 		sat = substr("`file'", 9, 5)	
 		
 		* rename variables but dropping the year suffix
-			gen 		v15_tp_`sat' = mean_season_2014 if year == 2014
-			lab var		v15_tp_`sat' "Mean Daily Temperature"
+			gen 		v15_`sat' = mean_season_2014 if year == 2014
+			lab var		v15_`sat' "Mean Daily Temperature"
 
-			gen 		v16_tp_`sat' = median_season_2014 if year == 2014
-			lab var		v16_tp_`sat' "Median Daily Temperature"
+			gen 		v16_`sat' = median_season_2014 if year == 2014
+			lab var		v16_`sat' "Median Daily Temperature"
 
-			gen 		v17_tp_`sat' = sd_season_2014 if year == 2014
-			lab var		v17_tp_`sat' "Variance of Daily Temperature"
+			gen 		v17_`sat' = sd_season_2014 if year == 2014
+			lab var		v17_`sat' "Variance of Daily Temperature"
 
-			gen 		v18_tp_`sat' = skew_season_2014 if year == 2014
-			lab var		v18_tp_`sat' "Skew of Daily Temperature"	
+			gen 		v18_`sat' = skew_season_2014 if year == 2014
+			lab var		v18_`sat' "Skew of Daily Temperature"	
 
-			gen 		v19_tp_`sat' = gdd_2014 if year == 2014
-			lab var		v19_tp_`sat' "Growing Degree Days (GDD)"	
+			gen 		v19_`sat' = gdd_2014 if year == 2014
+			lab var		v19_`sat' "Growing Degree Days (GDD)"	
 
-			gen 		v20_tp_`sat' = dev_gdd_2014 if year == 2014
-			lab var		v20_tp_`sat' "Deviation in GDD"	
+			gen 		v20_`sat' = dev_gdd_2014 if year == 2014
+			lab var		v20_`sat' "Deviation in GDD"	
 
-			gen 		v21_tp_`sat' = z_gdd_2014 if year == 2014
-			lab var		v21_tp_`sat' "Z-Score of GDD"	
+			gen 		v21_`sat' = z_gdd_2014 if year == 2014
+			lab var		v21_`sat' "Z-Score of GDD"	
 
-			gen 		v22_tp_`sat' = max_season_2014 if year == 2014
-			lab var		v22_tp_`sat' "Maximum Daily Temperature"
+			gen 		v22_`sat' = max_season_2014 if year == 2014
+			lab var		v22_`sat' "Maximum Daily Temperature"
 
-			gen 		v23_tp_`sat' = tempbin202014 if year == 2014
-			lab var		v23_tp_`sat' "Temperature Bin 0-20"	
+			gen 		v23_`sat' = tempbin202014 if year == 2014
+			lab var		v23_`sat' "Temperature Bin 0-20"	
 
-			gen 		v24_tp_`sat' = tempbin402014 if year == 2014
-			lab var		v24_tp_`sat' "Temperature Bin 20-40"	
+			gen 		v24_`sat' = tempbin402014 if year == 2014
+			lab var		v24_`sat' "Temperature Bin 20-40"	
 
-			gen 		v25_tp_`sat' = tempbin602014 if year == 2014
-			lab var		v25_tp_`sat' "Temperature Bin 40-60"	
+			gen 		v25_`sat' = tempbin602014 if year == 2014
+			lab var		v25_`sat' "Temperature Bin 40-60"	
 
-			gen 		v26_tp_`sat' = tempbin802014 if year == 2014
-			lab var		v26_tp_`sat' "Temperature Bin 60-80"	
+			gen 		v26_`sat' = tempbin802014 if year == 2014
+			lab var		v26_`sat' "Temperature Bin 60-80"	
 
-			gen 		v27_tp_`sat' = tempbin1002014 if year == 2014
-			lab var		v27_tp_`sat' "Temperature Bin 80-100"
+			gen 		v27_`sat' = tempbin1002014 if year == 2014
+			lab var		v27_`sat' "Temperature Bin 80-100"
 		
 		* drop year variables
 			drop 		*2014

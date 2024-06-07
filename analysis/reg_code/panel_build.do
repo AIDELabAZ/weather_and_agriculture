@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: September 2020
 * Created by: jdm
-* Edited on: 23 May 2024
+* Edited on: 7 June 2024
 * Edited by: jdm
 * Stata v.18
 
@@ -14,7 +14,7 @@
 	* cleaned, merged (weather), and appended (waves) data
 
 * TO DO:
-	* complete
+	* need to add new malawi data
 
 	
 * **********************************************************************
@@ -62,7 +62,7 @@
 * **********************************************************************
 * 3 - load in niger data
 * **********************************************************************
-/*
+
 * append niger
 	append			using "$source/niger/ngr_complete"
 			
@@ -71,7 +71,7 @@
 		
 * drop unnecessary variables
 	drop			uid
-*/
+
 	
 * **********************************************************************
 * 4 - load in nigeria data
@@ -81,7 +81,7 @@
 	append			using "$source/nigeria/nga_complete"
 			
 * organize variables
-*	order			nga_id, after(ngr_id)	
+	order			nga_id, after(ngr_id)	
 	order			nga_id, after(eth_id)		
 		
 * drop unnecessary variables
@@ -159,12 +159,12 @@
 	tostring		mwi_id, replace
 	replace 		mwi_id = "mwi" + mwi_id if mwi_id != "."
 	replace			mwi_id = "" if mwi_id == "."
-/*	
+
 	sort 			country ngr_id year
 	tostring		ngr_id, replace
 	replace 		ngr_id = "ngr" + ngr_id if ngr_id != "."
 	replace			ngr_id = "" if ngr_id == "."
-*/	
+
 	sort 			country nga_id year
 	tostring		nga_id, replace
 	replace 		nga_id = "nga" + nga_id if nga_id != "."
@@ -183,7 +183,7 @@
 * define cross country household id
 	gen				HHID = eth_id if eth_id != ""
 	replace			HHID = mwi_id if mwi_id != ""
-	*replace			HHID = ngr_id if ngr_id != ""
+	replace			HHID = ngr_id if ngr_id != ""
 	replace			HHID = nga_id if nga_id != ""
 	replace			HHID = tza_id if tza_id != ""
 	replace			HHID = uga_id if uga_id != ""
@@ -191,8 +191,8 @@
 	sort			country HHID year
 	egen			hhid = group(HHID)
 	
-*	drop			HHID eth_id mwi_id ngr_id nga_id tza_id uga_id
-	drop			HHID eth_id mwi_id nga_id tza_id uga_id
+	drop			HHID eth_id mwi_id ngr_id nga_id tza_id uga_id ///
+					dup hid old_new track
 	order			hhid, after(country)
 	lab var			hhid "Unique household ID"
 	
