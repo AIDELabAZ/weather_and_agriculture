@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: June 2020
 * Created by: ek
-* Stata v.16
+* Edited on: 4 June 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* identifies regional elements for use in price data contruction 
@@ -10,7 +12,7 @@
 	* outputs clean data file ready for combination with wave 1 data
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 
 * TO DO:
 	* done
@@ -97,8 +99,7 @@
 	summarize
 
 * save file
-	customsave , idvar(hid) filename("2011_ms00p1.dta") ///
-		path("`export'") dofile(2011_ms00p1) user($user)
+	save 			"`export'/2011_ms00p1.dta", replace
 
 * close the log
 	log		close

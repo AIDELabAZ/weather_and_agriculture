@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: July 2020
 * Created by: ek
-* Stata v.16
+* Edited on: 7 June 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* reads in merged data sets
@@ -10,7 +12,6 @@
 
 * assumes
 	* all Niger data has been cleaned and merged with rainfall
-	* customsave.ado
 	* xfill.ado
 
 * TO DO:
@@ -22,13 +23,13 @@
 * **********************************************************************
 
 * define paths
-	loc		root 	= 	"$data/merged_data/niger"
-	loc		export 	= 	"$data/regression_data/niger"
-	loc		logout 	= 	"$data/merged_data/niger/logs"
+	global		root 	= 	"$data/merged_data/niger"
+	global		export 	= 	"$data/regression_data/niger"
+	global		logout 	= 	"$data/merged_data/niger/logs"
 
 * open log	
-	cap 	log 	close 
-	log 	using 	"`logout'/ngr_append_built", append
+	cap 		log 		close 
+	log 		using 		"$logout/ngr_append_built", append
 
 	
 * **********************************************************************
@@ -37,19 +38,19 @@
 
 * using merge rather than append
 * import wave 1 niger
-	use 			"`root'/wave_1/ecvmay1_merged", clear
+	use 			"$root/wave_1/ecvmay1_merged", clear
 	
 * append wave 2 file
-	append			using "`root'/wave_2/ecvmay2_merged", force	
+	append			using "$root/wave_2/ecvmay2_merged", force	
 		
 	
 * check the number of observations again
 	count
-	*** 3,952 observations 
+	*** 3,951 observations 
 	count if 		year == 2011
-	*** wave 1 has 2,233
+	*** wave 1 has 2,223
 	count if 		year == 2014
-	*** wave 2 has  1,729
+	*** wave 2 has  1,728
 
 * create household panel id
 	sort			hid year
@@ -115,7 +116,7 @@
 	
 * save file
 	qui: compress
-	save			"`export'/ngr_complete.dta", replace 
+	save			"$export/ngr_complete.dta", replace 
 
 * close the log
 	log	close

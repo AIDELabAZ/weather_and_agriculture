@@ -2,7 +2,9 @@
 * Created on: May 2020
 * Created by: alj
 * Edited by: ek
-* Stata v.16
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* reads in Nigeria, WAVE 1 (2010-2011) POST PLANTING, NIGERIA SECT 11C
@@ -10,11 +12,13 @@
 	* outputs clean data file ready for combination with wave 1 plot data
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* mdesc.ado
 	
 * TO DO:
 	* complete
+	
+	
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
@@ -31,6 +35,7 @@
 	cap log close
 	log using "`logout'/pp_sect11c", append
 
+	
 * **********************************************************************
 * 1 - determine pesticide and herbicide use 
 * **********************************************************************
@@ -78,10 +83,8 @@
 	summarize 
 
 * save file
-		customsave , idvar(hhid) filename("pp_sect11c.dta") ///
-			path("`export'/`folder'") dofile(pp_sect11c) user($user)
-*note on customsave issue - 2547 observation(s) are missing the ID variable hhid 
-
+	save			"`export'/pp_sect11c.dta", replace
+	
 * close the log
 	log	close
 

@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: rg
-* Edited on: 8 May 24
+* Edited on: 25 May 24
 * Edited by: rg
 * Stata v.18, mac
 
@@ -14,7 +14,7 @@
 	* previously cleaned household datasets
 
 * TO DO:
-	* merge harvmonth file (section 8 and beyond)
+	* done
 	* missing aez since no geovars in wave 5
 		* check for geovar file from talip or xfill in panel build
 	
@@ -43,14 +43,13 @@
 	
 * merge in plot size data and irrigation data
 	merge			m:1 hhid prcid using "$root/2015_agsec2", generate(_sec2)
-	*** matched 6,811, unmatched 454from master
+	*** matched 6,546, unmatched 428 from master
 
 	drop			if _sec2 != 3
 		
 * merging in labor, fertilizer and pest data
 	merge			m:1 hhid prcid pltid  using "$root/2015_agsec3a", generate(_sec3a)
-	*** 1,404 unmatched from master
-	*** check why there are so many unmatched
+	*** 12 unmatched from master
 
 	drop			if _sec3a == 2
 	
@@ -93,7 +92,7 @@
 						mz_hrv mz_lnd mz_lab mz_frt  ///
 			 (max)	pest_any herb_any irr_any fert_any  ///
 						mz_pst mz_hrb mz_irr mz_damaged, ///
-						by(hhid prcid pltid region district subcounty ///
+						by(hhid hh prcid pltid region district subcounty ///
 						parish rotate wgt15)
 
 * replace non-maize harvest values as missing
@@ -104,14 +103,14 @@
 	}	
 	replace			mz_hrv = . if mz_damaged == . & mz_hrv == 0		
 	drop 			mz_damaged
-	*** 3,573 changes made
+	*** 3,449 changes made
 	
 * encode the string location data
 	encode 			district, gen(districtdstrng)
 	encode			subcounty, gen(subcountydstrng)
 	encode			parish, gen(parishdstrng)
 
-	order			hhid prcid pltid region district districtdstrng ///
+	order			hhid hh prcid pltid region district districtdstrng ///
 						subcounty subcountydstrng parish ///
 						parishdstrng rotate wgt15 vl_hrv ///
 						plotsize labordays fert_any fert irr_any ///
@@ -160,7 +159,7 @@
 						& !inlist(vl_yld,.,0) & !mi(maxrep)
 	tabstat			vl_yld vl_yldimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 226 to 149
+	*** reduces mean from 223 to 151
 						
 	drop			stddev median replacement maxrep minrep
 	lab var			vl_yldimp	"value of yield (2015USD/ha), imputed"
@@ -197,7 +196,7 @@
 						& !inlist(labordays_ha,.,0) & !mi(maxrep)
 	tabstat 		labordays_ha labordays_haimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 459 to 355
+	*** reduces mean from 599 to 471
 	
 	drop			stddev median replacement maxrep minrep
 	lab var			labordays_haimp	"farm labor use (days/ha), imputed"
@@ -276,7 +275,7 @@
 						& !inlist(mz_yld,.,0) & !mi(maxrep)
 	tabstat 		mz_yld mz_yldimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 207 to 125
+	*** reduces mean from 209 to 126
 					
 	drop 			stddev median replacement maxrep minrep
 	lab var 		mz_yldimp "maize yield (kg/ha), imputed"
@@ -313,7 +312,7 @@
 						& !inlist(mz_lab_ha,.,0) & !mi(maxrep)
 	tabstat 		mz_lab_ha mz_lab_haimp, ///
 						f(%9.0f) s(n me min p1 p50 p95 p99 max) c(s) longstub
-	*** reduces mean from 501 to 400
+	*** reduces mean from 686 to 536
 	
 	drop			stddev median replacement maxrep minrep
 	lab var			mz_lab_haimp	"maize labor use (days/ha), imputed"
@@ -462,15 +461,15 @@
 	
 * count before collapse
 	count
-	*** 4,901 obs
+	*** 4,713 obs
 	
 	collapse 		(max) tf_* cp_*, by(region district districtdstrng ///
 						subcounty subcountydstrng parish ///
-						parishdstrng rotate wgt15 hhid)
+						parishdstrng rotate wgt15 hhid hh)
 
 * count after collapse 
 	count 
-	*** 4,901 to 1,937 observations 
+	*** 4,713 to 1,879 observations 
 	
 * return non-maize production to missing
 	replace			cp_yld = . if cp_yld == 0
@@ -487,16 +486,25 @@
 
 * verify values are accurate
 	sum				tf_* cp_*
-
+	
+* generate new hhid to match with previous rounds
+	isid			hh
+	isid			hhid
+	
+* create future panel ID variable
+	rename			hhid HHID
+	
 	
 ************************************************************************
 **# 8 - end matter, clean up to save
 ************************************************************************
 	
 * verify unique household id
-	isid			hhid
+	isid			hh
 
 * label variables
+	lab var			hh "Unique ID for wave 5"
+	lab var			HHID "Unique future panel ID"
 	lab var			tf_lnd	"Total farmed area (ha)"
 	lab var			tf_hrv	"Total value of harvest (2010 USD)"
 	lab var			tf_yld	"value of yield (2010 USD/ha)"
@@ -525,13 +533,13 @@
 	replace			season = 0 if season == .	
 	
 	drop			districtdstrng subcountydstrng ///
-						parishdstrng hh_status2011 harv _merge
+						parishdstrng  harv 
 
 * generate year identifier
 	gen				year = 2015
 	lab var			year "Year"
 			
-	order 			region district  subcounty parish  hhid wgt15 /// 	
+	order 			region district  subcounty parish hh HHID wgt15 /// 	
 					year season tf_hrv tf_lnd tf_yld tf_lab tf_frt ///
 					tf_pst tf_hrb tf_irr cp_hrv cp_lnd cp_yld cp_lab ///
 					cp_frt cp_pst cp_hrb cp_irr 

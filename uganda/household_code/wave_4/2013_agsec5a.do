@@ -617,7 +617,7 @@
 	replace			cropvalue = cropvl
 	replace			cropvalue = 0 if cropvalue == .
 	
-	keep 			hhid prcid pltid cropvalue harvqtykg region district ///
+	keep 			hhid hh hhid_pnl prcid pltid cropvalue harvqtykg region district ///
 						subcounty parish cropid  ///
 						wgt13 harvmonth 
 

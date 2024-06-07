@@ -1,7 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: alj
-* Stata v.16
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* reads in Nigeria, w1agnsconversion (wave 1 conversion file)
@@ -9,11 +11,12 @@
 	* outputs conversion file ready for combination with wave 1 harvest data
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* w1agnsconversion.dta conversion file
 
 * TO DO:
 	* complete 
+	
 	
 * **********************************************************************
 * 0 - setup
@@ -28,12 +31,13 @@
 	cap log close
 	log 	using 	"`logout'/harvconv_master_wave_1", append	
 	
+	
 * **********************************************************************
 * 1 - general import and clean up
 * **********************************************************************
 
 * import the relevant conversion file
-	use 			"`cnvrt'\w1agnsconversion" , clear
+	use 			"`cnvrt'/w1agnsconversion" , clear
 	
 * rename for matching with harvest files
 	rename 			nscode harv_unit
@@ -1001,8 +1005,7 @@
 	summarize
 
 * save file
-	customsave , idvar(crop_unit) filename("harvconv_wave_1.dta") ///
-		path("`export'") dofile(harvconv_wave_1) user($user)
+	save			"`export'/harvconv_wave_1.dta", replace
 
 * close the log
 	log		close

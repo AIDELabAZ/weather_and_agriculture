@@ -1,8 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: alj
-* Edited by: ek
-* Stata v.16
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* reads in Nigeria, WAVE 1 (2010-2011) POST PLANTING, NIGERIA SECT 11D AG - fertilizer
@@ -10,12 +11,13 @@
 	* outputs clean data file ready for combination with wave 2 plot data
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* mdesc.ado
 	
 * TO DO:
 	* complete
 
+	
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
@@ -32,6 +34,7 @@
 	cap log close
 	log using "`logout'/pp_sect11d", append
 
+	
 * **********************************************************************
 * 1 - determine fertilizer use 
 * **********************************************************************
@@ -128,9 +131,7 @@
 	summarize 
 	
 * save file
-		customsave , idvar(hhid) filename("pp_sect11d.dta") ///
-			path("`export'/`folder'") dofile(pp_sect11d) user($user)
-*note on customsave issue - 2547 observation(s) are missing the ID variable hhid 
+	save 			"`export'/pp_sect11d.dta", replace
 
 * close the log
 	log	close

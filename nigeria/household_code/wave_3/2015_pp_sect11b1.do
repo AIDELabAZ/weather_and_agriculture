@@ -1,8 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
-* Created by: alj
-* Edited by: ek
-* Stata v.16
+* Created by: ek
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* reads in Nigeria, WAVE 3 (2015-2016) POST PLANTING, NIGERIA AG SECT11B1
@@ -10,7 +11,11 @@
 	* outputs clean data file ready for combination with wave 3 hh data
 
 * assumes
-	* customsave.ado
+	* access to all raw data
+
+* TO DO:
+	* complete
+	
 	
 * **********************************************************************
 * 0 - setup
@@ -20,14 +25,12 @@
 	loc root = "$data/household_data/nigeria/wave_3/raw"
 	loc export = "$data/household_data/nigeria/wave_3/refined"
 	loc logout = "$data/household_data/nigeria/logs"
-
-* close log (in case still open)
-	*log close
 	
 * open log	
 	cap log close
 	log using "`logout'/pp_sect11b1", append
 
+	
 * **********************************************************************
 * 1 - determine irrigation and plot use
 * **********************************************************************
@@ -70,8 +73,7 @@ rename s11b1q39 irr_any
 
 
 * save file
-		customsave , idvar(hhid) filename("pp_sect11b1.dta") ///
-			path("`export'/`folder'") dofile(pp_sect11b1) user($user)
+	save 			"`export'/pp_sect11b1.dta", replace
 
 * close the log
 	log	close

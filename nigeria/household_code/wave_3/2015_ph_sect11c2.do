@@ -1,8 +1,9 @@
 * Project: WB Weather
 * Created on: May 2020
-* Created by: alj
-* Edited by: ek
-* Stata v.16
+* Created by: ek
+* Edited on: 23 May 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
 	* reads in Nigeria, WAVE 3 (2015-2016), POST HARVEST, AG SECT11C2
@@ -10,12 +11,13 @@
 	* outputs clean data file ready for combination with wave 2 plot data
 
 * assumes
-	* customsave.ado
+	* access to all raw data
 	* mdesc.ado
 	
 * TO DO:
 	* complete
 
+	
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
@@ -25,13 +27,11 @@
 	loc export = "$data/household_data/nigeria/wave_3/refined"
 	loc logout = "$data/household_data/nigeria/logs"
 
-* close log (in case still open)
-	*log close
-	
 * open log	
 	cap log close
-	*log using "`logout'/ph_sect11c2", append
+	log using "`logout'/ph_sect11c2", append
 
+	
 * **********************************************************************
 * 1 - determine pesticide, herbicide, etc.
 * **********************************************************************
@@ -77,8 +77,7 @@ describe
 summarize 
 
 * save file
-		customsave , idvar(hhid) filename("ph_sect11c2.dta") ///
-			path("`export'/`folder'") dofile(ph_sect11c2) user($user)
+	save 			"`export'/ph_sect11c2.dta", replace
 
 * close the log
 	log	close
