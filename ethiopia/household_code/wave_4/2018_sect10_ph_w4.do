@@ -1,16 +1,18 @@
 * Project: WB Weather
 * Created on: June 2020
 * Created by: McG
-* Stata v.16
+* Edited on: 4 June 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
-	* cleans Ethiopia household variables, wave 3 PH sec9
+	* cleans Ethiopia household variables, wave 4 PH sec9
 	* seems to roughly correspong to Malawi ag-modD and ag-modK
 	* contains labor information on a crop level
 	* hierarchy: holder > parcel > field > crop
 
 * assumes
-	* customsave.ado
+	* raw lsms-isa data
 	* distinct.ado
 	
 * TO DO:
@@ -22,46 +24,31 @@
 * **********************************************************************
 
 * define paths
-	loc root = "$data/household_data/ethiopia/wave_3/raw"
-	loc export = "$data/household_data/ethiopia/wave_3/refined"
-	loc logout = "$data/household_data/ethiopia/logs"
-
-* open log
-	cap log close
-	log using "`logout'/wv3_PHSEC10", append
+	global		root 		 	"$data/household_data/ethiopia/wave_4/raw"  
+	global		export 		 	"$data/household_data/ethiopia/wave_4/refined"
+	global		logout 		 	"$data/household_data/ethiopia/logs"
+	
+* open log	
+	cap log 	close
+	log 		using			"$logout/wv4_PHSEC10", append
 
 
 * **********************************************************************
-* 1 - preparing ESS (Wave 3) - Post Harvest Section 10
+* 1 - preparing ESS (Wave 4) - Post Harvest Section 10
 * **********************************************************************
 
 * load data
-	use 		"`root'/sect10_ph_w3.dta", clear
+	use 		"$root/sect10_ph_w4.dta", clear
 
 * dropping duplicates
-	duplicates drop
-	
-* one ob missing local ids, even though holder_id has 4 other obs and crop_code is present	
-	replace 	household_id = "07070100903022" ///
-					if holder_id == "0707010090302201" & household_id == ""
-	replace 	household_id2 = "070701088800903022" ///
-					if holder_id == "0707010090302201" & household_id2 == ""
-	replace 	rural = 1 if holder_id == "0707010090302201" & rural == .
-	replace 	pw_w3 = 3452.8 if holder_id == "0707010090302201" & pw_w3 == .
-	replace 	ea_id = "07070100903" ///
-					if holder_id == "0707010090302201" & ea_id == ""
-	replace 	saq01 = 7 if holder_id == "0707010090302201" & saq01 == .
-	replace 	saq02 = 7 if holder_id == "0707010090302201" & saq02 == .
-	replace 	saq03 = 1 if holder_id == "0707010090302201" & saq03 == .
-	replace 	saq04 = 9 if holder_id == "0707010090302201" & saq04 == .
-	replace 	saq05 = 3 if holder_id == "0707010090302201" & saq05 == .
-	replace 	saq06 = 22 if holder_id == "0707010090302201" & saq06 == .
-	replace 	ph_saq07 = 1 if holder_id == "0707010090302201" & ph_saq07 == .
+	duplicates  drop
+	format 		%4.0g crop_id
+	rename		s9q00b crop_code
 
 * unique identifier can only be generated including crop code as some fields are mixed
 	describe
-	sort 		holder_id parcel_id field_id crop_code
-	isid 		holder_id parcel_id field_id crop_code
+	sort 		holder_id parcel_id field_id crop_id
+	isid 		holder_id parcel_id field_id crop_id
 	
 * creating parcel identifier
 	rename		parcel_id parcel
@@ -74,32 +61,26 @@
 	generate 	field_id = holder_id + " " + ea_id + " " + parcel + " " + field
 	
 * creating unique crop identifier
-	tostring	crop_code, generate(crop_codeS)
+	rename		crop_id crop
+	tostring	crop, generate(crop_codeS)
 	generate 	crop_id = holder_id + " " + ea_id + " " + parcel + " " ///
 					+ field + " " + crop_codeS
 	isid		crop_id
 	drop		crop_codeS
 
-* drop observations with a missing crop_id
-	summarize 	if missing(parcel_id,field_id,crop_code)
-	drop 		if missing(parcel_id,field_id,crop_code)
-	*** no obs dropped
-	
-	isid 		holder_id parcel_id field_id crop_code
-
 * creating district identifier
 	egen 		district_id = group( saq01 saq02)
 	label var 	district_id "Unique district identifier"
 	distinct	saq01 saq02, joint
-	*** 69 distinct districts
-	*** same as pp sect3, and ph sect9, good
+	*** 71 distinct districts
+	*** close but different from all other sections
 
 	
 * **********************************************************************
 * 2 - collecting labor variables
 * **********************************************************************	
 	
-* following same procedure as pp_w3 for continuity
+* following same procedure as pp_w4 for continuity
 
 * per Palacios-Lopez et al. (2017) in Food Policy, we cap labor per activity
 * 7 days * 13 weeks = 91 days for land prep and planting
@@ -120,109 +101,57 @@
 		where # of men = 3 and total # of days = 1 for example
 		the same dilemna/assumption applies to free labor (ph_s10q03_*)
 		this can be revised if we think this assumption is shakey */
-	replace		ph_s10q01_b = 0 if ph_s10q01_b == . 
-	replace		ph_s10q01_e = 0 if ph_s10q01_e == .
-	rename	 	ph_s10q01_b laborhi_m
-	rename	 	ph_s10q01_e laborhi_f
+	replace		s10q01a = 0 if s10q01a == . 
+	replace		s10q01d = 0 if s10q01d == .
+	rename	 	s10q01a laborhi_m
+	rename	 	s10q01d laborhi_f
 
 * totaling free labor
-	replace 	ph_s10q03_b = 0 if ph_s10q03_b == .
-	replace 	ph_s10q03_d = 0 if ph_s10q03_d == .
-	rename 		ph_s10q03_b laborfr_m
-	rename 		ph_s10q03_d laborfr_f
+	replace 	s10q03a = 0 if s10q03a == .
+	replace 	s10q03c = 0 if s10q03c == .
+	rename 		s10q03a laborfr_m
+	rename 		s10q03c laborfr_f
 
 * totaling household labor
 * replace weeks worked equal to zero if missing
-	replace		ph_s10q02_b = 0 if ph_s10q02_b == . 
-	replace		ph_s10q02_f = 0 if ph_s10q02_f == . 
-	replace		ph_s10q02_j = 0 if ph_s10q02_j == . 
-	replace		ph_s10q02_n = 0 if ph_s10q02_n == . 
-	
+	replace		s10q02b = 0 if s10q02b == . 
+	replace		s10q02f = 0 if s10q02f == . 
+	replace		s10q02j = 0 if s10q02j == . 
+	replace		s10q02n = 0 if s10q02n == . 
+	   
 * find average # of days worked by worker reported (most obs)
-	sum 		ph_s10q02_c ph_s10q02_g ph_s10q02_k ph_s10q02_o
-	*** ph_s10q02_c - 2.3, ph_s10q02_g - 2.22
-	*** ph_s10q02_k - 2.18, ph_s10q02_o - 2.16
+	sum 		s10q02c s10q02g s10q02k s10q02o
+	*** s10q02c - 2.26, s10q02g - 2.27
+	*** s10q02k - 2.31, s10q02o - 2.23
 	
 * replace days per week worked equal to average if missing and weeks were worked 
-	replace		ph_s10q02_c = 2.3 if ph_s10q02_c == . &  ph_s10q02_b != 0 
-	replace		ph_s10q02_g = 2.22 if ph_s10q02_g == . &  ph_s10q02_f != 0  
-	replace		ph_s10q02_k = 2.18 if ph_s10q02_k == . &  ph_s10q02_j != 0  
-	replace		ph_s10q02_o = 2.16 if ph_s10q02_o == . &  ph_s10q02_n != 0 
+	replace		s10q02c = 2.26 if s10q02c == . &  s10q02b != 0 
+	replace		s10q02g = 2.27 if s10q02g == . &  s10q02f != 0  
+	replace		s10q02k = 2.31 if s10q02k == . &  s10q02j != 0  
+	replace		s10q02o = 2.23 if s10q02o == . &  s10q02n != 0 
 	
 * replace days per week worked equal to 0 if missing and no weeks were worked
-	replace		ph_s10q02_c = 0 if ph_s10q02_c == . &  ph_s10q02_b == 0 
-	replace		ph_s10q02_g = 0 if ph_s10q02_g == . &  ph_s10q02_f == 0  
-	replace		ph_s10q02_k = 0 if ph_s10q02_k == . &  ph_s10q02_j == 0  
-	replace		ph_s10q02_o = 0 if ph_s10q02_o == . &  ph_s10q02_n == 0 
+	replace		s10q02c = 0 if s10q02c == . &  s10q02b == 0 
+	replace		s10q02g = 0 if s10q02g == . &  s10q02f == 0  
+	replace		s10q02k = 0 if s10q02k == . &  s10q02j == 0  
+	replace		s10q02o = 0 if s10q02o == . &  s10q02n == 0 
 	
-	summarize	ph_s10q02_b ph_s10q02_c ph_s10q02_f ph_s10q02_g ph_s10q02_j ///
-					ph_s10q02_k ph_s10q02_n ph_s10q02_o
+	summarize	s10q02b s10q02c s10q02f s10q02g s10q02j ///
+					s10q02k s10q02n s10q02o
 	*** it looks like the above approach works
 	
-	generate	laborhh_1 = ph_s10q02_b * ph_s10q02_c
-	generate	laborhh_2 = ph_s10q02_f * ph_s10q02_g
-	generate	laborhh_3 = ph_s10q02_j * ph_s10q02_k
-	generate	laborhh_4 = ph_s10q02_n * ph_s10q02_o
+	generate	laborhh_1 = s10q02b * s10q02c
+	generate	laborhh_2 = s10q02f * s10q02g
+	generate	laborhh_3 = s10q02j * s10q02k
+	generate	laborhh_4 = s10q02n * s10q02o
 	
 	summarize	labor*	
 	*** maxes shouldn't be greater than 91
-	*** laborhi_m, laborfr_f, laborhh_1, laborhh_2, laborhh_3 all have maxes > 91
+	*** none have maxes > 91
 	
 	summarize 	laborhi_m laborfr_f laborhh_1 laborhh_2 laborhh_3, detail
-	*** only one large outlier for laborhi_m, laborfr_f, & laborhh_3
-	*** many outliers for laborhh_1, fewer for laborhh_2
-	
-* dropping outliers
-	replace 	laborhi_m = . if laborhi_m > 91 // 1 drop
-	replace 	laborfr_f = . if laborfr_f > 91 // 1 drop
-	replace 	laborhh_1 = . if laborhh_1 > 91 // 104 drops
-	replace 	laborhh_2 = . if laborhh_2 > 91 // 26 drops
- 	replace 	laborhh_3 = . if laborhh_3 > 91 // 1 drop
-	
-* impute missing values (only need to do four variables)
-	mi set 			wide 	// declare the data to be wide.
-	mi xtset		, clear 	// clear any xtset that may have had in place previously
-	
-	* impute laborhi_m 
-		mi register		imputed laborhi_m // identify laborhi_m as the variable being imputed
-		sort			holder_id parcel field crop_code, stable // sort to ensure reproducability of results
-		mi impute 		pmm laborhi_m i.district_id, add(1) rseed(245780) ///
-							noisily dots force knn(5) bootstrap
-	
-	* impute laborfr_f
-		mi register		imputed laborfr_f // identify laborfr_f as the variable being imputed
-		sort			holder_id parcel field crop_code, stable // sort to ensure reproducability of results
-		mi impute 		pmm laborfr_f i.district_id, add(1) rseed(245780) ///
-							noisily dots force knn(5) bootstrap
-	
-	* impute laborhh_1
-		mi register		imputed laborhh_1 // identify laborhh_1 as the variable being imputed
-		sort			holder_id parcel field crop_code, stable // sort to ensure reproducability of results
-		mi impute 		pmm laborhh_1 i.district_id, add(1) rseed(245780) ///
-							noisily dots force knn(5) bootstrap
-	
-	* impute laborhh_2
-		mi register		imputed laborhh_2 // identify laborhh_2 as the variable being imputed
-		sort			holder_id parcel field crop_code, stable // sort to ensure reproducability of results
-		mi impute 		pmm laborhh_2 i.district_id, add(1) rseed(245780) ///
-							noisily dots force knn(5) bootstrap
-	
-	* impute laborhh_3
-		mi register		imputed laborhh_3 // identify laborhh_3 as the variable being imputed
-		sort			holder_id parcel field crop_code, stable // sort to ensure reproducability of results
-		mi impute 		pmm laborhh_3 i.district_id, add(1) rseed(245780) ///
-							noisily dots force knn(5) bootstrap
-	
-	mi 				unset	
-	
-* replace values with imputed values
-	replace			laborhi_m = laborhi_m_1_
-	replace			laborfr_f = laborfr_f_2_
-	replace			laborhh_1 = laborhh_1_3_
-	replace			laborhh_2 = laborhh_2_4_
-	replace			laborhh_3 = laborhh_3_5_
-	drop			laborhi_m_1_- laborhh_3_5_
-	
+	*** no need to impute or deal with outliers
+
 * generate aggregate hh and hired labor variables	
 	generate 	laborday_hh = laborhh_1 + laborhh_2 + laborhh_3 + laborhh_4
 	generate 	laborday_hired = laborhi_m + laborhi_f
@@ -244,28 +173,28 @@
 
 * renaming some variables of interest
 	rename 		household_id hhid
-	rename 		household_id2 hhid2
 	rename 		saq01 region
 	rename 		saq02 zone
 	rename 		saq03 woreda
 	rename		saq05 ea
 
+	lab var 		crop_code "Crop Identifier"
+	lab var			crop_id "Unique Crop ID"
+	lab var			crop "Unique Crop ID Within Plot"
+	
 *	Restrict to variables of interest
-	keep  		holder_id- crop_code crop_id labordays_harv
-	order 		holder_id- crop_code
+	keep  		holder_id- saq09 crop_code crop_id labordays_harv
+	order 		holder_id- crop
 
 * final preparations to export
 	isid 		crop_id
 	compress
 	describe
 	summarize
-	*** one ob is missing ea, other obs w/ same ea id exist
+
+	sort 		holder_id ea_id parcel field crop
 	
-	replace		ea = 6 if ea == .
-	summarize
-	sort 		holder_id ea_id parcel field crop_code
-	customsave , idvar(crop_id) filename(PH_SEC10.dta) path("`export'") ///
-		dofile(PP_SEC10) user($user)
+	save 		"$export/PH_SEC10.dta", replace
 
 * close the log
 	log	close

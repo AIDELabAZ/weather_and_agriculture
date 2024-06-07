@@ -55,6 +55,8 @@
 	do 			"`dofile'/wave_1/ess1_merge.do"			//	merges wv 1 hh datasets
 	do 			"`dofile'/wave_2/ess2_merge.do"			//	merges wv 2 hh datasets
 	do 			"`dofile'/wave_3/ess3_merge.do"			//	merges wv 3 hh datasets
+	do 			"`dofile'/wave_4/ess4_merge.do"			//	merges wv 4 hh datasets
+	do 			"`dofile'/wave_5/ess5_merge.do"			//	merges wv 5 hh datasets
 
 
 * **********************************************************************
@@ -65,6 +67,8 @@
 	do 			"`dofile'/wave_1/ess1_build.do"			//	merges ESSY1 to weather
 	do 			"`dofile'/wave_2/ess2_build.do"			//	merges ESSY2 to weather
 	do 			"`dofile'/wave_3/ess3_build.do"			//	merges ESSY3 to weather
+	do 			"`dofile'/wave_4/ess4_build.do"			//	merges ESSY4 to weather
+	do 			"`dofile'/wave_5/ess5_build.do"			//	merges ESSY5 to weather
 	
 
 * **********************************************************************

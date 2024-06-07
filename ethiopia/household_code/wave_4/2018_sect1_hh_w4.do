@@ -1,58 +1,58 @@
 * Project: WB Weather
-* Created on: June 2020
-* Created by: McG
-* Stata v.16
+* Created on: May 2024
+* Created by: jdm
+* Edited on 4 June 2024
+* Edited by: jdm
+* Stata v.18
 
 * does
-	* cleans Ethiopia household variables, wave 3 HH sec1
+	* cleans Ethiopia household variables, wave 4 HH sec1
 	* gives location identifiers for participants
 	* hierarchy: holder > parcel > field > crop - not a concern in this dofile
 	* seems to very roughly correspond to Malawi ag-modI and ag-modO
 	
 * assumes
-	* customsave.ado
+	* access to raw data
 	* distinct.ado
 
 * TO DO:
-	* the only isid variable i found is individual_id2
-	* where is the isid for wave 3?
-	* otherwise complete
+	* done
 
 	
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
 
-* define paths
-	loc root = "$data/household_data/ethiopia/wave_3/raw"
-	loc export = "$data/household_data/ethiopia/wave_3/refined"
-	loc logout = "$data/household_data/ethiopia/logs"
-
-* open log
-	cap log close
-	log using "`logout'/wv3_HHSEC1", append
+* define paths	
+	global		root 		 	"$data/household_data/ethiopia/wave_4/raw"  
+	global		export 		 	"$data/household_data/ethiopia/wave_4/refined"
+	global		logout 		 	"$data/household_data/ethiopia/logs"
+	
+* open log	
+	cap log 	close
+	log 		using			"$logout/wv4_HHSEC1", append
 
 	
 * **********************************************************************
-* 1 - preparing ESS 2015/16 (Wave 3) - Household Section 1 
+* 1 - preparing ESS 2018/19 (Wave 4) - Household Section 1 
 * **********************************************************************
 
 * load data
-	use 		"`root'/sect1_hh_w3.dta", clear
+	use 		"$root/sect1_hh_w4.dta", clear
 
 * dropping duplicates
 	duplicates 	drop
 
 * individual_id2 is unique identifier 
 	describe
-	sort 		household_id2 individual_id2
-	isid 		individual_id2, missok
+	sort 		household_id individual_id
+	isid 		household_id individual_id
 
-* creating district identifier
+* create district identifier
 	egen 		district_id = group( saq01 saq02)
 	label var 	district_id "Unique district identifier"
 	distinct	saq01 saq02, joint
-	*** 84 distinct districts
+	*** 105 distinct districts
 
 
 * ***********************************************************************
@@ -61,25 +61,28 @@
 
 * renaming some variables of interest
 	rename 		household_id hhid
-	rename 		household_id2 hhid2
 	rename 		saq01 region
-	rename 		saq02 district
-	label var 	district "District Code"
+	rename 		saq02 zone
 	rename 		saq03 woreda
 	rename		saq07 ea
+	rename		saq14 sector
 
+* destring zone and woreda
+	destring	zone, replace
+	destring	woreda, replace
+	destring	ea, replace
+	
 * restrict to variables of interest
-	keep  		hhid- hh_s1q00 district_id
-	order 		hhid- saq08
+	keep  		hhid- woreda ea
 	
 * prepare for export
-	isid		individual_id2
+	isid		hhid individual_id
 	compress
 	describe
 	summarize 
 	sort hhid ea_id
-	customsave , idvar(individual_id2) filename(HH_SEC1.dta) path("`export'") ///
-		dofile(HH_SEC1) user($user)
+	
+	save 		"$export/HH_SEC1.dta", replace
 
 * close the log
 	log	close
