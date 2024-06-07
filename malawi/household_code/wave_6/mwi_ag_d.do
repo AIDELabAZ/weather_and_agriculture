@@ -152,10 +152,25 @@
 	
 * as an intermediate step, make dummies for non-missing type and quantity 
 * details for a first application and second application. 
-	generate 		fert_inorg1 = (!missing(ag_d39a) & !missing(ag_d39b) & !missing(ag_d39c))	
+	generate 		fert_inorg1 = (!missing(ag_d39a) & !missing(ag_d39c) & !missing(ag_d39c))	
 	*** type, quantity and unit for first application are non-missing
 	generate 		fert_inorg2 = (!missing(ag_d39f) & !missing(ag_d39g) & !missing(ag_d39h))	
 	*** type, quantity and unit for second application are non-missing
+	
+	gen 			fertkgs_con = .
+	replace			fertkgs_con = 0.0001 if  ag_d39c == 1 
+	replace			fertkgs_con = 1 if ag_d39c == 2
+	replace			fertkgs_con = 2 if ag_d39c == 3
+	replace			fertkgs_con = 3 if ag_d39c == 4
+	replace			fertkgs_con = 5 if ag_d39c == 5
+	replace 		fertkgs_con = 10 if ag_d39c == 6
+	replace			fertkgs_con = 50 if ag_d39c == 7 
+	
+	gen 			fert_inorg_kg1 =  ag_d39c * fertkgs_con
+	replace 		fert_inorg_kg1 = 0 if fert_inorg_kg1 == . 
+	gen 			fert_inorg_kg2 =  ag_d39f * fertkgs_con
+	replace 		fert_inorg_kg2 = 0 if fert_inorg_kg2 == . 
+	egen 			fert_inorg_kg = rsum(fert_inorg_kg1 fert_inorg_kg2)
 
 	generate 		fert_inorg_any = (fert_inorg1==1 | fert_inorg2==1)
 	label 			variable fert_inorg_any	"inorganic fertilizer was applied on plot"
@@ -163,7 +178,7 @@
 	egen 			fert_inorg_n = rowtotal(fert_inorg1 fert_inorg2)
 	label 			variable fert_inorg_n "number of applications of inorganic fertilizer on plot"
 
-	drop 			fert_inorg1 fert_inorg2
+	drop 			fert_inorg1 fert_inorg2 fert_inorg_kg1 fert_inorg_kg2
 	
 * **********************************************************************
 * 5 - irrigation
@@ -313,9 +328,9 @@
 * **********************************************************************
 
 	keep  			y4_hhid plotid gardenid crop_cash soiltype swc_* slope dambo irrigation_any fert_inorg_any ///
-						fert_inorg_n insecticide_any herbicide_any fungicide_any pesticide_any labordays hirelabor_any
+						fert_inorg_n insecticide_any herbicide_any fungicide_any pesticide_any labordays hirelabor_any fert_inorg_kg
 	order 			y4_hhid plotid gardenid crop_cash soiltype swc_* slope dambo irrigation_any fert_inorg_any ///
-						fert_inorg_n insecticide_any herbicide_any fungicide_any pesticide_any labordays hirelabor_any
+						fert_inorg_n insecticide_any herbicide_any fungicide_any pesticide_any labordays hirelabor_any fert_inorg_kg
 
 	compress
 	describe

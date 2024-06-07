@@ -45,10 +45,11 @@
 	merge 			m:1 y4_hhid plotid gardenid using "`root'/ag_mod_c_19", generate(_gc)
 	*** 28 not matched from master
 	*** 214 not matched from using 
-	*** drop all unmerged observations
+	*** drop all unmerged observations	
 	
 	drop			if _gc != 3
 	*** 252 observations dropped 
+		
 	
 * merging in production inputs data
 	merge			m:1 y4_hhid plotid gardenid using "`root'/rs_plot", generate(_rsp)
@@ -77,7 +78,7 @@
 
 	rename 			harvest_value vl_hrv
 	rename 			mz_harvest mz_hrv
-	rename			fert_inorg_n fert
+	rename			fert_inorg_kg fert
 	rename			pesticide_any pest_any
 	rename 			herbicide_any herb_any
 	rename			irrigation irr_any
