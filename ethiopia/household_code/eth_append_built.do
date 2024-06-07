@@ -1,14 +1,14 @@
 * Project: WB Weather
 * Created on: Aug 2020
 * Created by: mcg
-* Edited on: 6 June 2024
+* Edited on: 7 June 2024
 * Edited by: jdm
 * Stata v.18
 
 * does
 	* reads in merged data sets
 	* appends merged data sets
-	* outputs appended ethiopia panel with all three waves
+	* outputs appended ethiopia panel with all five waves
 
 
 * assumes
@@ -49,9 +49,12 @@
 * append wave 4 dataset
 	append		using "$root/wave_4/essy4_merged", force	
 	
+* append wave 5 dataset
+	append		using "$root/wave_5/essy5_merged", force	
+	
 * check the number of observations again
 	count
-	*** 9303 observations 
+	*** 10,709 observations 
 	count if 		year == 2011
 	*** wave 1 has 1689
 	count if 		year == 2013
@@ -60,6 +63,8 @@
 	*** wave 3 has 2718
 	count if 		year == 2018
 	*** wave 4 has 1996
+	count if 		year == 2021
+	*** wave 5 has 1406
 	
 * drop observations missing year 1 household id
 	drop if			household_id == ""
@@ -84,8 +89,9 @@
 	replace			weight = pw2 if weight == .
 	replace			weight = pw_w3 if weight == .
 	replace			weight = pw_w4 if weight == .
+	replace			weight = pw_w5 if weight == .
 	
-	drop			pw pw2 pw_w3 pw_w4
+	drop			pw pw2 pw_w3 pw_w4 pw_w5
 	
 	rename			weight pw
 	lab var			pw "Household Sample Weight"
@@ -95,6 +101,11 @@
 	
 	order			country dtype eth_id year aez pw
 	
+* replace missing z-gdd with missing
+	loc	zgdd			v21_*
+	foreach v of varlist `zgdd'{
+	    replace		`v' = 0 if `v' == .
+	}		
 	
 * **********************************************************************
 * 4 - end matter

@@ -211,7 +211,7 @@
 * construct production value per hectare
 	gen				vl_yld = vl_hrv / plotsize
 	assert 			!missing(vl_yld)
-	lab var			vl_yld "value of yield (2010USD/ha)"
+	lab var			vl_yld "value of yield (2015 USD/ha)"
 
 * impute value per hectare outliers 
 	sum				vl_yld

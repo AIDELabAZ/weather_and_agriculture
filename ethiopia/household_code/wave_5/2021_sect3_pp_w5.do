@@ -301,6 +301,9 @@
 					irrigated fert_any parcel_id field_id
 	order 		holder_id- saq09
 
+* for some reason saq04 & ea is not string in the raw file. drop to ovoid merge issues
+	drop		city ea
+	
 * final preparations to export
 	isid 		holder_id parcel field
 	isid		field_id

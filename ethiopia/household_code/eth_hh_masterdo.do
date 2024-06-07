@@ -30,52 +30,7 @@
 
 * starting with running all individual hh data files
 * define local with all sub-folders in it
-	loc folderList : dir "`dofile'" dirs "wave_1"
-
-* define local with all files in each sub-folder
-	foreach folder of loc folderList {
-
-	* loop through each HHSEC file in the folder local
-		loc HHfile : dir "`dofile'/`folder'" files "20*.do"
-	
-	* loop through each file in the above local
-		foreach file in `HHfile' {
-	    
-		* run each individual file
-			do "`dofile'/`folder'/`file'"		
-	}
-}
-	loc folderList : dir "`dofile'" dirs "wave_2"
-
-* define local with all files in each sub-folder
-	foreach folder of loc folderList {
-
-	* loop through each HHSEC file in the folder local
-		loc HHfile : dir "`dofile'/`folder'" files "20*.do"
-	
-	* loop through each file in the above local
-		foreach file in `HHfile' {
-	    
-		* run each individual file
-			do "`dofile'/`folder'/`file'"		
-	}
-}
-	loc folderList : dir "`dofile'" dirs "wave_3"
-
-* define local with all files in each sub-folder
-	foreach folder of loc folderList {
-
-	* loop through each HHSEC file in the folder local
-		loc HHfile : dir "`dofile'/`folder'" files "20*.do"
-	
-	* loop through each file in the above local
-		foreach file in `HHfile' {
-	    
-		* run each individual file
-			do "`dofile'/`folder'/`file'"		
-	}
-}
-	loc folderList : dir "`dofile'" dirs "wave_4"
+	loc folderList : dir "`dofile'" dirs "wave_*"
 
 * define local with all files in each sub-folder
 	foreach folder of loc folderList {
@@ -100,7 +55,8 @@
 	do 			"`dofile'/wave_1/ess1_merge.do"			//	merges wv 1 hh datasets
 	do 			"`dofile'/wave_2/ess2_merge.do"			//	merges wv 2 hh datasets
 	do 			"`dofile'/wave_3/ess3_merge.do"			//	merges wv 3 hh datasets
-	do 			"`dofile'/wave_4/ess4_merge.do"			//	merges wv 3 hh datasets
+	do 			"`dofile'/wave_4/ess4_merge.do"			//	merges wv 4 hh datasets
+	do 			"`dofile'/wave_5/ess5_merge.do"			//	merges wv 5 hh datasets
 
 
 * **********************************************************************
@@ -111,13 +67,14 @@
 	do 			"`dofile'/wave_1/ess1_build.do"			//	merges ESSY1 to weather
 	do 			"`dofile'/wave_2/ess2_build.do"			//	merges ESSY2 to weather
 	do 			"`dofile'/wave_3/ess3_build.do"			//	merges ESSY3 to weather
-	do 			"`dofile'/wave_4/ess4_build.do"			//	merges ESSY3 to weather
+	do 			"`dofile'/wave_4/ess4_build.do"			//	merges ESSY4 to weather
+	do 			"`dofile'/wave_5/ess5_build.do"			//	merges ESSY5 to weather
 	
 
 * **********************************************************************
 * 4 - run .do file to append each wave
 * **********************************************************************
-dsds
+
 	do			"`dofile'/eth_append_built.do"				// append waves
 	
 /* END */

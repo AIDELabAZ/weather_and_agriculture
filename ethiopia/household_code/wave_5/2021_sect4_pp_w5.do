@@ -137,6 +137,9 @@
 	keep  		holder_id- crop_code pesticide_any herbicide_any field_prop ///
 					damaged damaged_pct parcel_id field_id crop_id
 	order 		holder_id- ea
+	
+* for some reason saq04 & ea is not string in the raw file. drop to ovoid merge issues
+	drop		saq04 ea
 
 * Final preparations to export
 	isid 		holder_id parcel field crop_id
