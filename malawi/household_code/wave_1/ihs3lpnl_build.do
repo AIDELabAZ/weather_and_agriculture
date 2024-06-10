@@ -36,7 +36,7 @@
 * **********************************************************************
 
 * import the .dta houeshold file
-	use 		"$rooth/hhfinal_ihs3lpnl.dta", clear
+	use 		"$rooth/hhfinal_ihs3lpnl_new.dta", clear
 	    
 * generate variable to record data source
 	gen 		data = "lp1"

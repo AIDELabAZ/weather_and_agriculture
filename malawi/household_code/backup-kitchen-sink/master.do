@@ -45,7 +45,7 @@ version ${version}			//	sets the version of Stata equal to the version defined a
 *	must be updated based on where the Malawi_analysis_datasets folder is 
 *	located on your computer in order for the syntax to run.  
 if c(username)=="annal" { 
-global Malawi	"/Users/aljosephson/OneDrive - University of Arizona/weather_and_agriculture/household_data/malawi/wb_raw_data/"
+global Malawi	"C:/Users/aljosephson/OneDrive - University of Arizona/weather_and_agriculture/household_data/malawi/wb_raw_data"
 	}
 	
 ********************************************************************************

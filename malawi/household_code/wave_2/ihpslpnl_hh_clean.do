@@ -35,7 +35,7 @@
 * **********************************************************************
 
 * load data
-	use 		"`root'/ihpslpnl_hh.dta", clear
+	use 		"`root'/ihpslpnl_hh_new.dta", clear
 
 * keep only the variables we need
 	keep 		y2_hhid case_id region district urbanR2 ta ea_id urbanR1 ///
