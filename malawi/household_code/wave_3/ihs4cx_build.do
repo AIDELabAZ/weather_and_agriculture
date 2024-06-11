@@ -36,7 +36,7 @@
 * **********************************************************************
 
 * import the .dta houeshold file
-	use 		"$rooth/hhfinal_ihs4cx_new.dta", clear
+	use 		"$rooth/hhfinal_ihs4cx.dta", clear
 	    
 * generate variable to record data source
 	gen 		data = "cx2"

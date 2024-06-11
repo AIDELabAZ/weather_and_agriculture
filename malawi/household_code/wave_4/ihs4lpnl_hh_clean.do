@@ -52,7 +52,7 @@
 				ds_fungicide* ds_pesticide* dsmz_fert* dsmz_insecticide* ///
 				dsmz_herbicide* dsmz_fungicide* dsmz_pesticide* ///
 				rs_irrigation* rsmz_irrigation* ds_irrigation* dsmz_irrigation* /// 
-				rs_fert_inorgkg rsmz_fert_kg
+				rs_fert_inorgkg rsmz_fert_kg 
 
 * generate indicator variables for herbicide and fungicide
 	gen 		rs_herb = 1 if rs_herbicideany == 1 | rs_fungicideany == 1
