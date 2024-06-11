@@ -205,7 +205,7 @@
 * append the two panel files
 	append		using "$export/mwi_sp.dta", force	
 	append		using "$export/mwi_lp.dta", force	
-	
+
 * drop dry season values - we just focus on the rainy season (rs)
 	drop		ds*
 
@@ -222,7 +222,7 @@
 	gen 		cp_lab = rsmz_labordaysimp/cp_lnd
 	lab var 	cp_lab "Labor for maize (days/ha)"
 		
-	rename		rsmz_fert_kg cp_frt
+	rename		rsmz_fert_inorgpct cp_frt
 	lab var		cp_frt "Fertilizer (inorganic) for maize (kg/ha)"
 		
 	rename		rsmz_pest cp_pst
@@ -261,7 +261,7 @@
 	gen 		tf_lab = rs_labordaysimp/tf_lnd
 	lab var 	tf_lab "Labor for all crops (days/ha)"
 		
-	rename		rs_fert_inorgkg tf_frt
+	rename		rs_fert_inorgpct tf_frt
 	lab var		tf_frt "Fertilizer (inorganic) for all crops (kg/ha)"
 		
 	rename		rs_pest tf_pst
