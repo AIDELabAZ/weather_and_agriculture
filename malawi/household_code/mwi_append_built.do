@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: jdm
-* Edited on: 23 May 2024
+* Edited on: 17 June 2024
 * Edited by: jdm
 * Stata v.18
 
@@ -20,7 +20,7 @@
 	* xfill.ado
 
 * TO DO:
-	* complete
+	* ccan't figure out how to generate unique household ID given all the movers and splits
 	
 * **********************************************************************
 * 0 - setup
@@ -74,6 +74,8 @@
 	order		country dtype region district urban ta strata cluster ///
 				ea_id cx_id case_id hhid hhweight hh_x02 hh_x04
 
+	isid		case_id
+				
 * save file
 	qui: compress
 	save 			"$export/mwi_cx.dta", replace
@@ -124,6 +126,8 @@
 	order		country dtype region district urban ta strata cluster ///
 				ea_id spid sp_id case_id y2_hhid hhweight
 	
+	isid		case_id year
+	
 * save file
 	qui: compress
 	save 			"$export/mwi_sp.dta", replace
@@ -148,9 +152,18 @@
 	
 * append the third long panel file	
 	append		using "$root/wave_4/lp3_merged.dta", force	
-
+	
 * fill in missing lpid for third long panel using y2_hhid
 	egen		aux_id = group(y2_hhid)
+	xtset 		aux_id
+	xfill 		lp_id if aux_id != ., i(aux_id)
+	drop		aux_id
+	
+* append the third long panel file	
+	append		using "$root/wave_6/lp4_merged.dta", force	
+	
+* fill in missing lpid for fourth long panel using y3_hhid
+	egen		aux_id = group(y3_hhid)
 	xtset 		aux_id
 	xfill 		lp_id if aux_id != ., i(aux_id)
 	drop		aux_id
@@ -160,10 +173,15 @@
 	drop if		dup > 0 & mover_R1R2R3 == 1
 	drop		dup
 	duplicates 	tag case_id year, generate(dup)
-	drop if 	dup > 0 & splitoffR2 != 1
+	drop if 	dup > 0 & splitoffR2 == 2
 	drop if 	dup > 0 & tracking_R1_to_R2 ==1
 	drop		dup
-	duplicates 	tag case_id year, generate(dup)
+	
+* replace lp_id for household missing it
+	replace		lp_id = 1621 if lp_id == .
+dfgfdgfd	
+	duplicates 	tag case_id year, generate(dupc)
+	duplicates 	tag lp_id year, generate(dupl)
 	drop if		dup > 0 
 	drop		dup
 
@@ -184,17 +202,20 @@
 	replace		strata 		= strataR2 if strata == .
 	replace		strata 		= strataR3 if strata == .
 	rename		hhweightR1 	hhweight
-	drop		urbanR2- distance_R1_to_R2 urbanR3- distance_R2_to_R3
+	replace		hhweight = hh_wgt if hhweight == .
+	drop		urbanR2- distance_R1_to_R2 urbanR3- distance_R2_to_R3 hh_wgt
 	
 * order variables
 	order		country dtype region district urban ta strata cluster ///
-				ea_id lpid lp_id case_id y2_hhid y3_hhid hhweight
+				ea_id lpid lp_id case_id y2_hhid y3_hhid y4_hhid hhweight
+	
+	isid		case_id year
 	
 * save file
 	qui: compress
 	save 			"$export/mwi_lp.dta", replace
 	
-		
+
 * **********************************************************************
 * 4 - append all Malawi data
 * **********************************************************************
@@ -273,21 +294,26 @@
 	rename		rs_irrigationany tf_irr
 	lab var		tf_irr "Irrigation for all crops (=1)"
 
-* going to append to this the 2019/2020 data, which is a bit different, but let's give it a go
-	*append 		using "`export5'/mwi_merge.dta", force	
-	
 * rename household weights
 	rename		hhweight pw
 	
-* drop unnecessary variables and reorder remaining
-	drop		rs* region district urban strata cluster ea_id spid ///
-					y2_hhid y3_hhid hhid hh_x02 hh_x04 intmonth ///
-					intyear qx_type ta lpid
+* drop unused production variables
+	drop 		rs*
+	
+* going to append to this the 2019/2020 data, which is a bit different, but let's give it a go
+	append 		using "$root/wave_6/lp4_merged.dta", force	
+
+	replace		pw = hh_wgt if pw == .
 	
 	order		country dtype cx_id sp_id lp_id year aez pw tf_hrv tf_lnd tf_yld tf_lab ///
 					tf_frt tf_pst tf_hrb tf_irr cp_hrv cp_lnd cp_yld cp_lab ///
 					cp_frt cp_pst cp_hrb cp_irr
-
+	
+* drop unnecessary variables and reorder remaining
+	drop		region district urban strata cluster ea_id spid ///
+					y2_hhid y3_hhid hhid hh_x02 hh_x04 intmonth ///
+					intyear qx_type ta lpid
+	
 * replace missing variables
 	replace		aez = 312 if lp_id == 320
 	replace		aez = 312 if lp_id == 1142

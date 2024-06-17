@@ -50,7 +50,6 @@
 	drop			if _gc != 3
 	*** 252 observations dropped 
 		
-	
 * merging in production inputs data
 	merge			m:1 y4_hhid plotid gardenid using "`root'/rs_plot", generate(_rsp)
 	*** 0 out of 5,398 missing in master 
@@ -489,6 +488,15 @@
 * verify values are accurate
 	sum				tf_* cp_*
 	
+* merging in household codes to build panel
+	merge			1:1 y4_hhid using "`root'/hh_mod_a_filt_19", generate(_hh)
+	*** all unmerged obs came from using data (848)
+
+	drop			if _hh != 3
+	*** 848 observfations droppped 	
+	
+* destring case_id
+	destring		case_id, replace
 	
 * **********************************************************************
 * 5 - end matter, clean up to save
@@ -519,8 +527,8 @@
 	gen				year = 2019
 	lab var			year "Year"
 	
-	order 			y4_hhid ea_id region district reside  ///
-						year tf_hrv tf_lnd tf_yld tf_lab tf_frt ///
+	order 			case_id y4_hhid y3_hhid ea_id region district reside  ///
+						hh_wgt year tf_hrv tf_lnd tf_yld tf_lab tf_frt ///
 						tf_pst tf_hrb tf_irr cp_hrv cp_lnd cp_yld ///
 						cp_lab cp_frt cp_pst cp_hrb cp_irr
 	compress
@@ -528,7 +536,7 @@
 	summarize 
 	
 * saving production dataset
-	save 			"`export'/mwi_merge.dta", replace
+	save 			"`export'/hhfinal_ihs5p.dta", replace
  
 * close the log
 	log	close

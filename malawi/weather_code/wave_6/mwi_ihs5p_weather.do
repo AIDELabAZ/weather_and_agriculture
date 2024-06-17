@@ -35,7 +35,7 @@
 
 * open log
 	cap log		close
-	log 		using 		"`logout'/mwi_ihs5pp_weather", append
+	log 		using 		"`logout'/mwi_ihs5p_weather", append
 
 
 * **********************************************************************
