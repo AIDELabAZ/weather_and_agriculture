@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: March 2024
 * Created by: alj
-* Edited on: 24 may 2024
+* Edited on: 17 june 2024
 * Edited by: alj 
 * Stata v.18
 
@@ -14,9 +14,7 @@
 	* access to MWI W6 raw data
 	
 * TO DO:
-	* ISSUES: 
-	*** hired labor divided into harvest and non-harvest
-	*** free labor not counted 
+	* done 
 	
 	* generally complete 
 	

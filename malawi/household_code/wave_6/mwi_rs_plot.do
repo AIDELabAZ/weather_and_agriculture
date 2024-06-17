@@ -154,7 +154,9 @@
 * self-reported production quantities.
 	
 * construct maize yield
-	generate 		mz_yield = mz_harvest / plotsize, after(mz_harvest)
+	gen 			mz_plotsize = plotsize if mz_harvest > 0 
+	label 			variable mz_plotsize "maize harvest plot size"
+	generate 		mz_yield = mz_harvest / mz_plotsize, after(mz_harvest)
 	label 			variable mz_yield "maize yield (kg/ha)"
 	tabstat 		mz_yield, statistics(n mean min p75 p90 p95 p99 max) columns(statistics) format(%9.3g) longstub
 

@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: Feb 2024
 * Created by: alj
-* Edited on: 24 may 2024
+* Edited on: 17 June 2024
 * Edited by: alj 
 * Stata v.18
 
@@ -12,7 +12,7 @@
 	* access to MWI 6 raw data - PANEL
 	
 * TO DO:
-	* done?
+	* done
 
 * **********************************************************************
 * 0 - setup
