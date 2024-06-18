@@ -42,42 +42,843 @@
 
 * load data 
 	use 			"$root/lsms_complete_results", clear
+	frames 			reset
+	frame 			create rainfall
+	frame 			rainfall: use "$root/lsms_complete_results"
 	
-* keep HH Bilinear - true hh coordinates 
-	keep			if ext == 1
-	
-*generate different betas based on signficance
-	gen 			b_sig = beta
-	replace 		b_sig = . if pval > .05
-	lab var 		b_sig "p < 0.05"
-	
-	gen 			b_ns = beta
-	replace 		b_ns= . if p <= .05
-	lab var 		b_ns "n.s."
-	
-* generate significance dummy
-	gen				sig = 1 if b_sig != .
-	replace			sig = 0 if b_ns != .
-	lab	def			yesno 0 "Not Significant" 1 "Significant"
-	lab val			sig yesno
-	lab var			sig "Weather variable is significant"
-	
-* generate sign dummy
-	gen 			b_sign = 1 if b_sig > 0 & b_sig != .
-	replace 		b_sign = 0 if b_sig < 0 & b_sig != .
-	lab	def			posneg 0 "Negative" 1 "Positive"
-	lab val			b_sign posneg
-	lab var			b_sign "Sign on weather variable"
-	
-	
+	frame 			create temperature
+	frame 			temperature: use "$root/lsms_complete_results"
+
 ************************************************************************
-**# 2 - generate specification chart varying over rainfall measure
+**# 2 - generate specification chart for rainfall
+************************************************************************		
+/*
+frame rainfall {
+	keep if			varname < 15
+	drop			obs
+
+	levelsof 		varname, local(varrain)
+	foreach 		i of local varrain {
+
+************************************************************************
+**## 2a - ethiopia
+************************************************************************
+
+preserve
+	keep			if varname == `i' & country == 1 & regname < 4
+	sort 			regname beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	regname
+	gen 			k2 		= 	depvar + 3 + 2
+	gen 			k3 		= 	sat + 2 + 2 + 3 + 2
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Model"
+	lab				var k2 "Dep. Var."
+	lab 			var k3 "Weather Product"
+
+	qui sum			ci_up
+	global			bmax = r(max)
+	
+	qui sum			ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - 2.5*$brange
+	global			gheight	=	23
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(4)36) xsize(10) ysize(6) xtitle("") ytitle("") ///
+						title("Ethiopia")  ylab(0(1)$gheight ) ///
+						msize(small small small) mcolor(gs10 gs10 gs10) ylabel( ///
+						1 "Weather" 2 "Weather + FE" 3 "Weather + FE + Inputs" ///
+						4 "*{bf: Model}*" 6 "Quantity" 7 "Value" 8 "*{bf:Dep. Var.}*" ///
+						10 "CHIRPS" 11 "CPC" 12 "MERRA-2" 13 "ARC2" 14 "ERA5" ///
+						15 "TAMSAT" 16 "*{bf:Weather Product}*" 23 " ", ///
+						angle(0) labsize(vsmall) tstyle(notick)) || ///
+						(scatter k3 obs if b_sig != . & beta > 0, ///
+						msize(small small) mcolor(edkblue) msymbol(d)) || ///
+						(scatter k3 obs if b_sig != . & beta < 0, ///
+						msize(small small) mcolor(maroon) msymbol(d)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) msymbol(Th) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs if beta > 0, yaxis(2) mcolor(edkblue%75) msymbol(+) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs if beta < 0, yaxis(2) mcolor(maroon%75) msymbol(+) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != . & beta < 0, ///
+						barwidth(.2) color(maroon%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != . & beta > 0, ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ///
+						xline(12.5, lcolor(black) lstyle(solid)) ///
+						xline(24.5, lcolor(black) lstyle(solid)) ), ///
+						legend(order(8 6 7) cols(3) size(small) rowgap(.5) pos(12)) 
+				
+	graph export 	"$xfig\v`i'_cty1.pdf", as(pdf) replace
+restore
+	
+
+************************************************************************
+**## 2b - malawi
+************************************************************************
+	
+preserve
+	keep			if varname == `i' & country == 2 & regname < 4
+	sort 			regname beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	regname
+	gen 			k2 		= 	depvar + 3 + 2
+	gen 			k3 		= 	sat + 2 + 2 + 3 + 2
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Model"
+	lab				var k2 "Dep. Var."
+	lab 			var k3 "Weather Product"
+
+	qui sum			ci_up
+	global			bmax = r(max)
+	
+	qui sum			ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - 2.5*$brange
+	global			gheight	=	23
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(4)36) xsize(10) ysize(6) xtitle("") ytitle("") ///
+						title("Malawi")  ylab(0(1)$gheight ) ///
+						msize(small small small) mcolor(gs10 gs10 gs10) ylabel( ///
+						1 "Weather" 2 "Weather + FE" 3 "Weather + FE + Inputs" ///
+						4 "*{bf: Model}*" 6 "Quantity" 7 "Value" 8 "*{bf:Dep. Var.}*" ///
+						10 "CHIRPS" 11 "CPC" 12 "MERRA-2" 13 "ARC2" 14 "ERA5" ///
+						15 "TAMSAT" 16 "*{bf:Weather Product}*" 23 " ", ///
+						angle(0) labsize(vsmall) tstyle(notick)) || ///
+						(scatter k3 obs if b_sig != . & beta > 0, ///
+						msize(small small) mcolor(edkblue) msymbol(d)) || ///
+						(scatter k3 obs if b_sig != . & beta < 0, ///
+						msize(small small) mcolor(maroon) msymbol(d)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) msymbol(Th) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs if beta > 0, yaxis(2) mcolor(edkblue%75) msymbol(+) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs if beta < 0, yaxis(2) mcolor(maroon%75) msymbol(+) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != . & beta < 0, ///
+						barwidth(.2) color(maroon%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != . & beta > 0, ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ///
+						xline(12.5, lcolor(black) lstyle(solid)) ///
+						xline(24.5, lcolor(black) lstyle(solid)) ), ///
+						legend(order(8 6 7) cols(3) size(small) rowgap(.5) pos(12)) 
+				
+	graph export 	"$xfig\v`i'_cty2.pdf", as(pdf) replace
+restore
+
+
+************************************************************************
+**## 2c - Niger
+************************************************************************
+	
+preserve
+	keep			if varname == `i' & country == 4 & regname < 4
+	sort 			regname beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	regname
+	gen 			k2 		= 	depvar + 3 + 2
+	gen 			k3 		= 	sat + 2 + 2 + 3 + 2
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Model"
+	lab				var k2 "Dep. Var."
+	lab 			var k3 "Weather Product"
+
+	qui sum			ci_up
+	global			bmax = r(max)
+	
+	qui sum			ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - 2.5*$brange
+	global			gheight	=	23
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(4)36) xsize(10) ysize(6) xtitle("") ytitle("") ///
+						title("Niger")  ylab(0(1)$gheight ) ///
+						msize(small small small) mcolor(gs10 gs10 gs10) ylabel( ///
+						1 "Weather" 2 "Weather + FE" 3 "Weather + FE + Inputs" ///
+						4 "*{bf: Model}*" 6 "Quantity" 7 "Value" 8 "*{bf:Dep. Var.}*" ///
+						10 "CHIRPS" 11 "CPC" 12 "MERRA-2" 13 "ARC2" 14 "ERA5" ///
+						15 "TAMSAT" 16 "*{bf:Weather Product}*" 23 " ", ///
+						angle(0) labsize(vsmall) tstyle(notick)) || ///
+						(scatter k3 obs if b_sig != . & beta > 0, ///
+						msize(small small) mcolor(edkblue) msymbol(d)) || ///
+						(scatter k3 obs if b_sig != . & beta < 0, ///
+						msize(small small) mcolor(maroon) msymbol(d)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) msymbol(Th) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs if beta > 0, yaxis(2) mcolor(edkblue%75) msymbol(+) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs if beta < 0, yaxis(2) mcolor(maroon%75) msymbol(+) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != . & beta < 0, ///
+						barwidth(.2) color(maroon%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != . & beta > 0, ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ///
+						xline(12.5, lcolor(black) lstyle(solid)) ///
+						xline(24.5, lcolor(black) lstyle(solid)) ), ///
+						legend(order(8 6 7) cols(3) size(small) rowgap(.5) pos(12)) 
+				
+	graph export 	"$xfig\v`i'_cty4.pdf", as(pdf) replace
+restore
+
+
+************************************************************************
+**## 2d - Nigeria
+************************************************************************
+
+preserve
+	keep			if varname == `i' & country == 5 & regname < 4
+	sort 			regname beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	regname
+	gen 			k2 		= 	depvar + 3 + 2
+	gen 			k3 		= 	sat + 2 + 2 + 3 + 2
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Model"
+	lab				var k2 "Dep. Var."
+	lab 			var k3 "Weather Product"
+
+	qui sum			ci_up
+	global			bmax = r(max)
+	
+	qui sum			ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - 2.5*$brange
+	global			gheight	=	23
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(4)36) xsize(10) ysize(6) xtitle("") ytitle("") ///
+						title("Nigeria")  ylab(0(1)$gheight ) ///
+						msize(small small small) mcolor(gs10 gs10 gs10) ylabel( ///
+						1 "Weather" 2 "Weather + FE" 3 "Weather + FE + Inputs" ///
+						4 "*{bf: Model}*" 6 "Quantity" 7 "Value" 8 "*{bf:Dep. Var.}*" ///
+						10 "CHIRPS" 11 "CPC" 12 "MERRA-2" 13 "ARC2" 14 "ERA5" ///
+						15 "TAMSAT" 16 "*{bf:Weather Product}*" 23 " ", ///
+						angle(0) labsize(vsmall) tstyle(notick)) || ///
+						(scatter k3 obs if b_sig != . & beta > 0, ///
+						msize(small small) mcolor(edkblue) msymbol(d)) || ///
+						(scatter k3 obs if b_sig != . & beta < 0, ///
+						msize(small small) mcolor(maroon) msymbol(d)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) msymbol(Th) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs if beta > 0, yaxis(2) mcolor(edkblue%75) msymbol(+) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs if beta < 0, yaxis(2) mcolor(maroon%75) msymbol(+) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != . & beta < 0, ///
+						barwidth(.2) color(maroon%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != . & beta > 0, ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ///
+						xline(12.5, lcolor(black) lstyle(solid)) ///
+						xline(24.5, lcolor(black) lstyle(solid)) ), ///
+						legend(order(8 6 7) cols(3) size(small) rowgap(.5) pos(12)) 
+				
+	graph export 	"$xfig\v`i'_cty5.pdf", as(pdf) replace
+restore
+
+
+************************************************************************
+**## 2e - Tanzania
+************************************************************************
+
+preserve
+	keep			if varname == `i' & country == 6 & regname < 4
+	sort 			regname beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	regname
+	gen 			k2 		= 	depvar + 3 + 2
+	gen 			k3 		= 	sat + 2 + 2 + 3 + 2
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Model"
+	lab				var k2 "Dep. Var."
+	lab 			var k3 "Weather Product"
+
+	qui sum			ci_up
+	global			bmax = r(max)
+	
+	qui sum			ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - 2.5*$brange
+	global			gheight	=	23
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(4)36) xsize(10) ysize(6) xtitle("") ytitle("") ///
+						title("Tanzania")  ylab(0(1)$gheight ) ///
+						msize(small small small) mcolor(gs10 gs10 gs10) ylabel( ///
+						1 "Weather" 2 "Weather + FE" 3 "Weather + FE + Inputs" ///
+						4 "*{bf: Model}*" 6 "Quantity" 7 "Value" 8 "*{bf:Dep. Var.}*" ///
+						10 "CHIRPS" 11 "CPC" 12 "MERRA-2" 13 "ARC2" 14 "ERA5" ///
+						15 "TAMSAT" 16 "*{bf:Weather Product}*" 23 " ", ///
+						angle(0) labsize(vsmall) tstyle(notick)) || ///
+						(scatter k3 obs if b_sig != . & beta > 0, ///
+						msize(small small) mcolor(edkblue) msymbol(d)) || ///
+						(scatter k3 obs if b_sig != . & beta < 0, ///
+						msize(small small) mcolor(maroon) msymbol(d)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) msymbol(Th) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs if beta > 0, yaxis(2) mcolor(edkblue%75) msymbol(+) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs if beta < 0, yaxis(2) mcolor(maroon%75) msymbol(+) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != . & beta < 0, ///
+						barwidth(.2) color(maroon%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != . & beta > 0, ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ///
+						xline(12.5, lcolor(black) lstyle(solid)) ///
+						xline(24.5, lcolor(black) lstyle(solid)) ), ///
+						legend(order(8 6 7) cols(3) size(small) rowgap(.5) pos(12)) 
+				
+	graph export 	"$xfig\v`i'_cty6.pdf", as(pdf) replace
+restore
+
+
+************************************************************************
+**## 2f - Uganda
+************************************************************************
+
+preserve
+	keep			if varname == `i' & country == 7 & regname < 4
+	sort 			regname beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	regname
+	gen 			k2 		= 	depvar + 3 + 2
+	gen 			k3 		= 	sat + 2 + 2 + 3 + 2
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Model"
+	lab				var k2 "Dep. Var."
+	lab 			var k3 "Weather Product"
+
+	qui sum			ci_up
+	global			bmax = r(max)
+	
+	qui sum			ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - 2.5*$brange
+	global			gheight	=	23
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(4)36) xsize(10) ysize(6) xtitle("") ytitle("") ///
+						title("Uganda")  ylab(0(1)$gheight ) ///
+						msize(small small small) mcolor(gs10 gs10 gs10) ylabel( ///
+						1 "Weather" 2 "Weather + FE" 3 "Weather + FE + Inputs" ///
+						4 "*{bf: Model}*" 6 "Quantity" 7 "Value" 8 "*{bf:Dep. Var.}*" ///
+						10 "CHIRPS" 11 "CPC" 12 "MERRA-2" 13 "ARC2" 14 "ERA5" ///
+						15 "TAMSAT" 16 "*{bf:Weather Product}*" 23 " ", ///
+						angle(0) labsize(vsmall) tstyle(notick)) || ///
+						(scatter k3 obs if b_sig != . & beta > 0, ///
+						msize(small small) mcolor(edkblue) msymbol(d)) || ///
+						(scatter k3 obs if b_sig != . & beta < 0, ///
+						msize(small small) mcolor(maroon) msymbol(d)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) msymbol(Th) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs if beta > 0, yaxis(2) mcolor(edkblue%75) msymbol(+) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs if beta < 0, yaxis(2) mcolor(maroon%75) msymbol(+) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != . & beta < 0, ///
+						barwidth(.2) color(maroon%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != . & beta > 0, ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ///
+						xline(12.5, lcolor(black) lstyle(solid)) ///
+						xline(24.5, lcolor(black) lstyle(solid)) ), ///
+						legend(order(8 6 7) cols(3) size(small) rowgap(.5) pos(12)) 
+				
+	graph export 	"$xfig\v`i'_cty7.pdf", as(pdf) replace
+restore
+}
+}
+*/
+************************************************************************
+**# 3 - generate specification chart for temperature
+************************************************************************		
+
+frame temperature {
+	keep if			varname > 14
+	drop			obs
+
+	levelsof 		varname, local(varrain)
+	foreach 		i of local varrain {
+
+************************************************************************
+**## 3a - ethiopia
+************************************************************************
+
+preserve
+	keep			if varname == `i' & country == 1 & regname < 4
+	sort 			regname beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	regname
+	gen 			k2 		= 	depvar + 3 + 2
+	gen 			k3 		= 	sat + 2 + 2 + 3 + 2 - 6
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Model"
+	lab				var k2 "Dep. Var."
+	lab 			var k3 "Weather Product"
+
+	qui sum			ci_up
+	global			bmax = r(max)
+	
+	qui sum			ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - 2.5*$brange
+	global			gheight	=	23
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(2)18) xsize(10) ysize(6) xtitle("") ytitle("") ///
+						title("Ethiopia")  ylab(0(1)$gheight ) ///
+						msize(small small small) mcolor(gs10 gs10 gs10) ylabel( ///
+						1 "Weather" 2 "Weather + FE" 3 "Weather + FE + Inputs" ///
+						4 "*{bf: Model}*" 6 "Quantity" 7 "Value" 8 "*{bf:Dep. Var.}*" ///
+						10 "CPC" 11 "ERA5" 12 "MERRA-2" 13 "*{bf:Weather Product}*" 17 " ", ///
+						angle(0) labsize(vsmall) tstyle(notick)) || ///
+						(scatter k3 obs if b_sig != . & beta > 0, ///
+						msize(small small) mcolor(edkblue) msymbol(d)) || ///
+						(scatter k3 obs if b_sig != . & beta < 0, ///
+						msize(small small) mcolor(maroon) msymbol(d)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) msymbol(Th) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs if beta > 0, yaxis(2) mcolor(edkblue%75) msymbol(+) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs if beta < 0, yaxis(2) mcolor(maroon%75) msymbol(+) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != . & beta < 0, ///
+						barwidth(.2) color(maroon%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != . & beta > 0, ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ///
+						xline(6.5, lcolor(black) lstyle(solid)) ///
+						xline(12.5, lcolor(black) lstyle(solid)) ), ///
+						legend(order(8 6 7) cols(3) size(small) rowgap(.5) pos(12)) 
+				
+	graph export 	"$xfig\v`i'_cty1.pdf", as(pdf) replace
+restore
+	
+
+************************************************************************
+**## 3b - malawi
+************************************************************************
+	
+preserve
+	keep			if varname == `i' & country == 2 & regname < 4
+	sort 			regname beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	regname
+	gen 			k2 		= 	depvar + 3 + 2
+	gen 			k3 		= 	sat + 2 + 2 + 3 + 2 - 6
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Model"
+	lab				var k2 "Dep. Var."
+	lab 			var k3 "Weather Product"
+
+	qui sum			ci_up
+	global			bmax = r(max)
+	
+	qui sum			ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - 2.5*$brange
+	global			gheight	=	23
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(2)18) xsize(10) ysize(6) xtitle("") ytitle("") ///
+						title("Malawi")  ylab(0(1)$gheight ) ///
+						msize(small small small) mcolor(gs10 gs10 gs10) ylabel( ///
+						1 "Weather" 2 "Weather + FE" 3 "Weather + FE + Inputs" ///
+						4 "*{bf: Model}*" 6 "Quantity" 7 "Value" 8 "*{bf:Dep. Var.}*" ///
+						10 "CPC" 11 "ERA5" 12 "MERRA-2" 13 "*{bf:Weather Product}*" 17 " ", ///
+						angle(0) labsize(vsmall) tstyle(notick)) || ///
+						(scatter k3 obs if b_sig != . & beta > 0, ///
+						msize(small small) mcolor(edkblue) msymbol(d)) || ///
+						(scatter k3 obs if b_sig != . & beta < 0, ///
+						msize(small small) mcolor(maroon) msymbol(d)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) msymbol(Th) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs if beta > 0, yaxis(2) mcolor(edkblue%75) msymbol(+) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs if beta < 0, yaxis(2) mcolor(maroon%75) msymbol(+) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != . & beta < 0, ///
+						barwidth(.2) color(maroon%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != . & beta > 0, ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) //////
+						xline(6.5, lcolor(black) lstyle(solid)) ///
+						xline(12.5, lcolor(black) lstyle(solid)) ), ///
+						legend(order(8 6 7) cols(3) size(small) rowgap(.5) pos(12)) 
+				
+	graph export 	"$xfig\v`i'_cty2.pdf", as(pdf) replace
+restore
+
+
+************************************************************************
+**## 3c - Niger
+************************************************************************
+	
+preserve
+	keep			if varname == `i' & country == 4 & regname < 4
+	sort 			regname beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	regname
+	gen 			k2 		= 	depvar + 3 + 2
+	gen 			k3 		= 	sat + 2 + 2 + 3 + 2 - 6
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Model"
+	lab				var k2 "Dep. Var."
+	lab 			var k3 "Weather Product"
+
+	qui sum			ci_up
+	global			bmax = r(max)
+	
+	qui sum			ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - 2.5*$brange
+	global			gheight	=	23
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(2)18) xsize(10) ysize(6) xtitle("") ytitle("") ///
+						title("Niger")  ylab(0(1)$gheight ) ///
+						msize(small small small) mcolor(gs10 gs10 gs10) ylabel( ///
+						1 "Weather" 2 "Weather + FE" 3 "Weather + FE + Inputs" ///
+						4 "*{bf: Model}*" 6 "Quantity" 7 "Value" 8 "*{bf:Dep. Var.}*" ///
+						10 "CPC" 11 "ERA5" 12 "MERRA-2" 13 "*{bf:Weather Product}*" 17 " ", ///
+						angle(0) labsize(vsmall) tstyle(notick)) || ///
+						(scatter k3 obs if b_sig != . & beta > 0, ///
+						msize(small small) mcolor(edkblue) msymbol(d)) || ///
+						(scatter k3 obs if b_sig != . & beta < 0, ///
+						msize(small small) mcolor(maroon) msymbol(d)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) msymbol(Th) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs if beta > 0, yaxis(2) mcolor(edkblue%75) msymbol(+) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs if beta < 0, yaxis(2) mcolor(maroon%75) msymbol(+) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != . & beta < 0, ///
+						barwidth(.2) color(maroon%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != . & beta > 0, ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) //////
+						xline(6.5, lcolor(black) lstyle(solid)) ///
+						xline(12.5, lcolor(black) lstyle(solid)) ), ///
+						legend(order(8 6 7) cols(3) size(small) rowgap(.5) pos(12)) 
+				
+	graph export 	"$xfig\v`i'_cty4.pdf", as(pdf) replace
+restore
+
+
+************************************************************************
+**## 3d - Nigeria
+************************************************************************
+
+preserve
+	keep			if varname == `i' & country == 5 & regname < 4
+	sort 			regname beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	regname
+	gen 			k2 		= 	depvar + 3 + 2
+	gen 			k3 		= 	sat + 2 + 2 + 3 + 2 - 6
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Model"
+	lab				var k2 "Dep. Var."
+	lab 			var k3 "Weather Product"
+
+	qui sum			ci_up
+	global			bmax = r(max)
+	
+	qui sum			ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - 2.5*$brange
+	global			gheight	=	23
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(2)18) xsize(10) ysize(6) xtitle("") ytitle("") ///
+						title("Nigeria")  ylab(0(1)$gheight ) ///
+						msize(small small small) mcolor(gs10 gs10 gs10) ylabel( ///
+						1 "Weather" 2 "Weather + FE" 3 "Weather + FE + Inputs" ///
+						4 "*{bf: Model}*" 6 "Quantity" 7 "Value" 8 "*{bf:Dep. Var.}*" ///
+						10 "CPC" 11 "ERA5" 12 "MERRA-2" 13 "*{bf:Weather Product}*" 17 " ", ///
+						angle(0) labsize(vsmall) tstyle(notick)) || ///
+						(scatter k3 obs if b_sig != . & beta > 0, ///
+						msize(small small) mcolor(edkblue) msymbol(d)) || ///
+						(scatter k3 obs if b_sig != . & beta < 0, ///
+						msize(small small) mcolor(maroon) msymbol(d)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) msymbol(Th) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs if beta > 0, yaxis(2) mcolor(edkblue%75) msymbol(+) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs if beta < 0, yaxis(2) mcolor(maroon%75) msymbol(+) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != . & beta < 0, ///
+						barwidth(.2) color(maroon%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != . & beta > 0, ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) //////
+						xline(6.5, lcolor(black) lstyle(solid)) ///
+						xline(12.5, lcolor(black) lstyle(solid)) ), ///
+						legend(order(8 6 7) cols(3) size(small) rowgap(.5) pos(12)) 
+				
+	graph export 	"$xfig\v`i'_cty5.pdf", as(pdf) replace
+restore
+
+
+************************************************************************
+**## 3e - Tanzania
+************************************************************************
+
+preserve
+	keep			if varname == `i' & country == 6 & regname < 4
+	sort 			regname beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	regname
+	gen 			k2 		= 	depvar + 3 + 2
+	gen 			k3 		= 	sat + 2 + 2 + 3 + 2 - 6
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Model"
+	lab				var k2 "Dep. Var."
+	lab 			var k3 "Weather Product"
+
+	qui sum			ci_up
+	global			bmax = r(max)
+	
+	qui sum			ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - 2.5*$brange
+	global			gheight	=	23
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(2)18) xsize(10) ysize(6) xtitle("") ytitle("") ///
+						title("Tanzania")  ylab(0(1)$gheight ) ///
+						msize(small small small) mcolor(gs10 gs10 gs10) ylabel( ///
+						1 "Weather" 2 "Weather + FE" 3 "Weather + FE + Inputs" ///
+						4 "*{bf: Model}*" 6 "Quantity" 7 "Value" 8 "*{bf:Dep. Var.}*" ///
+						10 "CPC" 11 "ERA5" 12 "MERRA-2" 13 "*{bf:Weather Product}*" 17 " ", ///
+						angle(0) labsize(vsmall) tstyle(notick)) || ///
+						(scatter k3 obs if b_sig != . & beta > 0, ///
+						msize(small small) mcolor(edkblue) msymbol(d)) || ///
+						(scatter k3 obs if b_sig != . & beta < 0, ///
+						msize(small small) mcolor(maroon) msymbol(d)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) msymbol(Th) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs if beta > 0, yaxis(2) mcolor(edkblue%75) msymbol(+) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs if beta < 0, yaxis(2) mcolor(maroon%75) msymbol(+) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != . & beta < 0, ///
+						barwidth(.2) color(maroon%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != . & beta > 0, ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) //////
+						xline(6.5, lcolor(black) lstyle(solid)) ///
+						xline(12.5, lcolor(black) lstyle(solid)) ), ///
+						legend(order(8 6 7) cols(3) size(small) rowgap(.5) pos(12)) 
+				
+	graph export 	"$xfig\v`i'_cty6.pdf", as(pdf) replace
+restore
+
+
+************************************************************************
+**## 3f - Uganda
+************************************************************************
+
+preserve
+	keep			if varname == `i' & country == 7 & regname < 4
+	sort 			regname beta
+	gen 			obs = _n
+
+* stack values of the specification indicators
+	gen 			k1 		= 	regname
+	gen 			k2 		= 	depvar + 3 + 2
+	gen 			k3 		= 	sat + 2 + 2 + 3 + 2 - 6
+	
+* label new variables	
+	lab				var obs "Specification # - sorted by effect size"
+
+	lab 			var k1 "Model"
+	lab				var k2 "Dep. Var."
+	lab 			var k3 "Weather Product"
+
+	qui sum			ci_up
+	global			bmax = r(max)
+	
+	qui sum			ci_lo
+	global			bmin = r(min)
+	
+	global			brange	=	$bmax - $bmin
+	global			from_y	=	$bmin - 2.5*$brange
+	global			gheight	=	23
+
+	twoway 			scatter k1 k2 k3 obs, xlab(0(2)18) xsize(10) ysize(6) xtitle("") ytitle("") ///
+						title("Uganda")  ylab(0(1)$gheight ) ///
+						msize(small small small) mcolor(gs10 gs10 gs10) ylabel( ///
+						1 "Weather" 2 "Weather + FE" 3 "Weather + FE + Inputs" ///
+						4 "*{bf: Model}*" 6 "Quantity" 7 "Value" 8 "*{bf:Dep. Var.}*" ///
+						10 "CPC" 11 "ERA5" 12 "MERRA-2" 13 "*{bf:Weather Product}*" 17 " ", ///
+						angle(0) labsize(vsmall) tstyle(notick)) || ///
+						(scatter k3 obs if b_sig != . & beta > 0, ///
+						msize(small small) mcolor(edkblue) msymbol(d)) || ///
+						(scatter k3 obs if b_sig != . & beta < 0, ///
+						msize(small small) mcolor(maroon) msymbol(d)) || ///
+						(scatter b_ns obs, yaxis(2) mcolor(black%75) msymbol(Th) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs if beta > 0, yaxis(2) mcolor(edkblue%75) msymbol(+) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(scatter b_sig obs if beta < 0, yaxis(2) mcolor(maroon%75) msymbol(+) ///
+						ylab(,axis(2) labsize(vsmall) angle(0) ) yscale( ///
+						range($from_y $bmax ) axis(2)) ) || ///
+						(rbar ci_lo ci_up obs if b_sig == ., ///
+						barwidth(.2) color(black%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != . & beta < 0, ///
+						barwidth(.2) color(maroon%50) yaxis(2) ) || ///
+						(rbar ci_lo ci_up obs if b_sig != . & beta > 0, ///
+						barwidth(.2) color(edkblue%50) yaxis(2)  ///
+						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) //////
+						xline(6.5, lcolor(black) lstyle(solid)) ///
+						xline(12.5, lcolor(black) lstyle(solid)) ), ///
+						legend(order(8 6 7) cols(3) size(small) rowgap(.5) pos(12)) 
+				
+	graph export 	"$xfig\v`i'_cty7.pdf", as(pdf) replace
+restore
+}
+}
+/*	
+************************************************************************
+**# 4 - generate specification chart varying over rainfall measure
 ************************************************************************
 
 * experimenting with specification chart 
  
-levelsof varname, local(varrain)
-foreach i of local varrain {
+levelsof varname, local(vartemp)
+foreach i of local vartemp {
 
 *this is a test
 
@@ -142,355 +943,6 @@ preserve
 graph export 	"$xfig\v_`i'_reg3.pdf", as(pdf) replace
 restore
 }
-		
-	
-************************************************************************
-**# 3 - generate specification chart for mean rainfall
-************************************************************************		
-	
-************************************************************************
-**## 3a - ethiopia
-************************************************************************
-	
-preserve
-	keep			if varname == 1 & country == 1 & regname < 4
-	sort 			regname sat beta
-	gen 			obs = _n
-
-* stack values of the specification indicators
-	gen 			k1 		= 	regname
-	gen 			k2 		= 	depvar + 3 + 2
-	gen 			k3 		= 	sat + 2 + 2 + 3 + 2
-	
-* label new variables	
-	lab				var obs "Specification # - sorted by effect size"
-
-	lab 			var k1 "Model"
-	lab				var k2 "Dep. Var."
-	lab 			var k3 "Weather Product"
-
-	qui sum			ci_up
-	global			bmax = r(max)
-	
-	qui sum			ci_lo
-	global			bmin = r(min)
-	
-	global			brange	=	$bmax - $bmin
-	global			from_y	=	$bmin - 2.5*$brange
-	global			gheight	=	23
-
-	twoway 			scatter k1 k2 k3 obs, xlab(0(4)36) xsize(10) ysize(6) xtitle("") ytitle("") ///
-						title("Ethiopia")  ylab(0(1)$gheight ) ///
-						msize(small small small) mcolor(gs10 gs10 gs10) ylabel( ///
-						1 "Weather" 2 "Weather + FE" 3 "Weather + FE + Inputs" ///
-						4 "*{bf: Model}*" 6 "Quantity" 7 "Value" 8 "*{bf:Dep. Var.}*" ///
-						10 "CHIRPS" 11 "CPC" 12 "MERRA-2" 13 "ARC2" 14 "ERA5" ///
-						15 "TAMSAT" 16 "*{bf:Weather Product}*" 23 " ", ///
-						angle(0) labsize(vsmall) tstyle(notick)) || ///
-						(scatter b_ns obs, yaxis(2) mcolor(black%75) ylab(, ///
-						axis(2) labsize(vsmall) angle(0) ) yscale( ///
-						range($from_y $bmax ) axis(2)) ) || ///
-						(scatter b_sig obs, yaxis(2) mcolor(edkblue%75) ylab(, ///
-						axis(2) labsize(vsmall) angle(0) ) yscale( ///
-						range($from_y $bmax ) axis(2)) ) || ///
-						(rbar ci_lo ci_up obs if b_sig == ., ///
-						barwidth(.2) color(black%50) yaxis(2) ) || ///
-						(rbar ci_lo ci_up obs if b_sig != ., ///
-						barwidth(.2) color(edkblue%50) yaxis(2)  ///
-						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ), ///
-						legend(order(4 5) cols(2) size(small) rowgap(.5) pos(12)) 	///
-						saving("$sfig/v01_cty1", replace)
-				
-*graph export 	"$xfig\v01_cty1.pdf", as(pdf) replace
-restore
-
-
-************************************************************************
-**## 3b - malawi
-************************************************************************
-	
-preserve
-	keep			if varname == 1 & country == 2 & regname < 4
-	sort 			beta
-	gen 			obs = _n
-
-* stack values of the specification indicators
-	gen 			k1 		= 	regname
-	gen 			k2 		= 	depvar + 3 + 2
-	gen 			k3 		= 	sat + 2 + 2 + 3 + 2
-	
-* label new variables	
-	lab				var obs "Specification # - sorted by effect size"
-
-	lab 			var k1 "Model"
-	lab				var k2 "Dep. Var."
-	lab 			var k3 "Weather Product"
-
-	qui sum			ci_up
-	global			bmax = r(max)
-	
-	qui sum			ci_lo
-	global			bmin = r(min)
-	
-	global			brange	=	$bmax - $bmin
-	global			from_y	=	$bmin - 2.5*$brange
-	global			gheight	=	23
-
-	twoway 			scatter k1 k2 k3 obs, xlab(0(4)36) xsize(10) ysize(6) xtitle("") ytitle("") ///
-						title("Malawi")  ylab(0(1)$gheight ) ///
-						msize(small small small) mcolor(gs10 gs10 gs10) ylabel( ///
-						1 "Weather" 2 "Weather + FE" 3 "Weather + FE + Inputs" ///
-						4 "*{bf: Model}*" 6 "Quantity" 7 "Value" 8 "*{bf:Dep. Var.}*" ///
-						10 "CHIRPS" 11 "CPC" 12 "MERRA-2" 13 "ARC2" 14 "ERA5" ///
-						15 "TAMSAT" 16 "*{bf:Weather Product}*" 23 " ", ///
-						angle(0) labsize(vsmall) tstyle(notick)) || ///
-						(scatter b_ns obs, yaxis(2) mcolor(black%75) ylab(, ///
-						axis(2) labsize(vsmall) angle(0) ) yscale( ///
-						range($from_y $bmax ) axis(2)) ) || ///
-						(scatter b_sig obs, yaxis(2) mcolor(edkblue%75) ylab(, ///
-						axis(2) labsize(vsmall) angle(0) ) yscale( ///
-						range($from_y $bmax ) axis(2)) ) || ///
-						(rbar ci_lo ci_up obs if b_sig == ., ///
-						barwidth(.2) color(black%50) yaxis(2) ) || ///
-						(rbar ci_lo ci_up obs if b_sig != ., ///
-						barwidth(.2) color(edkblue%50) yaxis(2)  ///
-						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ), ///
-						legend(order(4 5) cols(2) size(small) rowgap(.5) pos(12)) 	///
-						saving("$sfig/v01_cty2", replace)
-				
-	graph export 	"$xfig\v01_cty2.pdf", as(pdf) replace
-restore
-
-
-************************************************************************
-**## 3c - Niger
-************************************************************************
-	
-preserve
-	keep			if varname == 1 & country == 4 & regname < 4
-	sort 			beta
-	gen 			obs = _n
-
-* stack values of the specification indicators
-	gen 			k1 		= 	regname
-	gen 			k2 		= 	depvar + 3 + 2
-	gen 			k3 		= 	sat + 2 + 2 + 3 + 2
-	
-* label new variables	
-	lab				var obs "Specification # - sorted by effect size"
-
-	lab 			var k1 "Model"
-	lab				var k2 "Dep. Var."
-	lab 			var k3 "Weather Product"
-
-	qui sum			ci_up
-	global			bmax = r(max)
-	
-	qui sum			ci_lo
-	global			bmin = r(min)
-	
-	global			brange	=	$bmax - $bmin
-	global			from_y	=	$bmin - 2.5*$brange
-	global			gheight	=	23
-
-	twoway 			scatter k1 k2 k3 obs, xlab(0(4)36) xsize(10) ysize(6) xtitle("") ytitle("") ///
-						title("Niger")  ylab(0(1)$gheight ) ///
-						msize(small small small) mcolor(gs10 gs10 gs10) ylabel( ///
-						1 "Weather" 2 "Weather + FE" 3 "Weather + FE + Inputs" ///
-						4 "*{bf: Model}*" 6 "Quantity" 7 "Value" 8 "*{bf:Dep. Var.}*" ///
-						10 "CHIRPS" 11 "CPC" 12 "MERRA-2" 13 "ARC2" 14 "ERA5" ///
-						15 "TAMSAT" 16 "*{bf:Weather Product}*" 23 " ", ///
-						angle(0) labsize(vsmall) tstyle(notick)) || ///
-						(scatter b_ns obs, yaxis(2) mcolor(black%75) ylab(, ///
-						axis(2) labsize(vsmall) angle(0) ) yscale( ///
-						range($from_y $bmax ) axis(2)) ) || ///
-						(scatter b_sig obs, yaxis(2) mcolor(edkblue%75) ylab(, ///
-						axis(2) labsize(vsmall) angle(0) ) yscale( ///
-						range($from_y $bmax ) axis(2)) ) || ///
-						(rbar ci_lo ci_up obs if b_sig == ., ///
-						barwidth(.2) color(black%50) yaxis(2) ) || ///
-						(rbar ci_lo ci_up obs if b_sig != ., ///
-						barwidth(.2) color(edkblue%50) yaxis(2)  ///
-						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ), ///
-						legend(order(4 5) cols(2) size(small) rowgap(.5) pos(12)) 	///
-						saving("$sfig/v01_cty3", replace)
-				
-	graph export 	"$xfig\v01_cty4.pdf", as(pdf) replace
-restore
-
-
-************************************************************************
-**## 3d - Nigeria
-************************************************************************
-
-	
-preserve
-	keep			if varname == 1 & country == 5 & regname < 4
-	sort 			beta
-	gen 			obs = _n
-
-* stack values of the specification indicators
-	gen 			k1 		= 	regname
-	gen 			k2 		= 	depvar + 3 + 2
-	gen 			k3 		= 	sat + 2 + 2 + 3 + 2
-	
-* label new variables	
-	lab				var obs "Specification # - sorted by effect size"
-
-	lab 			var k1 "Model"
-	lab				var k2 "Dep. Var."
-	lab 			var k3 "Weather Product"
-
-	qui sum			ci_up
-	global			bmax = r(max)
-	
-	qui sum			ci_lo
-	global			bmin = r(min)
-	
-	global			brange	=	$bmax - $bmin
-	global			from_y	=	$bmin - 2.5*$brange
-	global			gheight	=	23
-
-	twoway 			scatter k1 k2 k3 obs, xlab(0(4)36) xsize(10) ysize(6) xtitle("") ytitle("") ///
-						title("Nigeria")  ylab(0(1)$gheight ) ///
-						msize(small small small) mcolor(gs10 gs10 gs10) ylabel( ///
-						1 "Weather" 2 "Weather + FE" 3 "Weather + FE + Inputs" ///
-						4 "*{bf: Model}*" 6 "Quantity" 7 "Value" 8 "*{bf:Dep. Var.}*" ///
-						10 "CHIRPS" 11 "CPC" 12 "MERRA-2" 13 "ARC2" 14 "ERA5" ///
-						15 "TAMSAT" 16 "*{bf:Weather Product}*" 23 " ", ///
-						angle(0) labsize(vsmall) tstyle(notick)) || ///
-						(scatter b_ns obs, yaxis(2) mcolor(black%75) ylab(, ///
-						axis(2) labsize(vsmall) angle(0) ) yscale( ///
-						range($from_y $bmax ) axis(2)) ) || ///
-						(scatter b_sig obs, yaxis(2) mcolor(edkblue%75) ylab(, ///
-						axis(2) labsize(vsmall) angle(0) ) yscale( ///
-						range($from_y $bmax ) axis(2)) ) || ///
-						(rbar ci_lo ci_up obs if b_sig == ., ///
-						barwidth(.2) color(black%50) yaxis(2) ) || ///
-						(rbar ci_lo ci_up obs if b_sig != ., ///
-						barwidth(.2) color(edkblue%50) yaxis(2)  ///
-						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ), ///
-						legend(order(4 5) cols(2) size(small) rowgap(.5) pos(12)) 	///
-						saving("$sfig/v01_cty5", replace)
-				
-	graph export 	"$xfig\v01_cty5.pdf", as(pdf) replace
-restore
-
-
-************************************************************************
-**## 3e - Tanzania
-************************************************************************
-
-preserve
-	keep			if varname == 1 & country == 6 & regname < 4
-	sort 			beta
-	gen 			obs = _n
-
-* stack values of the specification indicators
-	gen 			k1 		= 	regname
-	gen 			k2 		= 	depvar + 3 + 2
-	gen 			k3 		= 	sat + 2 + 2 + 3 + 2
-	
-* label new variables	
-	lab				var obs "Specification # - sorted by effect size"
-
-	lab 			var k1 "Model"
-	lab				var k2 "Dep. Var."
-	lab 			var k3 "Weather Product"
-
-	qui sum			ci_up
-	global			bmax = r(max)
-	
-	qui sum			ci_lo
-	global			bmin = r(min)
-	
-	global			brange	=	$bmax - $bmin
-	global			from_y	=	$bmin - 2.5*$brange
-	global			gheight	=	23
-
-	twoway 			scatter k1 k2 k3 obs, xlab(0(4)36) xsize(10) ysize(6) xtitle("") ytitle("") ///
-						title("Tanzania")  ylab(0(1)$gheight ) ///
-						msize(small small small) mcolor(gs10 gs10 gs10) ylabel( ///
-						1 "Weather" 2 "Weather + FE" 3 "Weather + FE + Inputs" ///
-						4 "*{bf: Model}*" 6 "Quantity" 7 "Value" 8 "*{bf:Dep. Var.}*" ///
-						10 "CHIRPS" 11 "CPC" 12 "MERRA-2" 13 "ARC2" 14 "ERA5" ///
-						15 "TAMSAT" 16 "*{bf:Weather Product}*" 23 " ", ///
-						angle(0) labsize(vsmall) tstyle(notick)) || ///
-						(scatter b_ns obs, yaxis(2) mcolor(black%75) ylab(, ///
-						axis(2) labsize(vsmall) angle(0) ) yscale( ///
-						range($from_y $bmax ) axis(2)) ) || ///
-						(scatter b_sig obs, yaxis(2) mcolor(edkblue%75) ylab(, ///
-						axis(2) labsize(vsmall) angle(0) ) yscale( ///
-						range($from_y $bmax ) axis(2)) ) || ///
-						(rbar ci_lo ci_up obs if b_sig == ., ///
-						barwidth(.2) color(black%50) yaxis(2) ) || ///
-						(rbar ci_lo ci_up obs if b_sig != ., ///
-						barwidth(.2) color(edkblue%50) yaxis(2)  ///
-						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ), ///
-						legend(order(4 5) cols(2) size(small) rowgap(.5) pos(12)) 	///
-						saving("$sfig/v01_cty6", replace)
-				
-	graph export 	"$xfig\v01_cty6.pdf", as(pdf) replace
-restore
-
-
-************************************************************************
-**## 3f - Uganda
-************************************************************************
-
-	
-preserve
-	keep			if varname == 1 & country == 7 & regname < 4
-	sort 			beta
-	gen 			obs = _n
-
-* stack values of the specification indicators
-	gen 			k1 		= 	regname
-	gen 			k2 		= 	depvar + 3 + 2
-	gen 			k3 		= 	sat + 2 + 2 + 3 + 2
-	
-* label new variables	
-	lab				var obs "Specification # - sorted by effect size"
-
-	lab 			var k1 "Model"
-	lab				var k2 "Dep. Var."
-	lab 			var k3 "Weather Product"
-
-	qui sum			ci_up
-	global			bmax = r(max)
-	
-	qui sum			ci_lo
-	global			bmin = r(min)
-	
-	global			brange	=	$bmax - $bmin
-	global			from_y	=	$bmin - 2.5*$brange
-	global			gheight	=	23
-
-	twoway 			scatter k1 k2 k3 obs, xlab(0(4)36) xsize(10) ysize(6) xtitle("") ytitle("") ///
-						title("Uganda")  ylab(0(1)$gheight ) ///
-						msize(small small small) mcolor(gs10 gs10 gs10) ylabel( ///
-						1 "Weather" 2 "Weather + FE" 3 "Weather + FE + Inputs" ///
-						4 "*{bf: Model}*" 6 "Quantity" 7 "Value" 8 "*{bf:Dep. Var.}*" ///
-						10 "CHIRPS" 11 "CPC" 12 "MERRA-2" 13 "ARC2" 14 "ERA5" ///
-						15 "TAMSAT" 16 "*{bf:Weather Product}*" 23 " ", ///
-						angle(0) labsize(vsmall) tstyle(notick)) || ///
-						(scatter b_ns obs, yaxis(2) mcolor(black%75) ylab(, ///
-						axis(2) labsize(vsmall) angle(0) ) yscale( ///
-						range($from_y $bmax ) axis(2)) ) || ///
-						(scatter b_sig obs, yaxis(2) mcolor(edkblue%75) ylab(, ///
-						axis(2) labsize(vsmall) angle(0) ) yscale( ///
-						range($from_y $bmax ) axis(2)) ) || ///
-						(rbar ci_lo ci_up obs if b_sig == ., ///
-						barwidth(.2) color(black%50) yaxis(2) ) || ///
-						(rbar ci_lo ci_up obs if b_sig != ., ///
-						barwidth(.2) color(edkblue%50) yaxis(2)  ///
-						yline(0, lcolor(maroon) axis(2) lstyle(solid) ) ), ///
-						legend(order(4 5) cols(2) size(small) rowgap(.5) pos(12)) 	///
-						saving("$sfig/v01_cty7", replace)
-				
-	graph export 	"$xfig\v01_cty7.pdf", as(pdf) replace
-restore
-
 	
 ************************************************************************
 **# 4 - generate specification chart for z-score total rain

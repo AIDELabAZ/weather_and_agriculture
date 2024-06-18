@@ -52,7 +52,7 @@
 * create file to post results to
 	tempname 	reg_results
 	postfile 	`reg_results' country str3 sat str2 depvar str4 regname str3 varname ///
-					betarain serain adjustedr loglike dfr ///
+					betarain serain adjustedr loglike dfr obs ///
 					using "$results/reg_results.dta", replace
 					
 * define loop through levels of the data type variable	
@@ -75,37 +75,37 @@ foreach l of local levels {
 			reg 		lntf_yld `v' if country == `l', vce(cluster hhid)
 			post 		`reg_results' (`l') ("`sat'") ("tf") ("reg1") ///
 						("`varn'") (`=_b[`v']') (`=_se[`v']') (`=e(r2_a)') ///
-						(`=e(ll)') (`=e(df_r)')
+						(`=e(ll)') (`=e(df_r)') (`=e(N)')
 
 		* weather and fe	
 			xtreg 		lntf_yld `v' i.year if country == `l', fe vce(cluster hhid)
 			post 		`reg_results' (`l') ("`sat'") ("tf") ("reg2") ///
 						("`varn'") (`=_b[`v']') (`=_se[`v']') (`=e(r2_a)') ///
-						(`=e(ll)') (`=e(df_r)')
+						(`=e(ll)') (`=e(df_r)') (`=e(N)')
 
 		* weather and inputs and fe
 			xtreg 		lntf_yld `v' `inputstf' i.year if country == `l', fe vce(cluster hhid)
 			post 		`reg_results' (`l') ("`sat'") ("tf") ("reg3") ///
 						("`varn'") (`=_b[`v']') (`=_se[`v']') (`=e(r2_a)') ///
-						(`=e(ll)') (`=e(df_r)')
+						(`=e(ll)') (`=e(df_r)') (`=e(N)')
 			
 		* weather and squared weather
 			reg 		lntf_yld c.`v'##c.`v' if country == `l', vce(cluster hhid)
 			post 		`reg_results' (`l') ("`sat'") ("tf") ("reg4") ///
 						("`varn'") (`=_b[`v']') (`=_se[`v']') (`=e(r2_a)') ///
-						(`=e(ll)') (`=e(df_r)')
+						(`=e(ll)') (`=e(df_r)') (`=e(N)')
 		
 		* weather and squared weather and fe
 			xtreg 		lntf_yld c.`v'##c.`v' i.year if country == `l', fe vce(cluster hhid)
 			post 		`reg_results' (`l') ("`sat'") ("tf") ("reg5") ///
 						("`varn'") (`=_b[`v']') (`=_se[`v']') (`=e(r2_a)') ///
-						(`=e(ll)') (`=e(df_r)')
+						(`=e(ll)') (`=e(df_r)') (`=e(N)')
 		
 		* weather and squared weather and inputs and fe
 			xtreg 		lntf_yld c.`v'##c.`v' `inputstf' i.year if country == `l', fe vce(cluster hhid)
 			post 		`reg_results' (`l') ("`sat'") ("tf") ("reg6") ///
 						("`varn'") (`=_b[`v']') (`=_se[`v']') (`=e(r2_a)') ///
-						(`=e(ll)') (`=e(df_r)')
+						(`=e(ll)') (`=e(df_r)') (`=e(N)')
 
 		* 2.2: Quantity of Maize
 		
@@ -113,37 +113,37 @@ foreach l of local levels {
 			reg 		lncp_yld `v' if country == `l', vce(cluster hhid)
 			post 		`reg_results' (`l') ("`sat'") ("cp") ("reg1") ///
 						("`varn'") (`=_b[`v']') (`=_se[`v']') (`=e(r2_a)') ///
-						(`=e(ll)') (`=e(df_r)')
+						(`=e(ll)') (`=e(df_r)') (`=e(N)')
 
 		* weather and fe	
 			xtreg 		lncp_yld `v' i.year if country == `l', fe vce(cluster hhid)
 			post 		`reg_results' (`l') ("`sat'") ("cp") ("reg2") ///
 						("`varn'") (`=_b[`v']') (`=_se[`v']') (`=e(r2_a)') ///
-						(`=e(ll)') (`=e(df_r)')
+						(`=e(ll)') (`=e(df_r)') (`=e(N)')
 
 		* weather and inputs and fe
 			xtreg 		lncp_yld `v' `inputscp' i.year if country == `l', fe vce(cluster hhid)
 			post 		`reg_results' (`l') ("`sat'") ("cp") ("reg3") ///
 						("`varn'") (`=_b[`v']') (`=_se[`v']') (`=e(r2_a)') ///
-						(`=e(ll)') (`=e(df_r)')
+						(`=e(ll)') (`=e(df_r)') (`=e(N)')
 			
 		* weather and squared weather
 			reg 		lncp_yld c.`v'##c.`v' if country == `l', vce(cluster hhid)
 			post 		`reg_results' (`l') ("`sat'") ("cp") ("reg4") ///
 						("`varn'") (`=_b[`v']') (`=_se[`v']') (`=e(r2_a)') ///
-						(`=e(ll)') (`=e(df_r)')
+						(`=e(ll)') (`=e(df_r)') (`=e(N)')
 		
 		* weather and squared weather and fe
 			xtreg 		lncp_yld c.`v'##c.`v' i.year if country == `l', fe vce(cluster hhid)
 			post 		`reg_results' (`l') ("`sat'") ("cp") ("reg5") ///
 						("`varn'") (`=_b[`v']') (`=_se[`v']') (`=e(r2_a)') ///
-						(`=e(ll)') (`=e(df_r)')
+						(`=e(ll)') (`=e(df_r)') (`=e(N)')
 		
 		* weather and squared weather and inputs and fe
 			xtreg 		lncp_yld c.`v'##c.`v' `inputscp' i.year if country == `l', fe vce(cluster hhid)
 			post 		`reg_results' (`l') ("`sat'") ("cp") ("reg6") ///
 						("`varn'") (`=_b[`v']') (`=_se[`v']') (`=e(r2_a)') ///
-						(`=e(ll)') (`=e(df_r)')
+						(`=e(ll)') (`=e(df_r)') (`=e(N)')
 
 	}
 }
@@ -184,6 +184,7 @@ foreach l of local levels {
 	lab var		adjustedr "Adjusted R^2"
 	lab var		loglike "Log likelihood"
 	lab var		dfr "Degrees of freedom"
+	lab var		obs "Number of observations"
 
 * create unique id variable
 	egen 		reg_id = group(country sat depvar regname varname)
@@ -305,6 +306,29 @@ foreach l of local levels {
 	rename 		aux_reg regname
 
 order	reg_id
+	
+*generate different betas based on signficance
+	gen 			b_sig = beta
+	replace 		b_sig = . if pval > .05
+	lab var 		b_sig "p < 0.05"
+	
+	gen 			b_ns = beta
+	replace 		b_ns= . if p <= .05
+	lab var 		b_ns "n.s."
+	
+* generate significance dummy
+	gen				sig = 1 if b_sig != .
+	replace			sig = 0 if b_ns != .
+	lab	def			yesno 0 "Not Significant" 1 "Significant"
+	lab val			sig yesno
+	lab var			sig "Weather variable is significant"
+	
+* generate sign dummy
+	gen 			b_sign = 1 if b_sig > 0 & b_sig != .
+	replace 		b_sign = 0 if b_sig < 0 & b_sig != .
+	lab	def			posneg 0 "Negative" 1 "Positive"
+	lab val			b_sign posneg
+	lab var			b_sign "Sign on weather variable"
 	
 * save complete results
 	compress
