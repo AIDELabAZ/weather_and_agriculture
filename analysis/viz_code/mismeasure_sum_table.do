@@ -2,8 +2,8 @@
 * Created on: November 2020
 * Created by: alj
 * Edited by: jdm
-* Last edit: 29 November 2020 
-* Stata v.16.1 
+* Last edit: 18 Jun 2024
+* Stata v.18.0
 
 * does
 	* reads in lsms data set
@@ -11,11 +11,11 @@
 
 * assumes
 	* you have results file 
-	* customsave.ado
 	* grc1leg2.ado
 
 * TO DO:
 	* complete
+	
 	
 * **********************************************************************
 * 0 - setup
@@ -24,10 +24,12 @@
 * define paths
 	global	root 	= 	"$data/regression_data"
 	global	stab 	= 	"$data/results_data/tables"
-	global	xtab 	= 	"$data/output/paper/tables"
+	global	xtab 	= 	"$data/output/mismeasure_paper/tables"
 	global	sfig	= 	"$data/results_data/figures"	
-	global 	xfig    =   "$data/output/paper/figures"
+	global 	xfig    =   "$data/output/mismeasure_paper/figures"
 	global	logout 	= 	"$data/results_data/logs"
+	* s indicates Stata figures, works in progress
+	* x indicates final version for paper 
 
 * open log	
 	cap log close
@@ -42,9 +44,9 @@
 	use 			"$root/lsms_panel", clear
 
 * label variables
-	lab var 		tf_hrv	"Total farm production (2010 USD)"
+	lab var 		tf_hrv	"Total farm production (2015 USD)"
 	lab var 		tf_lnd	"Total farmed area (ha)"
-	lab var 		tf_yld	"Total farm yield (2010 USD/ha)"
+	lab var 		tf_yld	"Total farm yield (2015 USD/ha)"
 	lab var 		tf_lab	"Total farm labor rate (days/ha)"
 	lab var 		tf_frt	"Total farm fertilizer rate (kg/ha)" 
 	lab var 		tf_pst	"Total farm pesticide use (\%)"

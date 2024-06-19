@@ -1,8 +1,8 @@
 * Project: WB Weather - mismeasure paper
 * Created on: 4 April 2023
 * Created by: jdm
-* Edited by: alj
-* Last edit: 25 Jan 2024
+* Edited by: jdm
+* Last edit: 18 Jun 2024
 * Stata v.18.0 
 
 * does
@@ -14,8 +14,8 @@
 	* grc1leg2.ado
 
 * TO DO:
-	* experimenting in section 2
-	* tidy, clean, etc. 
+	* experimenting in section 4
+	
 	
 ************************************************************************
 **# 0 - setup
