@@ -98,7 +98,9 @@
 	
 	drop		lat_modified - fsrad3_lcmaj srtm_1k - _geo
 
+
 * destring unique household indicator
+	gen			hh_id_merge = y3_hhid
 	destring 	case_id, replace
 	
 * **********************************************************************

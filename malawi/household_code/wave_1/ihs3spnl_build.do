@@ -185,7 +185,8 @@
 }
 
 * save file
-	qui: compress
+	order 		hh_id_merge
+	qui: 		compress
 	save 		"$export/sp1_merged.dta", replace
 		
 * close the log

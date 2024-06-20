@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: jdm
-* Edited on: 17 June 2024
+* Edited on: 20 June 2024
 * Edited by: jdm
 * Stata v.18
 
@@ -20,7 +20,7 @@
 	* xfill.ado
 
 * TO DO:
-	* ccan't figure out how to generate unique household ID given all the movers and splits
+	* left off at building panel
 	
 * **********************************************************************
 * 0 - setup
@@ -138,55 +138,32 @@
 * **********************************************************************
 	
 * import the first long panel file
-	use 		"$root/wave_1/lp1_merged.dta", clear
+	use 		"$data/household_data/malawi/trackingfiles/Frame_hhIDs.dta", clear
+	
+* import the first long panel file
+	merge		1:1 hh_id_merge wave using "$root/wave_1/lp1_merged.dta", gen(lp1)
 
 * append the second long panel file
-	append		using "$root/wave_2/lp2_merged.dta", force	
+	merge		1:1 hh_id_merge wave using "$root/wave_2/lp2_merged.dta", gen(lp2)
+	
+* append the third long panel filefile
+	merge		1:1 hh_id_merge wave using "$root/wave_4/lp3_merged.dta", gen(lp3)
+	
+* append the third long panel file
+	merge		1:1 hh_id_merge wave using "$root/wave_6/lp4_merged.dta", gen(lp4)
 	
 * reformat case_id
 	format %15.0g case_id
 	
-* create household panel id for lp1 and lp2 using case_id
-	egen		lp_id = group(case_id)
-	lab var		lp_id "Long panel household id"	
-	
-* append the third long panel file	
-	append		using "$root/wave_4/lp3_merged.dta", force	
-	
-* fill in missing lpid for third long panel using y2_hhid
-	egen		aux_id = group(y2_hhid)
-	xtset 		aux_id
-	xfill 		lp_id if aux_id != ., i(aux_id)
-	drop		aux_id
-	
-* append the third long panel file	
-	append		using "$root/wave_6/lp4_merged.dta", force	
-	
-* fill in missing lpid for fourth long panel using y3_hhid
-	egen		aux_id = group(y3_hhid)
-	xtset 		aux_id
-	xfill 		lp_id if aux_id != ., i(aux_id)
-	drop		aux_id
-	
-* drop split-off households, keep only original households
-	duplicates 	tag lp_id year, generate(dup)
-	drop if		dup > 0 & mover_R1R2R3 == 1
-	drop		dup
-	duplicates 	tag case_id year, generate(dup)
-	drop if 	dup > 0 & splitoffR2 == 2
-	drop if 	dup > 0 & tracking_R1_to_R2 ==1
-	drop		dup
-	
-* replace lp_id for household missing it
-	replace		lp_id = 1621 if lp_id == .
-dfgfdgfd	
-	duplicates 	tag case_id year, generate(dupc)
-	duplicates 	tag lp_id year, generate(dupl)
-	drop if		dup > 0 
-	drop		dup
+* check for unique identifiers
+	isid		hh_id_obs wave
 
+	replace		year = 2012 if wave == 2
+	replace		year = 2015 if wave == 3
+	replace		year = 2018 if wave == 4
+	
 * create household, country, and data identifiers
-	sort		lp_id year
+	sort		hh_id_obs year
 	egen		lpid = seq()
 	lab var		lpid "Long panel unique id"
 
@@ -196,20 +173,12 @@ dfgfdgfd
 	gen			dtype = "lp"
 	lab var		dtype "Data type"
 
-* combine variables
-	replace		urban		= urbanR2 if urban == .
-	replace		urban		= urbanR3 if urban == .
-	replace		strata 		= strataR2 if strata == .
-	replace		strata 		= strataR3 if strata == .
-	rename		hhweightR1 	hhweight
-	replace		hhweight = hh_wgt if hhweight == .
-	drop		urbanR2- distance_R1_to_R2 urbanR3- distance_R2_to_R3 hh_wgt
-	
 * order variables
 	order		country dtype region district urban ta strata cluster ///
-				ea_id lpid lp_id case_id y2_hhid y3_hhid y4_hhid hhweight
+				ea_id case_id lpid y2_hhid y3_hhid y4_hhid ///
+				hh_id_obs hh_id_merge
 	
-	isid		case_id year
+	isid		hh_id_obs year
 	
 * save file
 	qui: compress

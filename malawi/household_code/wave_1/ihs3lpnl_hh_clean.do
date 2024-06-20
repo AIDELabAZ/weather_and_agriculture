@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: May 2020
 * Created by: jdm
-* Edited on: 23 May 2024
+* Edited on: 20 June 2024
 * Edited by: jdm
 * Stata v.18
 
@@ -97,6 +97,7 @@
 	drop		lat_modified - fsrad3_lcmaj afmnslp_pct - _geo
 	
 * destring unique household indicator
+	gen			hh_id_merge = case_id
 	destring 	case_id, replace
 
 	

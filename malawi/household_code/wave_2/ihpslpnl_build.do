@@ -185,7 +185,9 @@
 }
 
 * save file
-	qui: compress
+	gen			wave = 2
+	order 		hh_id_merge
+	qui: 		compress
 	save 		"$export/lp2_merged.dta", replace
 		
 * close the log

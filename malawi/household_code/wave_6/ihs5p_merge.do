@@ -496,14 +496,12 @@
 	*** 848 observfations droppped 	
 	
 * destring case_id
+	gen				hh_id_merge = y4_hhid
 	destring		case_id, replace
 	
 * **********************************************************************
 * 5 - end matter, clean up to save
 * **********************************************************************
-
-* verify unique household id
-	isid			y4_hhid
 
 * label variables
 	lab var			tf_lnd	"Total farmed area (ha)"
