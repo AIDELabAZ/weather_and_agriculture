@@ -185,6 +185,7 @@
 }
 
 * save file
+	gen			wave = 1
 	order 		hh_id_merge
 	qui: 		compress
 	save 		"$export/sp1_merged.dta", replace

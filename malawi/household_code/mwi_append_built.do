@@ -20,6 +20,7 @@
 	* xfill.ado
 
 * TO DO:
+	* need to sort out short panel
 	* left off at building panel
 	
 * **********************************************************************
@@ -40,19 +41,24 @@
 * 1 - append cross section
 * **********************************************************************
 
+* import the long panel data frame
+	use 		"$data/household_data/malawi/trackingfiles/Frame_hhIDs.dta", clear
+	
+	drop if		wave == 2 | wave == 4
+	
 * import the first cross section file
-	use 		"$root/wave_1/cx1_merged.dta", clear
+	merge		1:1 hh_id_merge wave using "$root/wave_1/cx1_merged.dta", gen(cx1)
 
+	keep if		cx1 == 2
+	
 * append the second cross section file
-	append		using "$root/wave_3/cx2_merged.dta", force
-
+	merge		1:1 hh_id_merge wave using "$root/wave_3/cx2_merged.dta", gen(cx2)
+	
 * reformat case_id
 	format %15.0g case_id
 
-* drop duplicates (not sure why there are duplicats)
-	duplicates 	tag case_id, generate(dup)
-	drop if 	dup > 0 & qx_type == ""
-	drop		dup
+* drop duplicates (10), not sure why there are dups
+	duplicates drop case_id, force
 
 * create household, country, and data identifiers
 	egen		cx_id = seq()
@@ -84,12 +90,19 @@
 * **********************************************************************
 * 2 - append short panel
 * **********************************************************************
-
+	
+* import the long panel data frame
+	use 		"$data/household_data/malawi/trackingfiles/Frame_hhIDs.dta", clear
+	
+	drop if		wave > 2
+	
 * import the first short panel file
-	use 		"$root/wave_1/sp1_merged.dta", clear
+	merge		1:1 hh_id_merge wave using "$root/wave_1/sp1_merged.dta", gen(sp1)
+
+	keep if		sp1 == 2
 
 * append the second short panel file
-	append		using "$root/wave_2/sp2_merged.dta", force
+	merge		1:1 hh_id_merge wave using "$root/wave_2/sp2_merged.dta", gen(sp2) force
 
 * reformat case_id
 	format %15.0g case_id
@@ -137,7 +150,7 @@
 * 3 - append long panel
 * **********************************************************************
 	
-* import the first long panel file
+* import the long panel data frame
 	use 		"$data/household_data/malawi/trackingfiles/Frame_hhIDs.dta", clear
 	
 * import the first long panel file
