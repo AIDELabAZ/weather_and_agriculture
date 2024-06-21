@@ -38,7 +38,7 @@
 * merge cross section household files with ag season files
 	use 		"`source'/AG_MOD_A_FILT.dta", clear
 
-	merge 1:1	case_id	using	"`root'/ihs3cx_hh.dta"
+	merge 1:1	case_id	using	"`root'/ihs3cx_hh_new.dta"
 
 * drop and keep variables
 	drop 		ag_c01 ag_j01- ag_s00
@@ -56,7 +56,8 @@
 				rsmz_pesticide* ds_fert* ds_insecticide* ds_herbicide* ///
 				ds_fungicide* ds_pesticide* dsmz_fert* dsmz_insecticide* ///
 				dsmz_herbicide* dsmz_fungicide* dsmz_pesticide* ///
-				rs_irrigation* rsmz_irrigation* ds_irrigation* dsmz_irrigation*
+				rs_irrigation* rsmz_irrigation* ds_irrigation* dsmz_irrigation* ///
+				rs_fert_inorgkg rsmz_fert_kg
 
 * generate indicator variables for herbicide and fungicide
 	gen 		rs_herb = 1 if rs_herbicideany == 1 | rs_fungicideany == 1
@@ -103,6 +104,7 @@
 	drop		lat_modified - fsrad3_lcmaj afmnslp_pct - _geo
 	
 * destring unique household indicator
+	gen			hh_id_merge = case_id
 	destring 	case_id, replace
 
 * generate year variables and season variables

@@ -185,7 +185,8 @@
 }
 
 * save file
-	qui: compress
+	gen			wave = 2
+	qui: 		compress
 	save 		"$export/sp2_merged.dta", replace
 		
 * close the log

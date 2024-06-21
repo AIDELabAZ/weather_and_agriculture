@@ -185,7 +185,10 @@
 }
 
 * save file
-	qui: compress
+	gen			wave = 1
+	rename		case_id lp1_id
+	rename		hh_id_merge case_id
+	qui: 		compress
 	save 		"$export/lp1_merged.dta", replace
 		
 * close the log
