@@ -96,10 +96,6 @@
 	rename		ssa_aez09 aez
 	
 	drop		dist_road - fsrad3_lcmaj srtm_1k - _geo
-	
-* destring unique household indicator
-	gen			hh_id_merge = y2_hhid
-	destring 	case_id, replace
 
 	
 * **********************************************************************

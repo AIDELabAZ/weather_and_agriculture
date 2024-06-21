@@ -186,7 +186,6 @@
 
 * save file
 	gen			wave = 3
-	order 		hh_id_merge
 	qui: 		compress
 	save 		"$export/lp3_merged.dta", replace
 		

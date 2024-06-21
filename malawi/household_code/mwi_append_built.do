@@ -23,6 +23,7 @@
 	* need to sort out short panel
 	* left off at building panel
 	
+	
 * **********************************************************************
 * 0 - setup
 * **********************************************************************
@@ -42,20 +43,28 @@
 * **********************************************************************
 
 * import the long panel data frame
-	use 		"$data/household_data/malawi/trackingfiles/Frame_hhIDs.dta", clear
+	use 		"$data/household_data/malawi/trackingfiles/Frame_hhIDs_v2.dta", clear
+
+* import the first cross section file	
+	preserve
+	tempfile 	cx1
+	keep if		wave == 1
 	
-	drop if		wave == 2 | wave == 4
-	
-* import the first cross section file
-	merge		1:1 hh_id_merge wave using "$root/wave_1/cx1_merged.dta", gen(cx1)
+	merge		1:1 case_id using "$root/wave_1/cx1_merged.dta", gen(cx1)
 
 	keep if		cx1 == 2
 	
-* append the second cross section file
-	merge		1:1 hh_id_merge wave using "$root/wave_3/cx2_merged.dta", gen(cx2)
+	save 		`cx1'
+	restore
 	
-* reformat case_id
-	format %15.0g case_id
+* append the second cross section file
+	keep if		wave == 3
+
+	merge		m:1 case_id wave using "$root/wave_3/cx2_merged.dta", gen(cx2)
+	
+	keep if		cx2 == 2
+	
+	append 		using `cx1'
 
 * drop duplicates (10), not sure why there are dups
 	duplicates drop case_id, force
@@ -92,20 +101,29 @@
 * **********************************************************************
 	
 * import the long panel data frame
-	use 		"$data/household_data/malawi/trackingfiles/Frame_hhIDs.dta", clear
+	use 		"$data/household_data/malawi/trackingfiles/Frame_hhIDs_v2.dta", clear
+
+* import the first short panel file	
+	preserve
+	tempfile 	sp1
+	keep if		wave == 1
 	
-	drop if		wave > 2
-	
-* import the first short panel file
-	merge		1:1 hh_id_merge wave using "$root/wave_1/sp1_merged.dta", gen(sp1)
+	merge		1:1 case_id using "$root/wave_1/sp1_merged.dta", gen(sp1)
 
 	keep if		sp1 == 2
 
+	save 		`sp1'
+	restore
+	
 * append the second short panel file
-	merge		1:1 hh_id_merge wave using "$root/wave_2/sp2_merged.dta", gen(sp2) force
+	keep if		wave == 2
+	
+	merge		1:1 y2_hhid using "$root/wave_2/sp2_merged.dta", gen(sp2)
 
-* reformat case_id
-	format %15.0g case_id
+	keep if		sp2 == 2
+	
+	append 		using `sp1', force
+	
 
 * drop split-off households, keep only original households
 	duplicates 	tag case_id year, generate(dup)
@@ -114,6 +132,9 @@
 	drop		dup
 	duplicates 	tag case_id year, generate(dup)
 	drop if		dup > 0 
+	drop		dup
+	duplicates 	tag case_id, generate(dup)
+	drop if		dup == 0 
 	drop		dup
 
 * create household, country, and data identifiers
@@ -136,8 +157,8 @@
 	drop		urbanR2- distance_R1_to_R2
 	
 * order variables
-	order		country dtype region district urban ta strata cluster ///
-				ea_id spid sp_id case_id y2_hhid hhweight
+	order		country dtype region district urban strata ///
+				spid sp_id case_id y2_hhid
 	
 	isid		case_id year
 	
@@ -151,32 +172,71 @@
 * **********************************************************************
 	
 * import the long panel data frame
-	use 		"$data/household_data/malawi/trackingfiles/Frame_hhIDs.dta", clear
+	use 		"$data/household_data/malawi/trackingfiles/Frame_hhIDs_v2.dta", clear
 	
 * import the first long panel file
-	merge		1:1 hh_id_merge wave using "$root/wave_1/lp1_merged.dta", gen(lp1)
+	preserve
+	tempfile 	lp1
+	keep if		wave == 1
+	
+	merge		1:1 case_id using "$root/wave_1/lp1_merged.dta", gen(lp1)
+
+	keep if		lp1 == 3
+
+	save 		`lp1'
+	restore
 
 * append the second long panel file
-	merge		1:1 hh_id_merge wave using "$root/wave_2/lp2_merged.dta", gen(lp2)
+	preserve
+	tempfile 	lp2
+	keep if		wave == 2
 	
-* append the third long panel filefile
-	merge		1:1 hh_id_merge wave using "$root/wave_4/lp3_merged.dta", gen(lp3)
+	merge		1:1 y2_hhid wave using "$root/wave_2/lp2_merged.dta", gen(lp2)
+
+	keep if		lp2 == 3
+
+	save 		`lp2'
+	restore
 	
 * append the third long panel file
-	merge		1:1 hh_id_merge wave using "$root/wave_6/lp4_merged.dta", gen(lp4)
+	preserve
+	tempfile 	lp3
+	keep if		wave == 3
 	
-* reformat case_id
-	format %15.0g case_id
+	merge		1:1 y3_hhid wave using "$root/wave_4/lp3_merged.dta", gen(lp3)
+
+	keep if		lp3 == 3
+
+	save 		`lp3'
+	restore
+	
+* append the third long panel file
+	preserve
+	tempfile 	lp4
+	keep if		wave == 4
+	
+	merge		1:1 y4_hhid wave using "$root/wave_6/lp4_merged.dta", gen(lp4)
+
+	keep if		lp4 == 3
+
+	save 		`lp4'
+	restore
+
+* append data sets
+	use 		`lp1', clear
+	append		using `lp2'
+	append		using `lp3'
+	append		using `lp4'
 	
 * check for unique identifiers
-	isid		hh_id_obs wave
+	isid		hh_id_obs year
 
-	replace		year = 2012 if wave == 2
-	replace		year = 2015 if wave == 3
-	replace		year = 2018 if wave == 4
-	
 * create household, country, and data identifiers
 	sort		hh_id_obs year
+	rename		hh_id_obs lp_id
+	lab var		lp_id "Long panel household id"
+	
+	
 	egen		lpid = seq()
 	lab var		lpid "Long panel unique id"
 
@@ -188,10 +248,9 @@
 
 * order variables
 	order		country dtype region district urban ta strata cluster ///
-				ea_id case_id lpid y2_hhid y3_hhid y4_hhid ///
-				hh_id_obs hh_id_merge
+				ea_id case_id lpid y2_hhid y3_hhid y4_hhid lp_id
 	
-	isid		hh_id_obs year
+	isid		lp_id year
 	
 * save file
 	qui: compress
@@ -213,79 +272,75 @@
 	drop		ds*
 
 * create or rename variables for maize production (seed rate missing in data)
-	rename		rsmz_harvestimp cp_hrv
+	replace		cp_hrv = rsmz_harvestimp if cp_hrv == .
 	lab var 	cp_hrv "Harvest of maize (kg)"
 		
-	rename		rsmz_cultivatedarea cp_lnd
+	replace		cp_lnd = rsmz_cultivatedarea if cp_lnd == .
 	lab var 	cp_lnd "Land area planted to maize (ha)"
 		
-	gen 		cp_yld = cp_hrv/cp_lnd
+	replace		cp_yld = cp_hrv/cp_lnd
 	lab var 	cp_yld "Yield of maize (kg/ha)"
 
-	gen 		cp_lab = rsmz_labordaysimp/cp_lnd
+	replace		cp_lab = rsmz_labordaysimp/cp_lnd
 	lab var 	cp_lab "Labor for maize (days/ha)"
 		
-	rename		rsmz_fert_kg cp_frt
+	replace		cp_frt = rsmz_fert_kg if cp_frt == . 
 	lab var		cp_frt "Fertilizer (inorganic) for maize (kg/ha)"
 		
-	rename		rsmz_pest cp_pst
+	replace		cp_pst = rsmz_pest if cp_pst == . 
 	lab var		cp_pst "Pesticide/Insecticide for maize (=1)"
 		
-	rename		rsmz_herb cp_hrb
+	replace		cp_hrb = rsmz_herb if cp_hrb == . 
 	lab var		cp_hrb "Herbicide/Fungicide for maize (=1)"
 		
-	rename		rsmz_irrigationany cp_irr
+	replace		cp_irr = rsmz_irrigationany if cp_irr == .
 	lab var		cp_irr "Irrigation for maize (=1)"
 
 * convert kwacha into 2015 USD
 * exchange rates come from world_bank_exchange_rates.xlsx
-	replace		rs_harvest_valueimp = rs_harvest_valueimp/199.11 ///
-					if year == 2008
 	replace		rs_harvest_valueimp = rs_harvest_valueimp/184.65 ///
+					if year == 2008
+	replace		rs_harvest_valueimp = rs_harvest_valueimp/184.17 ///
 					if year == 2009
-	replace		rs_harvest_valueimp = rs_harvest_valueimp/285.12 ///
+	replace		rs_harvest_valueimp = rs_harvest_valueimp/395.68 ///
 					if year == 2012
-	replace		rs_harvest_valueimp = rs_harvest_valueimp/436.79 ///
-					if year == 2014
 	replace		rs_harvest_valueimp = rs_harvest_valueimp/499.61 ///
+					if year == 2014
+	replace		rs_harvest_valueimp = rs_harvest_valueimp/700.49 ///
 					if year == 2015
-	*** 2019 converted in file
+	*** 2018 converted in file
 		
 * create or rename variables for total farm production (seed rate missing)
-	rename		rs_harvest_valueimp tf_hrv
+	replace		tf_hrv = rs_harvest_valueimp if tf_hrv == .
 	lab var 	tf_hrv "Harvest of all crops (2015 USD)"
 		
-	rename		rs_cultivatedarea tf_lnd
+	replace		tf_lnd = rs_cultivatedarea if tf_lnd == .
 	lab var 	tf_lnd "Land area planted to all crops (ha)"
 		
-	gen 		tf_yld = tf_hrv/tf_lnd
+	replace		tf_yld = tf_hrv/tf_lnd
 	lab var 	tf_yld "Yield of all crops (USD/ha)"
 		
-	gen 		tf_lab = rs_labordaysimp/tf_lnd
+	replace		tf_lab = rs_labordaysimp/tf_lnd
 	lab var 	tf_lab "Labor for all crops (days/ha)"
 		
-	rename		rs_fert_inorgkg tf_frt
+	replace		tf_frt = rs_fert_inorgkg if tf_frt == .
 	lab var		tf_frt "Fertilizer (inorganic) for all crops (kg/ha)"
 		
-	rename		rs_pest tf_pst
+	replace		tf_pst = rs_pest if tf_pst == .
 	lab var		tf_pst "Pesticide/Insecticide for all crops (=1)"
 		
-	rename		rs_herb tf_hrb
+	replace		tf_hrb = rs_herb if tf_hrb == .
 	lab var		tf_hrb "Herbicide/Fungicide for all crops (=1)"
 		
-	rename		rs_irrigationany tf_irr
+	replace		tf_irr = rs_irrigationany if tf_irr == .
 	lab var		tf_irr "Irrigation for all crops (=1)"
 
 * rename household weights
 	rename		hhweight pw
+	replace		pw = hh_wgt if pw == .
 	
 * drop unused production variables
 	drop 		rs*
-	
-* going to append to this the 2019/2020 data, which is a bit different, but let's give it a go
-	append 		using "$root/wave_6/lp4_merged.dta", force	
-
-	replace		pw = hh_wgt if pw == .
 	
 	order		country dtype cx_id sp_id lp_id year aez pw tf_hrv tf_lnd tf_yld tf_lab ///
 					tf_frt tf_pst tf_hrb tf_irr cp_hrv cp_lnd cp_yld cp_lab ///
@@ -295,11 +350,7 @@
 	drop		region district urban strata cluster ea_id spid ///
 					y2_hhid y3_hhid hhid hh_x02 hh_x04 intmonth ///
 					intyear qx_type ta lpid
-	
-* replace missing variables
-	replace		aez = 312 if lp_id == 320
-	replace		aez = 312 if lp_id == 1142
-				
+			
 * drop observations missing output
 	drop 		if tf_hrv == . & cp_hrv == .
 	*** drop observations are from those who cultivated dry but NOT rainy season
@@ -310,8 +361,8 @@
 * label household variables	
 	lab var			year "Year"
 	lab var			tf_lnd	"Total farmed area (ha)"
-	lab var			tf_hrv	"Total value of harvest (2010 USD)"
-	lab var			tf_yld	"value of yield (2010 USD/ha)"
+	lab var			tf_hrv	"Total value of harvest (2015 USD)"
+	lab var			tf_yld	"value of yield (2015 USD/ha)"
 	lab var			tf_lab	"labor rate (days/ha)"
 	lab var			tf_frt	"fertilizer rate (kg/ha)"
 	lab var			tf_pst	"Any plot has pesticide"
@@ -532,15 +583,26 @@ foreach var of varlist v15_merra - v27_merra {
 	}
 					
 * create household, country, and data identifiers
+	egen			mwi_id = group(cx_id)
+	sum				mwi_id
+	replace			mwi_id = `r(max)' + sp_id if sp_id != .
+
+	egen			lpid = group(lp_id)
+	sum				mwi_id
+	replace			mwi_id = `r(max)' + lpid if lpid != .
+	
+	distinct		mwi_id
+	isid			mwi_id year
+	lab var			mwi_id "Malawi panel household id"
+	
 	egen			uid = seq()
 	lab var			uid "unique id"
 	
 * order variables
-	order			uid
+	order			uid mwi_id
 	
 * save file
-	qui: compress
-	
+	qui: 			compress
 	save 			"$export/mwi_complete.dta", replace
 	
 * close the log

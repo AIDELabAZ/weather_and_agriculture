@@ -141,7 +141,7 @@
 
 	gen				vl_yld = vl_hrv / plotsize
 	assert 			!missing(vl_yld)
-	lab var			vl_yld "value of yield (2015USD/ha)"
+	lab var			vl_yld "value of yield (2015 USD/ha)"
 
 * impute value per hectare outliers 
 	sum				vl_yld
@@ -163,12 +163,12 @@
 	*** reduces mean from 1855 to 604
 						
 	drop			stddev median replacement maxrep minrep
-	lab var			vl_yldimp	"value of yield (2015USD/ha), imputed"
+	lab var			vl_yldimp	"value of yield (2015 USD/ha), imputed"
 
 * inferring imputed harvest value from imputed harvest value per hectare
 	generate		vl_hrvimp = vl_yldimp * plotsize 
-	lab var			vl_hrvimp "value of harvest (2015USD), imputed"
-	lab var			vl_hrv "value of harvest (2015USD)"
+	lab var			vl_hrvimp "value of harvest (2015 USD), imputed"
+	lab var			vl_hrv "value of harvest (2015 USD)"
 	
 
 * **********************************************************************
@@ -494,10 +494,7 @@
 
 	drop			if _hh != 3
 	*** 848 observfations droppped 	
-	
-* destring case_id
-	gen				hh_id_merge = y4_hhid
-	destring		case_id, replace
+
 	
 * **********************************************************************
 * 5 - end matter, clean up to save

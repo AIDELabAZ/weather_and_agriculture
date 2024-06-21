@@ -130,20 +130,16 @@ end
 	use "${Input}\\Malawi\\IHPS 10\\HH_MOD_A_FILT_10.dta", clear
 	keep case_id
 	gen wave = 1 
-	gen hh_id_merge = case_id
 	gen hh_id_obs = case_id
 	append using "${Input}\\Malawi\\IHPS 13\\HH_MOD_A_FILT_13.dta"
-	keep hh_id_merge hh_id_obs wave case_id y2_hhid
+	keep  hh_id_obs wave case_id y2_hhid
 	replace wave = 2 if wave==.
-	replace hh_id_merge = y2_hhid if wave==2
 	append using "${Input}\\Malawi\\IHPS 16\\HH_MOD_A_FILT_16.dta"
-	keep hh_id_merge hh_id_obs wave case_id y2_hhid y3_hhid
+	keep  hh_id_obs wave case_id y2_hhid y3_hhid
 	replace wave = 3 if wave==.
-	replace hh_id_merge = y3_hhid if wave==3
 	append using "${Input}\\Malawi\\IHPS 19\\HH_MOD_A_FILT_19.dta"
-	keep hh_id_merge hh_id_obs wave case_id y2_hhid y3_hhid y4_hhid
+	keep  hh_id_obs wave case_id y2_hhid y3_hhid y4_hhid
 	replace wave = 4 if wave==.
-	replace hh_id_merge = y4_hhid if wave==4
 	
 	merge m:1 y2_hhid wave using `HH_frame_w2', nogen update
 	merge m:1 y3_hhid wave using `HH_frame_w3', nogen update
@@ -153,11 +149,10 @@ end
 	egen hh_id_obs = group(hh_id_obs_temp)
 	replace hh_id_obs = hh_id_obs + 2000000 
 	
-	lab var hh_id_merge "Household ID in wave (to merge with raw data)"
 	lab var hh_id_obs "Household ID (Tracked unit)"
 
-keep hh_id_obs hh_id_merge wave
-save "${Output}\\trackingfiles\\Frame_hhIDs.dta", replace
+keep hh_id_obs wave case_id y2_hhid y3_hhid y4_hhid
+save "${Output}\\trackingfiles\\Frame_hhIDs_v2.dta", replace
 
 
 
