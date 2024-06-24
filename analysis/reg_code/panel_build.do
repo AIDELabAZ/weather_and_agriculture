@@ -1,7 +1,7 @@
 * Project: WB Weather
 * Created on: September 2020
 * Created by: jdm
-* Edited on: 7 June 2024
+* Edited on: 20 June 2024
 * Edited by: jdm
 * Stata v.18
 
@@ -56,7 +56,7 @@
 	order			mwi_id, after(eth_id)		
 	
 * drop unnecessary variables
-	drop			uid cx_id sp_id case_id
+	drop			uid cx_id sp_id lp_id
 		
 		
 * **********************************************************************
@@ -192,7 +192,7 @@
 	egen			hhid = group(HHID)
 	
 	drop			HHID eth_id mwi_id ngr_id nga_id tza_id uga_id ///
-					dup hid old_new track
+					hid old_new track
 	order			hhid, after(country)
 	lab var			hhid "Unique household ID"
 	

@@ -57,8 +57,8 @@
 			(kdensity v05_rf6 if country ==1, color(ananas%30) recast(area) ///
 			xtitle("") xscale(r(0(2000)8000)) title("Ethiopia (n = 10,674)") ///
 			ytitle("Density") ylabel(, nogrid labsize(small)) xlabel(, nogrid labsize(small))), ///
-			legend(pos(6) col(6) label(1 "CHIRPS") label(2 "CPC") ///
-			label(3 "MERRA-2") label(4 "ARC2") label(5 "ERA5") ///
+			legend(pos(6) col(6) label(1 "ARC2") label(2 "CHIRPS") ///
+			label(3 "CPC") label(4 "ERA5") label(5 "MERRA-2") ///
 			label(6 "TAMSAT")) saving("$sfig/eth_density_rf", replace)
 			
 *	graph export 	"$xfig\eth_density_rf.pdf", as(pdf) replace
@@ -70,7 +70,7 @@
 			(kdensity v05_rf4 if country == 2, color(turquoise%30) recast(area)) ///
 			(kdensity v05_rf5 if country == 2, color(reddish%30) recast(area)) ///
 			(kdensity v05_rf6 if country == 2, color(ananas%30) recast(area) ///
-			xtitle("") xscale(r(0(500)2500)) title("Malawi (n = 7,553)") ///
+			xtitle("") xscale(r(0(500)2500)) title("Malawi (n = 8,897)") ///
 			ytitle("") ylabel(, nogrid labsize(small)) xlabel(, nogrid labsize(small))), ///
 			legend(off) saving("$sfig/mwi_density_rf", replace)
 			
@@ -146,8 +146,8 @@
 			(kdensity v15_tp9 if country ==1, color(sea%30) recast(area) ///
 			xtitle("") title("Ethiopia (n = 10,674)") ///
 			ytitle("Density") ylabel(, nogrid labsize(small)) xlabel(, nogrid labsize(small))), ///
-			legend(pos(6) col(3) label(1 "MERRA-2") label(2 "ERA5") ///
-			label(3 "CPC")) saving("$sfig/eth_density_tp", replace)
+			legend(pos(6) col(3) label(1 "CPC") label(2 "ERA5") ///
+			label(3 "MERRA-2")) saving("$sfig/eth_density_tp", replace)
 			
 *	graph export 	"$xfig\eth_density_tp.pdf", as(pdf) replace		
 
@@ -155,7 +155,7 @@
 	twoway	(kdensity v15_tp7 if country == 2, color(gray%30) recast(area)) ///
 			(kdensity v15_tp8 if country == 2, color(vermillion%30) recast(area)) ///
 			(kdensity v15_tp9 if country == 2, color(sea%30) recast(area) ///
-			xtitle("") title("Malawi (n = 7,553)") ///
+			xtitle("") title("Malawi (n = 8,897)") ///
 			ytitle("") ylabel(, nogrid labsize(small)) xlabel(, nogrid labsize(small))), ///
 			legend(off) saving("$sfig/mwi_density_tp", replace)
 			
@@ -167,7 +167,7 @@
 	twoway	(kdensity v15_tp7 if country == 4, color(gray%30) recast(area)) ///
 			(kdensity v15_tp8 if country == 4, color(vermillion%30) recast(area)) ///
 			(kdensity v15_tp9 if country == 4, color(sea%30) recast(area) ///
-			xtitle("") title("Niger (n = 3,280)") ///
+			xtitle("") title("Niger (n = 3,913)") ///
 			ytitle("Density") ylabel(, nogrid labsize(small)) xlabel(, nogrid labsize(small))), ///
 			legend(off) saving("$sfig/ngr_density_tp", replace)	
 			
@@ -225,8 +225,8 @@
 			(fpfitci v10_rf6 year if country ==1, color(ananas%30)  ///
 			xtitle("") title("Ethiopia (n = 10,674)") ///
 			ytitle("Days without Rain") ylabel(, nogrid labsize(small)) xlabel(, nogrid labsize(small))), ///
-			legend(pos(6) col(6) label(1 "CHIRPS") label(3 "CPC") ///
-			label(5 "MERRA-2") label(7 "ARC2") label(9 "ERA5") ///
+			legend(pos(6) col(6) label(1 "ARC2") label(3 "CHIRPS") ///
+			label(5 "CPC") label(7 "ERA5") label(9 "MERRA-2") ///
 			label(11 "TAMSAT") order(1 3 5 7 9 11)) saving("$sfig/eth_norain_rf", replace)
 
 * days without rain - malawi	
@@ -236,7 +236,7 @@
 			(fpfitci v10_rf4 year if country == 2, color(turquoise%30) ) ///
 			(fpfitci v10_rf5 year if country == 2, color(reddish%30) ) ///
 			(fpfitci v10_rf6 year if country == 2, color(ananas%30)  ///
-			xtitle("") title("Malawi (n = 7,553)") ///
+			xtitle("") title("Malawi (n = 8,897)") ///
 			ytitle("") ylabel(, nogrid labsize(small)) xlabel(, nogrid labsize(small))), ///
 			legend(off) saving("$sfig/mwi_norain_rf", replace)
 			
@@ -247,7 +247,7 @@
 			(fpfitci v10_rf4 year if country == 4, color(turquoise%30) ) ///
 			(fpfitci v10_rf5 year if country == 4, color(reddish%30) ) ///
 			(fpfitci v10_rf6 year if country == 4, color(ananas%30)  ///
-			xtitle("") title("Niger (n = 3,280)") ///
+			xtitle("") title("Niger (n = 3,913)") ///
 			ytitle("Days without Rain") ylabel(, nogrid labsize(small)) xlabel(, nogrid labsize(small))), ///
 			legend(off) saving("$sfig/ngr_norain_rf", replace)
 
@@ -301,14 +301,14 @@
 			(fpfitci v19_tp9 year if country ==1, color(sea%30)  ///
 			xtitle("") title("Ethiopia (n = 10,674)") ///
 			ytitle("Growing Degree Days") ylabel(, nogrid labsize(small)) xlabel(, nogrid labsize(small))), ///
-			legend(pos(6) col(3) label(1 "MERRA-2") label(3 "ERA5") ///
-			label(5 "CPC") order(1 3 5)) saving("$sfig/eth_gdd_tp", replace)
+			legend(pos(6) col(3) label(1 "CPC") label(3 "ERA5") ///
+			label(5 "MERRA-2") order(1 3 5)) saving("$sfig/eth_gdd_tp", replace)
 
 * growing degree days - malawi
 	twoway	(fpfitci v19_tp7 year if country == 2, color(gray%30) ) ///
 			(fpfitci v19_tp8 year if country == 2, color(vermillion%30) ) ///
 			(fpfitci v19_tp9 year if country == 2, color(sea%30)  ///
-			xtitle("") title("Malawi (n = 7,553)") ///
+			xtitle("") title("Malawi (n = 8,897)") ///
 			ytitle("") ylabel(, nogrid labsize(small)) xlabel(, nogrid labsize(small))), ///
 			legend(off) saving("$sfig/mwi_gdd_tp", replace)
 
@@ -316,7 +316,7 @@
 	twoway	(fpfitci v19_tp7 year if country == 4, color(gray%30) ) ///
 			(fpfitci v19_tp8 year if country == 4, color(vermillion%30) ) ///
 			(fpfitci v19_tp9 year if country == 4, color(sea%30) ///
-			xtitle("") title("Niger (n = 3,280)") ///
+			xtitle("") title("Niger (n = 3,913)") ///
 			ytitle("Growing Degree Days") ylabel(, nogrid labsize(small)) xlabel(, nogrid labsize(small))), ///
 			legend(off) saving("$sfig/ngr_gdd_tp", replace)		
 
