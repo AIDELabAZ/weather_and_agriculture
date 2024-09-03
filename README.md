@@ -3,7 +3,9 @@
 This repository acts as the mother ship for a number of other repositories that hold replication code for papers sprining from the main project. The main project site is on [OSF][1] and has the goal of exploring a variety of issues that arise when remotely sensed weather data is integrated with socioeconomic survey data. The dependency or subsidiary repos from this repo include:
 
 - Replication of Michler, J.D., Josephson, A., Kilic, T., and Murray, S. (2021). "[Estimating the Impact of Weather on Agriculture][4]." World Bank Policy Research Working Paper, No. 9867.
-
+- Michler, J.D., Josephson, A., Kilic, T., and Murray, S. (2022). "[Privacy Protection, Measurement Error, and the Integration of Remote Sensing and Socioeconomic Survey Data][5]." *Journal of Development Economics 158*: 102927.
+- Josephson, A., Michler, J.D., Kilic, T., and Murray, S. (2024). "[The Mismeasure of Weather: Using Remotely Sensed Weather in Economic Contexts][6]."
+- Agme, C., Josephson, A., Michler, J.D., Kilic, T., and Murray, S. (2024). "[Variable Selection in Economic Applications of Remotely Sensed Weather Data: Evidence from the LSMS-ISA][7]."
 
 <span style="color:blue">Because the weather data contains confidential information, it is not publically available. This means the weather code will not function, as that data is held by the World Bank. Contact Drs. Jeffrey D. Michler or Anna Josephson and they can share an intermediate - de-identified - version of the weather data for use in replicating the results.</span>
 
@@ -81,3 +83,6 @@ weather_and_agriculture
   [2]: https://www.worldbank.org/en/programs/lsms/initiatives/lsms-ISA
   [3]: https://openknowledge.worldbank.org/handle/10986/36643
   [4]: https://github.com/jdavidm/weather_project
+  [5]: https://github.com/AIDELabAZ/privacy_protection
+  [6]: https://github.com/AIDELabAZ/mismeasure_weather
+  [7]: https://github.com/AIDELabAZ/weather_metrics
