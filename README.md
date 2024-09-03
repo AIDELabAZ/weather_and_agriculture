@@ -1,8 +1,8 @@
 # Weather and Agriculture: Cleaning code for LSMS-ISA and remotely sensed weather data integration project
 
-This repository acts as the mother ship for a number of other repositories that hold replication code for papers sprining from the main project. The main project site is on [OSF][1] and has the goal of exploring a variety of issues that arise when remotely sensed weather data is integrated with socioeconomic survey data. The dependency or subsidiary repos from this repo include:
+This repository acts as the mother ship for a number of other repositories that hold replication code for papers sprining from the main project. The main project site is on [OSF][1] and has the goal of exploring a variety of issues that arise when remotely sensed weather data is integrated with socioeconomic survey data. The dependency or subsidiary repos from this repo include replication packages for:
 
-- Replication of Michler, J.D., Josephson, A., Kilic, T., and Murray, S. (2021). "[Estimating the Impact of Weather on Agriculture][4]." World Bank Policy Research Working Paper, No. 9867.
+- Michler, J.D., Josephson, A., Kilic, T., and Murray, S. (2021). "[Estimating the Impact of Weather on Agriculture][4]." World Bank Policy Research Working Paper, No. 9867.
 - Michler, J.D., Josephson, A., Kilic, T., and Murray, S. (2022). "[Privacy Protection, Measurement Error, and the Integration of Remote Sensing and Socioeconomic Survey Data][5]." *Journal of Development Economics 158*: 102927.
 - Josephson, A., Michler, J.D., Kilic, T., and Murray, S. (2024). "[The Mismeasure of Weather: Using Remotely Sensed Weather in Economic Contexts][6]."
 - Agme, C., Josephson, A., Michler, J.D., Kilic, T., and Murray, S. (2024). "[Variable Selection in Economic Applications of Remotely Sensed Weather Data: Evidence from the LSMS-ISA][7]."
