@@ -1,6 +1,6 @@
-* Project: WB Weather
-* Created on: May 2020
-* Created by: jdm
+* Project: WB Weather - metric 
+* Created on: Jan 2024
+* Created by: cda
 * Stata v.18.0
 
 * does
@@ -22,7 +22,7 @@
 * **********************************************************************
 
 * set $pack to 0 to skip package installation
-	global 			pack 	0
+	global 			pack 	1
 		
 * Specify Stata version in use
     global stataVersion 18.0    // set Stata version
@@ -58,6 +58,10 @@ if `"`c(username)'"' == "rbrnhm" {
         global 		code  	"C:/Users/rbrnhm/GitHub/weather_and_agriculture"
 		global 		data	"C:/Users/rbrnhm/OneDrive - University of Arizona/weather_and_agriculture"
     }	
+	 if `"`c(username)'"' == "Chandrakant Agme" {
+        global 		code  	"C:/Users/Chandrakant Agme/Documents/GitHub/weather_metrics"
+		global 		data	"C:/Users/Chandrakant Agme/University of Arizona/Michler, Jeffrey David - (jdmichler) - weather_metrics"
+	 }	
 
 * **********************************************************************
 * 0 (b) - Check if any required packages are installed:
@@ -67,7 +71,12 @@ if `"`c(username)'"' == "rbrnhm" {
 if $pack == 1 {
 	
 	* for packages/commands, make a local containing any required packages
-		loc userpack "blindschemes mdesc estout distinct winsor2" 
+    * temporarily set delimiter to ; so can break the line
+    #delimit ;		
+	loc userpack = "blindschemes mdesc estout distinct winsor2 unique 
+                    palettes catplot colrspace carryforward missings 
+                    coefplot" ;
+    #delimit cr
 	
 	* install packages that are on ssc	
 		foreach package in `userpack' {
@@ -86,13 +95,13 @@ if $pack == 1 {
 			}
 		}
 
-	* install -xfill- package
-		net install xfill, replace from(https://www.sealedenvelope.com/)
-
 	* install -weather- package
 		net install WeatherConfig, ///
 		from(https://jdavidm.github.io/) replace
 
+	* install -xfill and dm89_1 - packages
+		net install xfill, 	replace from(https://www.sealedenvelope.com/)
+		
 	* update all ado files
 		ado update, update
 
@@ -100,7 +109,6 @@ if $pack == 1 {
 		set scheme plotplain, perm
 		set more off
 }
-
 
 * **********************************************************************
 * 1 - run weather data cleaning .do file
