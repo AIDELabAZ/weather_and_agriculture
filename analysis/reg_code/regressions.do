@@ -6,7 +6,7 @@
 * Stata v.18
 
 * does
-	* NOTE IT TAKES 25 MIN TO RUN ALL REGRESSIONS
+	* NOTE IT TAKES 22 MIN TO RUN ALL REGRESSIONS
 	* loads multi country data set
 	* runs rainfall and temperature regressions
 	* outputs results file for analysis
