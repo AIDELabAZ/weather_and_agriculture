@@ -1,6 +1,6 @@
-* Project: WB Weather - metric 
+* Project: WB Weather
 * Created on: Jan 2024
-* Created by: cda
+* Created by: jdm
 * Stata v.18.0
 
 * does
